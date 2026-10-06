@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# Support explicit `sh deploy.sh` as well as direct execution.
+if [ -z "${BASH_VERSION:-}" ]; then
+  exec bash "$0" "$@"
+fi
 set -Eeuo pipefail
 
 # Run Compose from this project's directory, even when called elsewhere.

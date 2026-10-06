@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# An explicit `sh certbot.sh` bypasses the shebang; switch before Bash syntax.
+if [ -z "${BASH_VERSION:-}" ]; then
+  exec bash "$0" "$@"
+fi
 set -Eeuo pipefail
 
 project_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
