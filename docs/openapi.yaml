@@ -1,0 +1,1530 @@
+openapi: 3.0.3
+info:
+  title: Virtual Tour POC API
+  version: 0.8.0
+servers:
+- url: http://localhost:8080
+paths:
+  /health:
+    get:
+      summary: Check database health
+      responses:
+        '200':
+          description: Healthy
+        '503':
+          description: Database unavailable
+  /api/v1/projects:
+    get:
+      summary: List projects, newest first
+      responses:
+        '200':
+          description: Projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Project'
+        '500':
+          $ref: '#/components/responses/Error'
+    post:
+      summary: Create a project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/ProjectInput'
+              - required:
+                - name
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '400':
+          $ref: '#/components/responses/Error'
+        '500':
+          $ref: '#/components/responses/Error'
+  /api/v1/projects/{id}:
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    get:
+      summary: Read a project
+      responses:
+        '200':
+          description: Project
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '400':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '500':
+          $ref: '#/components/responses/Error'
+    patch:
+      summary: Update name and/or description
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectPatch'
+      responses:
+        '200':
+          description: Updated project
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '400':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '500':
+          $ref: '#/components/responses/Error'
+    delete:
+      summary: Delete a project
+      responses:
+        '204':
+          description: Deleted
+        '400':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '500':
+          $ref: '#/components/responses/Error'
+  /api/v1/projects/{id}/uploads:
+    parameters: &id001
+    - name: id
+      in: path
+      required: true
+      schema: &id016
+        type: string
+        format: uuid
+    post:
+      summary: Start a GLB, panorama or information image upload
+      responses:
+        '201':
+          description: Start a size-limited GLB or panorama upload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadTicket'
+        '400': &id002
+          $ref: '#/components/responses/Error'
+        '404': &id003
+          $ref: '#/components/responses/Error'
+        '500': &id004
+          $ref: '#/components/responses/Error'
+        '503': &id005
+          $ref: '#/components/responses/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - name
+              - size
+              properties:
+                name:
+                  type: string
+                  maxLength: 120
+                  description: Filename ending in .glb, .jpg, .jpeg, .png or .webp,
+                    without path separators
+                size:
+                  type: integer
+                  minimum: 20
+                  maximum: 1048576000
+                  description: GLB limit is 1000 MiB; PANORAMA and IMAGE limit is
+                    100 MiB.
+                file_type:
+                  type: string
+                  enum:
+                  - GLB
+                  - PANORAMA
+                  - IMAGE
+                  - TEXTURE_BASE_COLOR
+                  - TEXTURE_NORMAL
+                  - TEXTURE_ROUGHNESS
+                  description: Defaults to GLB for .glb, PANORAMA for images. Choose
+                    IMAGE for hotspot images without a 2:1 requirement. Choose a TEXTURE_*
+                    role for a material map without a 2:1 requirement. Base color
+                    is sRGB; normal/roughness are linear data. Images are limited
+                    to 8192 × 4096 pixels.
+      description: POST multipart form data directly to upload.url, with every upload.fields
+        entry and the file field last. The policy expires after 15 minutes and requires
+        the exact declared file size. Then call the completion endpoint.
+  /api/v1/projects/{id}/assets:
+    parameters: *id001
+    get:
+      summary: List project assets
+      responses:
+        '200':
+          description: List project assets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Asset'
+        '400': *id002
+        '404': *id003
+        '500': *id004
+        '503': *id005
+  /api/v1/assets/{id}:
+    parameters: *id001
+    get:
+      summary: Get asset metadata and a fresh read URL
+      responses:
+        '200':
+          description: Get asset metadata and a fresh read URL
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/Asset'
+                - type: object
+                  properties:
+                    url:
+                      type: string
+                      description: 15-minute presigned URL when ready; empty while
+                        pending
+        '400': *id002
+        '404': *id003
+        '500': *id004
+        '503': *id005
+    delete:
+      summary: Delete asset metadata; originals remain in storage
+      responses:
+        '204':
+          description: Deleted
+        '400':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '500':
+          $ref: '#/components/responses/Error'
+        '409':
+          description: Asset is still used by a scene
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /api/v1/assets/{id}/complete:
+    parameters: *id001
+    post:
+      summary: Validate upload and confirm completion
+      responses:
+        '200':
+          description: Validate upload and confirm completion
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Asset'
+        '400': *id002
+        '404': *id003
+        '500': *id004
+        '503': *id005
+        '422':
+          $ref: '#/components/responses/Error'
+      description: Checks size and validates GLB v2 framing/embedded resources or
+        panorama format, 2:1 dimensions (up to 8192 × 4096) and fully decoded pixels.
+        Copies validated bytes to the original key. Idempotent once ready. Body is
+        not required.
+  /api/v1/projects/{id}/scenes:
+    parameters: *id001
+    get:
+      summary: List project scenes in order
+      responses:
+        '200':
+          description: List project scenes in order
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Scene'
+        '400': *id002
+        '404': *id003
+        '500': *id004
+        '503': *id005
+    post:
+      summary: Create an imported scene or a continuous layout scene
+      responses:
+        '201':
+          description: Create a scene from a ready asset in the same project
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scene'
+        '400': *id002
+        '404': *id003
+        '500': *id004
+        '503': *id005
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+              - type: object
+                additionalProperties: false
+                required:
+                - asset_id
+                - name
+                properties:
+                  asset_id: &id020
+                    type: string
+                    format: uuid
+                  name:
+                    type: string
+                    minLength: 1
+                    maxLength: 120
+              - type: object
+                additionalProperties: false
+                required:
+                - type
+                - name
+                properties:
+                  type:
+                    type: string
+                    enum:
+                    - LAYOUT
+                  name:
+                    type: string
+                    minLength: 1
+                    maxLength: 120
+                  layout:
+                    $ref: '#/components/schemas/LayoutDocument'
+      description: Maximum JSON body 256 KiB. LAYOUT scenes omit asset_id; an omitted
+        layout starts with empty elements/doors. The scene and instance references
+        are created atomically.
+  /api/v1/scenes/{id}:
+    parameters: *id001
+    get:
+      summary: Get a scene
+      responses:
+        '200':
+          description: Get a scene
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scene'
+        '400': *id002
+        '404': *id003
+        '500': *id004
+        '503': *id005
+    patch:
+      summary: Rename, move or save scene start view
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScenePatch'
+      responses:
+        '200':
+          description: Scene with saved start view
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scene'
+        '400': *id002
+        '404': *id003
+        '500': *id004
+    delete:
+      summary: Delete a scene and its incoming/outgoing navigation links; replace
+        its start-scene setting
+      responses:
+        '204':
+          description: Deleted
+        '400':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '500':
+          $ref: '#/components/responses/Error'
+  /api/v1/scenes/{id}/hotspots:
+    parameters: &id006
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    get:
+      summary: List scene hotspots
+      responses:
+        '200':
+          description: Hotspot array
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Hotspot'
+        '400':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '500':
+          $ref: '#/components/responses/Error'
+    post:
+      summary: Create a NAVIGATION or INFO hotspot
+      requestBody: &id007
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NavigationInput'
+      responses:
+        '201':
+          description: Saved hotspot
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Hotspot'
+        '400':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '500':
+          $ref: '#/components/responses/Error'
+  /api/v1/hotspots/{id}:
+    parameters: *id006
+    delete:
+      summary: Delete a hotspot
+      responses:
+        '204':
+          description: Deleted
+        '400':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '500':
+          $ref: '#/components/responses/Error'
+    patch:
+      summary: Save complete hotspot content and/or reposition it
+      requestBody: *id007
+      responses:
+        '200':
+          description: Updated hotspot
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Hotspot'
+        '400':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+  /api/v1/projects/{id}/publish:
+    parameters:
+    - &id009
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    post:
+      summary: Publish the saved tour
+      responses:
+        '200':
+          description: Saved publication state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '400': &id008
+          $ref: '#/components/responses/Error'
+        '404': *id008
+        '500': *id008
+      description: Requires at least one usable scene, a valid start scene, completed
+        scene/image assets and valid navigation destinations. Publishing and repeated
+        publishing preserve the slug. Saved edits appear immediately; no snapshots.
+  /api/v1/projects/{id}/unpublish:
+    parameters:
+    - *id009
+    post:
+      summary: Unpublish the saved tour
+      responses:
+        '200':
+          description: Saved publication state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '400': *id008
+        '404': *id008
+        '500': *id008
+  /api/v1/public/tours/{slug}:
+    parameters:
+    - &id010
+      name: slug
+      in: path
+      required: true
+      schema:
+        type: string
+    get:
+      summary: Read a published saved tour
+      description: '404 for unpublished or unknown slugs. No storage keys or asset
+        URLs are exposed in metadata. Fetch fresh URLs through the tour-scoped asset
+        endpoint on scene load. Responses use Cache-Control: no-store.'
+      responses:
+        '200':
+          description: Tour metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicTour'
+        '404': *id008
+        '500': *id008
+  /api/v1/public/tours/{slug}/assets/{id}:
+    parameters:
+    - *id010
+    - *id009
+    get:
+      summary: Get a fresh read URL for an asset used by this published tour
+      description: 'Only completed assets referenced by a scene or information hotspot
+        in this tour are accessible. Unpublished tours, unused assets and other-project
+        assets return 404. Response uses Cache-Control: no-store.'
+      responses:
+        '200':
+          description: Browser-reachable presigned read URL
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - url
+                properties:
+                  url:
+                    type: string
+                    format: uri
+        '400': *id008
+        '404': *id008
+        '503': *id008
+  /api/v1/public/tours/{slug}/scenes/{id}/hotspots:
+    parameters:
+    - *id010
+    - *id009
+    get:
+      summary: Read hotspots for a scene in this published tour
+      description: 'Unknown/unpublished tours and scenes outside the tour return 404.
+        Response uses Cache-Control: no-store.'
+      responses:
+        '200':
+          description: Scene hotspots
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Hotspot'
+        '400': *id008
+        '404': *id008
+        '500': *id008
+  /api/v1/scenes/{id}/layout:
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    get:
+      summary: Get a saved layout document and revision
+      responses:
+        '200':
+          description: LayoutRead
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LayoutRead'
+        '400': &id011
+          $ref: '#/components/responses/Error'
+        '404': &id012
+          $ref: '#/components/responses/Error'
+        '409': &id013
+          $ref: '#/components/responses/Error'
+        '500': &id014
+          $ref: '#/components/responses/Error'
+        '503': &id015
+          $ref: '#/components/responses/Error'
+    put:
+      summary: Save a whole layout atomically with a revision check
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LayoutSave'
+      responses:
+        '200':
+          description: Scene
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scene'
+        '400': *id011
+        '404': *id012
+        '409': *id013
+        '500': *id014
+        '503': *id015
+  /api/v1/public/tours/{slug}/scenes/{id}/layout:
+    parameters:
+    - name: slug
+      in: path
+      required: true
+      schema:
+        type: string
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    get:
+      summary: Read a published tour-scoped layout
+      responses:
+        '200':
+          description: LayoutRead
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LayoutRead'
+        '400': *id011
+        '404': *id012
+        '409': *id013
+        '500': *id014
+        '503': *id015
+components:
+  schemas:
+    ProjectInput:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        description:
+          type: string
+          maxLength: 5000
+      required:
+      - name
+    Project:
+      type: object
+      required:
+      - id
+      - name
+      - description
+      - created_at
+      - updated_at
+      - start_scene_id
+      - slug
+      - published
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        start_scene_id:
+          type: string
+          format: uuid
+          nullable: true
+        slug:
+          type: string
+          description: Unique stable slug, assigned at creation and preserved through
+            unpublish/republish
+        published:
+          type: boolean
+    Asset:
+      type: object
+      required:
+      - id
+      - project_id
+      - name
+      - file_type
+      - storage_key
+      - upload_status
+      - size
+      - created_at
+      properties:
+        id: *id016
+        project_id: *id016
+        name:
+          type: string
+        file_type:
+          type: string
+          enum:
+          - GLB
+          - PANORAMA
+          - IMAGE
+          - TEXTURE_BASE_COLOR
+          - TEXTURE_NORMAL
+          - TEXTURE_ROUGHNESS
+        storage_key:
+          type: string
+        upload_status:
+          type: string
+          enum:
+          - pending
+          - ready
+        size:
+          type: integer
+          format: int64
+        created_at:
+          type: string
+          format: date-time
+    Scene:
+      type: object
+      required:
+      - id
+      - project_id
+      - asset_id
+      - name
+      - type
+      - sort_order
+      - settings
+      - start_camera
+      - created_at
+      - layout
+      - layout_revision
+      properties:
+        id: *id016
+        project_id: *id016
+        asset_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: Null for LAYOUT; required for imported 3D and PANORAMA scenes.
+        name:
+          type: string
+        type:
+          type: string
+          enum:
+          - 3D
+          - PANORAMA
+          - LAYOUT
+        sort_order:
+          type: integer
+        settings:
+          $ref: '#/components/schemas/SceneSettings'
+        start_camera:
+          oneOf:
+          - $ref: '#/components/schemas/CameraView'
+          - $ref: '#/components/schemas/PanoramaView'
+          - type: object
+            maxProperties: 0
+        created_at:
+          type: string
+          format: date-time
+        layout:
+          oneOf:
+          - $ref: '#/components/schemas/LayoutDocument'
+          - type: object
+            maxProperties: 0
+        layout_revision:
+          type: integer
+          minimum: 0
+          description: Positive for LAYOUT, zero otherwise.
+    CameraView:
+      type: object
+      additionalProperties: false
+      required:
+      - position
+      - yaw
+      - pitch
+      properties:
+        position:
+          type: array
+          description: World coordinates in model units (metres for the demo)
+          minItems: 3
+          maxItems: 3
+          items:
+            type: number
+            minimum: -1000000
+            maximum: 1000000
+        yaw:
+          type: number
+          description: Y axis rotation in radians; zero looks toward -Z
+          minimum: -3.141592653589793
+          maximum: 3.141592653589793
+        pitch:
+          type: number
+          description: X axis rotation in radians (YXZ rotation order)
+          minimum: -1.5607963267948965
+          maximum: 1.5607963267948965
+    UploadTicket:
+      type: object
+      properties:
+        asset:
+          $ref: '#/components/schemas/Asset'
+        upload:
+          type: object
+          properties:
+            url:
+              type: string
+              format: uri
+            fields:
+              type: object
+              additionalProperties:
+                type: string
+            expires_at:
+              type: string
+              format: date-time
+    ProjectPatch:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        description:
+          type: string
+          maxLength: 5000
+        start_scene_id:
+          type: string
+          format: uuid
+          description: A scene belonging to this project
+    PanoramaView:
+      type: object
+      additionalProperties: false
+      required:
+      - yaw
+      - pitch
+      properties:
+        yaw:
+          type: number
+          description: Y axis rotation in radians; zero looks toward -Z
+          minimum: -3.141592653589793
+          maximum: 3.141592653589793
+        pitch:
+          type: number
+          description: X axis rotation in radians (YXZ rotation order)
+          minimum: -1.5607963267948965
+          maximum: 1.5607963267948965
+    ScenePatch:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      description: Save full settings separately from start_camera. Model transform
+        changes move hotspots atomically and clear start_camera; appearance changes
+        preserve it. Settings apply only to 3D scenes. LAYOUT cameras use position/yaw/pitch.
+        Layout appearance settings allow lighting/background only; model preparation
+        remains identity, with transforms edited per element.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        move:
+          type: string
+          enum:
+          - up
+          - down
+        settings:
+          $ref: '#/components/schemas/SceneSettings'
+        start_camera:
+          description: 3D requires position/yaw/pitch; panorama requires only yaw/pitch.
+            Angles are radians.
+          oneOf:
+          - $ref: '#/components/schemas/CameraView'
+          - $ref: '#/components/schemas/PanoramaView'
+    SceneSettings:
+      type: object
+      additionalProperties: false
+      required:
+      - appearance
+      - model
+      properties:
+        appearance:
+          type: object
+          additionalProperties: false
+          required:
+          - exposure
+          - environment_intensity
+          - light_intensity
+          - background
+          - tint
+          - roughness
+          properties:
+            exposure:
+              type: number
+              minimum: 0.1
+              maximum: 4
+              default: 1
+            environment_intensity:
+              type: number
+              minimum: 0
+              maximum: 3
+              default: 1
+            light_intensity:
+              type: number
+              minimum: 0
+              maximum: 5
+              default: 1
+            background:
+              type: string
+              pattern: ^#[0-9a-fA-F]{6}$
+              default: '#edf1e8'
+            tint:
+              type: string
+              pattern: ^$|^#[0-9a-fA-F]{6}$
+              description: Empty string preserves uploaded material colors.
+              default: ''
+            roughness:
+              type: number
+              nullable: true
+              minimum: 0
+              maximum: 1
+              description: Null preserves uploaded roughness.
+        model:
+          type: object
+          additionalProperties: false
+          required:
+          - scale
+          - up_axis
+          - rotation
+          properties:
+            scale:
+              type: number
+              minimum: 1.0e-06
+              maximum: 1000000
+              default: 1
+              description: Metres per source unit; 0.01 for centimetres and 0.001
+                for millimetres.
+            up_axis:
+              type: string
+              enum:
+              - Y
+              - Z
+              default: Y
+            rotation:
+              type: number
+              minimum: -180
+              maximum: 180
+              default: 0
+              description: Yaw in degrees, applied after up-axis correction.
+        materials: &id022
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/MaterialPreset'
+        surface_materials: &id021
+          type: object
+          maxProperties: 200
+          additionalProperties:
+            type: string
+            format: uuid
+          description: Stable mesh child-index path (0/0/1) to preset ID. Textured
+            assignments require UV coordinates. Imported UV distortion remains; metre
+            scale is estimated from mesh dimensions and UV extents.
+        navigation:
+          $ref: '#/components/schemas/WalkingSettings'
+    WorldPosition:
+      type: object
+      additionalProperties: false
+      required:
+      - x
+      - y
+      - z
+      properties:
+        x:
+          type: number
+          minimum: -1000000
+          maximum: 1000000
+        y:
+          type: number
+          minimum: -1000000
+          maximum: 1000000
+        z:
+          type: number
+          minimum: -1000000
+          maximum: 1000000
+        attachment:
+          $ref: '#/components/schemas/HotspotAttachment'
+    NavigationInput:
+      type: object
+      additionalProperties: false
+      required:
+      - title
+      - position
+      properties:
+        type:
+          type: string
+          enum:
+          - NAVIGATION
+          - INFO
+        title:
+          type: string
+          minLength: 1
+          maxLength: 120
+        position:
+          oneOf:
+          - $ref: '#/components/schemas/WorldPosition'
+          - $ref: '#/components/schemas/PanoramaView'
+        destination_scene_id:
+          type: string
+          format: uuid
+          description: Another scene in the same project
+          nullable: true
+        description: &id017
+          type: string
+          maxLength: 5000
+        external_link: &id018
+          type: string
+          maxLength: 2048
+          description: Optional absolute HTTP(S) URL, or empty string
+        image_asset_id: &id019
+          type: string
+          format: uuid
+          nullable: true
+      description: Full hotspot content for create or update. NAVIGATION requires
+        another destination scene and no information fields. INFO requires no destination.
+        Images must be completed IMAGE assets in the same project.
+    Hotspot:
+      type: object
+      required:
+      - id
+      - project_id
+      - scene_id
+      - type
+      - title
+      - position
+      - destination_scene_id
+      - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        project_id:
+          type: string
+          format: uuid
+        scene_id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum:
+          - NAVIGATION
+          - INFO
+        title:
+          type: string
+          minLength: 1
+          maxLength: 120
+        position:
+          oneOf:
+          - $ref: '#/components/schemas/WorldPosition'
+          - $ref: '#/components/schemas/PanoramaView'
+        destination_scene_id:
+          type: string
+          format: uuid
+          description: Another scene in the same project
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        description: *id017
+        external_link: *id018
+        image_asset_id: *id019
+    PublicTour:
+      type: object
+      required:
+      - name
+      - description
+      - start_scene_id
+      - scenes
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        start_scene_id:
+          type: string
+          format: uuid
+          nullable: true
+        scenes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Scene'
+    LayoutElement:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - kind
+      - name
+      - x
+      - z
+      - width
+      - depth
+      - height
+      - rotation
+      - scale
+      - collidable
+      - tint
+      - roughness
+      properties:
+        id: *id020
+        kind:
+          type: string
+          enum:
+          - LOBBY
+          - ROOM
+          - CORRIDOR
+          - FLOOR
+          - WALL
+          - INSTANCE
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        x:
+          type: number
+          minimum: -1000
+          maximum: 1000
+        z:
+          type: number
+          minimum: -1000
+          maximum: 1000
+        width:
+          type: number
+          minimum: 0.1
+          maximum: 100
+        depth:
+          type: number
+          minimum: 0.1
+          maximum: 100
+        height:
+          type: number
+          minimum: 0.1
+          maximum: 10
+        rotation:
+          type: number
+          minimum: -360
+          maximum: 360
+        scale:
+          type: number
+          minimum: 0.001
+          maximum: 100
+        asset_id: *id020
+        collidable:
+          type: boolean
+        tint:
+          type: string
+          pattern: ^(|#[0-9a-fA-F]{6})$
+        roughness:
+          type: number
+          minimum: 0
+          maximum: 1
+          nullable: true
+        floor_material:
+          type: string
+          description: Material preset ID; omitted or empty uses the original/default
+            finish.
+        wall_material:
+          type: string
+          description: Material preset ID; omitted or empty uses the original/default
+            finish.
+        mesh_materials: *id021
+        exterior:
+          type: boolean
+          default: false
+          description: Only standalone FLOOR elements may be exterior. They require
+            explicit exit activation before walking.
+      description: Single-level element centred on x/z. Structural rotations are quarter
+        turns; structural collision is mandatory. Rooms require width/depth >=1 and
+        height >=2.2. WALL depth is exactly 0.12. INSTANCE requires a ready same-project
+        GLB, Y up; scale converts source units to metres. Instance materials are isolated;
+        source geometry/textures are shared.
+    LayoutDoor:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - a
+      - b
+      - at
+      - width
+      - height
+      properties:
+        id: *id020
+        a: *id020
+        b: *id020
+        at:
+          type: number
+          minimum: -1100
+          maximum: 1100
+        width:
+          type: number
+          minimum: 0.8
+          maximum: 10
+        height:
+          type: number
+          minimum: 2
+          maximum: 10
+      description: Opening between two adjacent room edges. at is its centre in world
+        metres along the shared edge. Leave 0.12 m at both ends. Height must fit both
+        rooms. Overlapping openings and standalone walls blocking openings are rejected.
+    LayoutDocument:
+      type: object
+      additionalProperties: false
+      required:
+      - version
+      - elements
+      - doors
+      properties:
+        version:
+          type: integer
+          enum:
+          - 1
+        elements:
+          type: array
+          maxItems: 200
+          items:
+            $ref: '#/components/schemas/LayoutElement'
+        doors:
+          type: array
+          maxItems: 200
+          items:
+            $ref: '#/components/schemas/LayoutDoor'
+        materials: *id022
+        navigation:
+          $ref: '#/components/schemas/WalkingSettings'
+      description: Versioned layout. Element/door IDs are unique stable UUIDs. Rectangular
+        room interiors cannot overlap. Visible and collision geometry are derived
+        from this same document.
+    LayoutRead:
+      type: object
+      required:
+      - document
+      - revision
+      properties:
+        document:
+          $ref: '#/components/schemas/LayoutDocument'
+        revision:
+          type: integer
+          minimum: 1
+    LayoutSave:
+      type: object
+      additionalProperties: false
+      required:
+      - document
+      - revision
+      properties:
+        document:
+          $ref: '#/components/schemas/LayoutDocument'
+        revision:
+          type: integer
+          minimum: 1
+          maximum: 2147483647
+      description: Maximum JSON body 256 KiB. revision must match the currently saved
+        scene. Stale saves return 409 without changing geometry, hotspots or references.
+        Missing attachment targets return 409; explicitly detach/delete their hotspots
+        first. Successful geometry saves increment revision and clear start_camera.
+    HotspotAttachment:
+      type: object
+      additionalProperties: false
+      required:
+      - element_id
+      - local
+      properties:
+        element_id: *id020
+        local:
+          type: array
+          minItems: 3
+          maxItems: 3
+          items:
+            type: number
+            minimum: -1000
+            maximum: 1000
+      description: LAYOUT only. Local x/y/z relative to the element centre, yaw and
+        instance scale. Server computes world x/y/z atomically on hotspot and layout
+        saves. Omit attachment to retain world position.
+    MaterialPreset:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - name
+      - tile_size
+      - repeat
+      - offset
+      - rotation
+      - tint
+      - roughness
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        tile_size:
+          type: number
+          minimum: 0.01
+          maximum: 100
+          description: Metres per tile before U/V repeat multipliers.
+        repeat:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items:
+            type: number
+            minimum: 0.01
+            maximum: 100
+        offset:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items:
+            type: number
+            minimum: -1000
+            maximum: 1000
+        rotation:
+          type: number
+          minimum: -360
+          maximum: 360
+          description: Texture rotation in degrees.
+        tint:
+          type: string
+          pattern: ^#[0-9a-fA-F]{6}$
+        roughness:
+          type: number
+          minimum: 0
+          maximum: 1
+        base_color:
+          type: string
+          description: Asset UUID with role TEXTURE_BASE_COLOR, or empty/omitted.
+            Roughness reads the green channel.
+        normal:
+          type: string
+          description: Asset UUID with role TEXTURE_NORMAL, or empty/omitted. Roughness
+            reads the green channel.
+        roughness_map:
+          type: string
+          description: Asset UUID with role TEXTURE_ROUGHNESS, or empty/omitted. Roughness
+            reads the green channel.
+      description: Reusable scene preset. Referenced maps must be ready assets from
+        the same project with the matching role. Presets and assignments save atomically.
+        Template UVs are in metres with world-aligned seams.
+    ArrivalPose:
+      type: object
+      additionalProperties: false
+      required:
+      - position
+      - yaw
+      - pitch
+      properties:
+        position: &id023
+          type: array
+          minItems: 3
+          maxItems: 3
+          items:
+            type: number
+            minimum: -1000
+            maximum: 1000
+        yaw:
+          type: number
+          minimum: -3.141592653589793
+          maximum: 3.141592653589793
+        pitch:
+          type: number
+          minimum: -1.5607963267948965
+          maximum: 1.5607963267948965
+      description: Standing eye coordinates and radians. Region membership is validated
+        on save; exact floor support, capsule clearance and locked thresholds are
+        checked before activation.
+    WalkRegion:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - name
+      - left
+      - right
+      - top
+      - bottom
+      - min_y
+      - max_y
+      - floor_meshes
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        floor_meshes:
+          type: array
+          minItems: 1
+          maxItems: 200
+          items:
+            type: string
+            pattern: ^0(/[0-9]+)*$
+            maxLength: 512
+        exterior:
+          type: boolean
+          default: false
+        left:
+          type: number
+          minimum: -1000
+          maximum: 1000
+        right:
+          type: number
+          minimum: -1000
+          maximum: 1000
+        top:
+          type: number
+          minimum: -1000
+          maximum: 1000
+        bottom:
+          type: number
+          minimum: -1000
+          maximum: 1000
+        min_y:
+          type: number
+          minimum: -1000
+          maximum: 1000
+        max_y:
+          type: number
+          minimum: -1000
+          maximum: 1000
+      description: Author-reviewed rectangle with at least 0.5 m sides. min_y/max_y
+        describe floor elevations. Only selected upward floor triangles within this
+        height band can support standing. Unreviewed imports remain inspectable with
+        walking disabled.
+    ExitPortal:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - label
+      - position
+      - axis
+      - width
+      - destination_region_id
+      - arrival
+      properties:
+        id:
+          type: string
+          format: uuid
+        label:
+          type: string
+          minLength: 1
+          maxLength: 120
+        position: *id023
+        axis:
+          type: string
+          enum:
+          - x
+          - z
+        width:
+          type: number
+          minimum: 0.8
+          maximum: 10
+        destination_scene_id:
+          type: string
+          description: Same-project 3D scene UUID; empty/omitted means the current
+            scene.
+        destination_region_id:
+          type: string
+          format: uuid
+        arrival:
+          $ref: '#/components/schemas/ArrivalPose'
+      description: Locked virtual threshold and nearby activation point. An explicit
+        click with a clear line of sight validates the approved arrival before transitioning.
+        Add a return portal in the destination. Referenced destination scenes cannot
+        be deleted until their exits are resolved.
+    WalkingSettings:
+      type: object
+      additionalProperties: false
+      required:
+      - speed
+      - eye_height
+      - step_height
+      - max_slope
+      - regions
+      - portals
+      properties:
+        speed:
+          type: number
+          minimum: 0.25
+          maximum: 6
+          default: 2
+        eye_height:
+          type: number
+          minimum: 1
+          maximum: 2.2
+          default: 1.65
+        step_height:
+          type: number
+          minimum: 0.01
+          maximum: 0.4
+          default: 0.25
+        max_slope:
+          type: number
+          minimum: 0
+          maximum: 50
+          default: 40
+        regions:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/WalkRegion'
+        portals:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/ExitPortal'
+      description: Optional version-compatible settings. Imported scenes require reviewed
+        regions; layout regions derive from room/floor elements and this regions array
+        must be empty. Save layout navigation in its document, not scene lighting
+        settings. Changes clear obsolete starts. Model preparation changes clear imported
+        region reviews and exits. Public viewers use the same collision and boundary
+        rules; publication rechecks destination region references.
+  responses:
+    Error:
+      description: Request failed
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - error
+            properties:
+              error:
+                type: string

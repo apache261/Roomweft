@@ -1,0 +1,360 @@
+{
+  "execution": "Headless Chromium / ANGLE SwiftShader; API mocked; not physical-device acceptance",
+  "downloads": [
+    "textured/balanced.glb",
+    "textured/collision.glb",
+    "textured/low.glb",
+    "textured/collision.glb",
+    "textured/hq.glb",
+    "textured/collision.glb",
+    "textured/balanced.glb",
+    "textured/collision.glb",
+    "textured/balanced.glb",
+    "textured/original.glb",
+    "textured/balanced.glb",
+    "textured/original.glb",
+    "textured/balanced.glb",
+    "textured/collision.glb",
+    "fan/balanced.glb",
+    "basis/original.glb",
+    "textured/balanced.glb",
+    "textured/collision.glb"
+  ],
+  "lowTextureInventory": [
+    {
+      "name": "",
+      "width": 1024,
+      "height": 1024,
+      "faces": 1,
+      "rgba8EquivalentBytes": 5592404
+    },
+    {
+      "name": "PMREM.cubeUv",
+      "width": 768,
+      "height": 1024,
+      "faces": 1,
+      "rgba8EquivalentBytes": 3145728
+    }
+  ],
+  "manifests": {
+    "textured": {
+      "version": "runtime-v1",
+      "source_sha256": "23a65f5a1a49030bd068793e49ffb21d928a8974be5dcb0a838909afe01f54fd",
+      "source_bytes": 2660252,
+      "bounds": {
+        "min": [
+          -4.1,
+          -0.1,
+          -5.1
+        ],
+        "max": [
+          4.1,
+          3.3,
+          5.1
+        ]
+      },
+      "surfaces": [
+        {
+          "source": "0/0",
+          "runtime": "0/0",
+          "name": "Lobby_and_rooms_floor",
+          "uv": true
+        },
+        {
+          "source": "0/1",
+          "runtime": "0/1",
+          "name": "Back_wall",
+          "uv": true
+        },
+        {
+          "source": "0/2",
+          "runtime": "0/2",
+          "name": "Left_wall",
+          "uv": true
+        },
+        {
+          "source": "0/3",
+          "runtime": "0/3",
+          "name": "Right_wall",
+          "uv": true
+        },
+        {
+          "source": "0/4",
+          "runtime": "0/4",
+          "name": "Front_left",
+          "uv": true
+        },
+        {
+          "source": "0/5",
+          "runtime": "0/5",
+          "name": "Front_right",
+          "uv": true
+        },
+        {
+          "source": "0/6",
+          "runtime": "0/6",
+          "name": "Entrance_lintel",
+          "uv": true
+        },
+        {
+          "source": "0/7",
+          "runtime": "0/7",
+          "name": "Room_wall",
+          "uv": true
+        },
+        {
+          "source": "0/8",
+          "runtime": "0/8",
+          "name": "Room_wall_1",
+          "uv": true
+        },
+        {
+          "source": "0/9",
+          "runtime": "0/9",
+          "name": "Room_wall_2",
+          "uv": true
+        },
+        {
+          "source": "0/10",
+          "runtime": "0/10",
+          "name": "Door_lintels",
+          "uv": true
+        },
+        {
+          "source": "0/11",
+          "runtime": "0/11",
+          "name": "Room_divider",
+          "uv": true
+        },
+        {
+          "source": "0/12",
+          "runtime": "0/12",
+          "name": "Red_lobby_artwork",
+          "uv": true
+        },
+        {
+          "source": "0/13",
+          "runtime": "0/13",
+          "name": "Blue_lobby_artwork",
+          "uv": true
+        },
+        {
+          "source": "0/14",
+          "runtime": "0/14",
+          "name": "Roof",
+          "uv": true
+        }
+      ],
+      "variants": {
+        "low": {
+          "file": "low.glb",
+          "sha256": "0e9a064f80c028c2e3f47b055fb56afae1c4b47e0dec6d528cc8268e4459fdd1",
+          "bytes": 70148,
+          "texture_rgba8_bytes": 5592406,
+          "max_texture": 1024
+        },
+        "balanced": {
+          "file": "balanced.glb",
+          "sha256": "34b9b4a84ad6b55d1a77baff722d4b50bd2e0a2a0a47999d844e5ec6712e4e6c",
+          "bytes": 226420,
+          "texture_rgba8_bytes": 22369622,
+          "max_texture": 2048
+        },
+        "hq": {
+          "file": "hq.glb",
+          "sha256": "34b9b4a84ad6b55d1a77baff722d4b50bd2e0a2a0a47999d844e5ec6712e4e6c",
+          "bytes": 226420,
+          "texture_rgba8_bytes": 22369622,
+          "max_texture": 2048
+        }
+      },
+      "collision": {
+        "file": "collision.glb",
+        "sha256": "9c9140631749648ec346e4db25543464384e1d23bfebd49ad81ee0a6f03fb1b9",
+        "bytes": 2640,
+        "geometry_sha256": "8f3f346da88b8dfff31ffa87b305e1105853a03f735d9b691652915301def0ac",
+        "strategy": "verified-exact-geometry",
+        "floor_approval": "authored-only"
+      }
+    },
+    "fan": {
+      "version": "runtime-v1",
+      "source_sha256": "adfbf4e9f434a88320db4a23bf4b2184fde4452810c3e20e293399771202f89b",
+      "source_bytes": 9888,
+      "bounds": {
+        "min": [
+          -2,
+          -0.2,
+          -1.5
+        ],
+        "max": [
+          2,
+          2.8,
+          1.5
+        ]
+      },
+      "surfaces": [
+        {
+          "source": "0/0/0",
+          "runtime": "0/0/0",
+          "name": "Fan_room_Floor",
+          "uv": true
+        },
+        {
+          "source": "0/0/1",
+          "runtime": "0/0/1",
+          "name": "Fan_room_north_wall_end",
+          "uv": true
+        },
+        {
+          "source": "0/0/2",
+          "runtime": "0/0/2",
+          "name": "Fan_room_south_wall_end",
+          "uv": true
+        },
+        {
+          "source": "0/0/3",
+          "runtime": "0/0/3",
+          "name": "Fan_room_west_wall_end",
+          "uv": true
+        },
+        {
+          "source": "0/0/4",
+          "runtime": "0/0/4",
+          "name": "Fan_room_east_wall_segment_1",
+          "uv": true
+        },
+        {
+          "source": "0/0/5",
+          "runtime": "0/0/5",
+          "name": "Fan_room_east_wall_door_1_lintel",
+          "uv": true
+        },
+        {
+          "source": "0/0/6",
+          "runtime": "0/0/6",
+          "name": "Fan_room_east_wall_end",
+          "uv": true
+        },
+        {
+          "source": "0/0/7",
+          "runtime": "0/0/7",
+          "name": "Fan_room_Bed_frame",
+          "uv": true
+        },
+        {
+          "source": "0/0/8",
+          "runtime": "0/0/8",
+          "name": "Fan_room_Mattress",
+          "uv": true
+        },
+        {
+          "source": "0/0/9",
+          "runtime": "0/0/9",
+          "name": "Fan_room_Pillow",
+          "uv": true
+        },
+        {
+          "source": "0/0/10",
+          "runtime": "0/0/10",
+          "name": "Fan_room_Wardrobe",
+          "uv": true
+        },
+        {
+          "source": "0/0/11",
+          "runtime": "0/0/11",
+          "name": "Fan_room_Fan_canopy",
+          "uv": true
+        },
+        {
+          "source": "0/0/12",
+          "runtime": "0/0/12",
+          "name": "Fan_room_Fan_downrod",
+          "uv": true
+        },
+        {
+          "source": "0/0/13",
+          "runtime": "0/0/13",
+          "name": "Fan_room_Fan_motor",
+          "uv": true
+        },
+        {
+          "source": "0/0/14/0",
+          "runtime": "0/0/14/0",
+          "name": "Fan_room_Fan_hub",
+          "uv": true
+        },
+        {
+          "source": "0/0/14/1",
+          "runtime": "0/0/14/1",
+          "name": "Fan_room_Fan_blade_1",
+          "uv": true
+        },
+        {
+          "source": "0/0/14/2",
+          "runtime": "0/0/14/2",
+          "name": "Fan_room_Fan_blade_2",
+          "uv": true
+        },
+        {
+          "source": "0/0/14/3",
+          "runtime": "0/0/14/3",
+          "name": "Fan_room_Fan_blade_3",
+          "uv": true
+        },
+        {
+          "source": "0/0/14/4",
+          "runtime": "0/0/14/4",
+          "name": "Fan_room_Fan_blade_4",
+          "uv": true
+        }
+      ],
+      "variants": {
+        "low": {
+          "file": "low.glb",
+          "sha256": "d74f6b1f1e70f5ff7b3a3882181145c1abb04fa417dbab9cc4863a5479e0a0a8",
+          "bytes": 11804,
+          "texture_rgba8_bytes": 0,
+          "max_texture": 0
+        },
+        "balanced": {
+          "file": "balanced.glb",
+          "sha256": "d74f6b1f1e70f5ff7b3a3882181145c1abb04fa417dbab9cc4863a5479e0a0a8",
+          "bytes": 11804,
+          "texture_rgba8_bytes": 0,
+          "max_texture": 0
+        },
+        "hq": {
+          "file": "hq.glb",
+          "sha256": "d74f6b1f1e70f5ff7b3a3882181145c1abb04fa417dbab9cc4863a5479e0a0a8",
+          "bytes": 11804,
+          "texture_rgba8_bytes": 0,
+          "max_texture": 0
+        }
+      },
+      "collision": {
+        "file": "collision.glb",
+        "sha256": "c0ef95ba83757431d3806ec8f80d66b750fb27d7a4b7deba3d53ca08600f59da",
+        "bytes": 6008,
+        "geometry_sha256": "1261cfb4bb29ee0c4781f7014f7c6d992756e37ab855782b929517653493f0cc",
+        "strategy": "verified-exact-geometry",
+        "floor_approval": "authored-only"
+      }
+    }
+  },
+  "checks": [
+    "Meshopt",
+    "tier texture resize",
+    "standing pose",
+    "orbit pose",
+    "exact collision proxy",
+    "missing/corrupt variant fallback",
+    "missing proxy fallback",
+    "fan animation",
+    "Basis KTX2",
+    "builder",
+    "preview",
+    "public",
+    "embed"
+  ]
+}

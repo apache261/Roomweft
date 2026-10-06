@@ -1,0 +1,32 @@
+{
+  "execution": "Native Node CPU microbenchmark; excludes network, decode, DOM, GPU and walkthrough FPS",
+  "fixture": {
+    "meshes": 601,
+    "inputTriangles": 7212,
+    "collisionTriangles": 14424
+  },
+  "cold": {
+    "samples": 12,
+    "medianMs": 156.95881400000007,
+    "p95Ms": 190.674533
+  },
+  "cached": {
+    "samples": 100,
+    "medianMs": 1.228179999999611,
+    "p95Ms": 1.640863999999965
+  },
+  "initial": {
+    "entries": 8,
+    "owners": 1,
+    "triangles": 115408
+  },
+  "final": {
+    "entries": 8,
+    "owners": 1,
+    "triangles": 115408
+  },
+  "checks": [
+    "shared triangle identity",
+    "100 repeated worlds retain stable entries/owners"
+  ]
+}

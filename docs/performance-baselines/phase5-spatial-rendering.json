@@ -1,0 +1,44 @@
+{
+  "baseline": {
+    "calls": 120,
+    "triangles": 357120
+  },
+  "near": {
+    "calls": 1,
+    "triangles": 357120
+  },
+  "distant": {
+    "calls": 1,
+    "triangles": 266400
+  },
+  "stats": {
+    "sourceMeshes": 120,
+    "renderMeshes": 1,
+    "instancedGroups": 1,
+    "batches": 0,
+    "lodGroups": 1
+  },
+  "memoryAfterDisposal": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+  ],
+  "execution": "Chromium SwiftShader; draw/triangle and ownership validation, not physical-device FPS"
+}

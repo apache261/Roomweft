@@ -1,0 +1,7 @@
+.git
+.env
+web/node_modules
+web/dist
+
+asset-tools/node_modules
+web/public/decoders

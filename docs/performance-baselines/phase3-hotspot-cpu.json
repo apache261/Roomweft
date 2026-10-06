@@ -1,0 +1,187 @@
+{
+  "benchmarkVersion": 1,
+  "scene": "Many hotspots (160)",
+  "hotspots": 160,
+  "framesPerRun": 180,
+  "execution": "Node CPU visibility microbenchmark; excludes DOM, GPU and total browser frame time; not physical-device acceptance",
+  "workloads": [
+    {
+      "name": "stationary rendered frames",
+      "before": [
+        {
+          "cpuMsPerFrame": 0.6412631166666665,
+          "meshRaycasts": 691200
+        },
+        {
+          "cpuMsPerFrame": 0.6443375666666662,
+          "meshRaycasts": 691200
+        },
+        {
+          "cpuMsPerFrame": 0.6512680055555551,
+          "meshRaycasts": 691200
+        }
+      ],
+      "after": [
+        {
+          "cpuMsPerFrame": 0.033929688888888955,
+          "meshRaycasts": 0,
+          "work": {
+            "evaluations": 160,
+            "cacheHits": 28640,
+            "raycasts": 0,
+            "candidates": 0,
+            "rejected": 24
+          }
+        },
+        {
+          "cpuMsPerFrame": 0.03428066111111118,
+          "meshRaycasts": 0,
+          "work": {
+            "evaluations": 160,
+            "cacheHits": 28640,
+            "raycasts": 0,
+            "candidates": 0,
+            "rejected": 24
+          }
+        },
+        {
+          "cpuMsPerFrame": 0.03714591666666694,
+          "meshRaycasts": 0,
+          "work": {
+            "evaluations": 160,
+            "cacheHits": 28640,
+            "raycasts": 0,
+            "candidates": 0,
+            "rejected": 24
+          }
+        }
+      ]
+    },
+    {
+      "name": "panning",
+      "before": [
+        {
+          "cpuMsPerFrame": 0.5651547444444449,
+          "meshRaycasts": 605568
+        },
+        {
+          "cpuMsPerFrame": 0.5642005611111112,
+          "meshRaycasts": 605568
+        },
+        {
+          "cpuMsPerFrame": 0.5634240055555552,
+          "meshRaycasts": 605568
+        }
+      ],
+      "after": [
+        {
+          "cpuMsPerFrame": 0.06718695555555566,
+          "meshRaycasts": 0,
+          "work": {
+            "evaluations": 28800,
+            "cacheHits": 0,
+            "raycasts": 0,
+            "candidates": 0,
+            "rejected": 16026
+          }
+        },
+        {
+          "cpuMsPerFrame": 0.06423643888888869,
+          "meshRaycasts": 0,
+          "work": {
+            "evaluations": 28800,
+            "cacheHits": 0,
+            "raycasts": 0,
+            "candidates": 0,
+            "rejected": 16026
+          }
+        },
+        {
+          "cpuMsPerFrame": 0.06842274444444456,
+          "meshRaycasts": 0,
+          "work": {
+            "evaluations": 28800,
+            "cacheHits": 0,
+            "raycasts": 0,
+            "candidates": 0,
+            "rejected": 16026
+          }
+        }
+      ]
+    },
+    {
+      "name": "panning from adjacent room",
+      "before": [
+        {
+          "cpuMsPerFrame": 0.8321079555555558,
+          "meshRaycasts": 691200
+        },
+        {
+          "cpuMsPerFrame": 0.822144444444445,
+          "meshRaycasts": 691200
+        },
+        {
+          "cpuMsPerFrame": 0.8190767444444443,
+          "meshRaycasts": 691200
+        }
+      ],
+      "after": [
+        {
+          "cpuMsPerFrame": 0.1539753944444442,
+          "meshRaycasts": 10608,
+          "work": {
+            "evaluations": 28800,
+            "cacheHits": 0,
+            "raycasts": 10608,
+            "candidates": 10608,
+            "rejected": 18192
+          }
+        },
+        {
+          "cpuMsPerFrame": 0.13164046666666612,
+          "meshRaycasts": 10608,
+          "work": {
+            "evaluations": 28800,
+            "cacheHits": 0,
+            "raycasts": 10608,
+            "candidates": 10608,
+            "rejected": 18192
+          }
+        },
+        {
+          "cpuMsPerFrame": 0.12977902222222232,
+          "meshRaycasts": 10608,
+          "work": {
+            "evaluations": 28800,
+            "cacheHits": 0,
+            "raycasts": 10608,
+            "candidates": 10608,
+            "rejected": 18192
+          }
+        }
+      ]
+    }
+  ],
+  "runtime": {
+    "node": "v26.10.0",
+    "platform": "linux",
+    "architecture": "x64"
+  },
+  "camera": {
+    "fov": 60,
+    "aspect": 1.4222222222222223,
+    "near": 0.05,
+    "far": 100,
+    "initialPosition": [
+      0,
+      1.75,
+      0
+    ],
+    "adjacentPosition": [
+      0,
+      1.75,
+      6
+    ],
+    "panYaw": "sin(frame / 30) * 1.2"
+  }
+}

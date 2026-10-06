@@ -1,0 +1,1 @@
+ALTER TABLE scenes ADD COLUMN settings JSONB NOT NULL DEFAULT '{"appearance":{"exposure":1,"environment_intensity":1,"light_intensity":1,"background":"#edf1e8","tint":"","roughness":null},"model":{"scale":1,"up_axis":"Y","rotation":0}}';

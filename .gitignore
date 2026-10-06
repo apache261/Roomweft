@@ -1,0 +1,9 @@
+.env
+.env.production
+node_modules/
+web/dist/
+*.log
+
+# Generated, version-matched Basis decoders are copied by npm postinstall.
+web/public/decoders/
+asset-tools/node_modules/

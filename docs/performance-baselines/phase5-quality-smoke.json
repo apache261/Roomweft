@@ -1,0 +1,24 @@
+{
+  "execution": "headless ANGLE SwiftShader; simulated visibility changes; not physical-device evidence",
+  "evidence": [
+    {
+      "setting": "low",
+      "dpr": 1,
+      "idleWindowMs": 800,
+      "idleFrames": 0
+    },
+    {
+      "setting": "balanced",
+      "dpr": 1.5,
+      "idleWindowMs": 800,
+      "idleFrames": 0
+    },
+    {
+      "setting": "hq",
+      "dpr": 2,
+      "idleWindowMs": 800,
+      "idleFrames": 0
+    }
+  ],
+  "animationFramesDuring700ms": 36
+}

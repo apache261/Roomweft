@@ -1,0 +1,15 @@
+{
+  "name": "tour-asset-tools",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node --test tests/*.test.mjs", "test:worker": "node tests/worker.integration.mjs" },
+  "dependencies": {
+    "@gltf-transform/core": "4.3.0",
+    "@gltf-transform/extensions": "4.3.0",
+    "@gltf-transform/functions": "4.3.0",
+    "meshoptimizer": "0.25.0",
+    "sharp": "0.34.5",
+    "gltf-validator": "2.0.0-dev.3.10",
+    "three": "0.186.0"
+  }
+}

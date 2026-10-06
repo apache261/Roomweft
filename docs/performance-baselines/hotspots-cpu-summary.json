@@ -1,0 +1,158 @@
+{
+  "status": "preliminary CPU attribution only; not a physical-device baseline",
+  "execution": "Headless Chromium / ANGLE SwiftShader, 3 second stationary hotspot scene; another browser regression check was active, so durations are not baseline timing",
+  "benchmarkVersion": 1,
+  "metadata": {
+    "sceneId": "00000000-0000-4000-8000-000000000015",
+    "sceneName": "Many hotspots (160)",
+    "sceneRevision": "4c3f40dc",
+    "layoutRevision": 1,
+    "quality": "current (no quality tiers yet)",
+    "mode": "public",
+    "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+    "viewport": {
+      "width": 1280,
+      "height": 900
+    },
+    "device": "chromium-swiftshader-emulation",
+    "physicalDevice": "unverified",
+    "canvas": {
+      "width": 1280,
+      "height": 900,
+      "top": 0,
+      "left": 0
+    },
+    "pixelRatio": 1,
+    "renderer": "WebKit WebGL",
+    "cpuProfilerEnabled": true
+  },
+  "trace": "hotspots-chromium.cpuprofile.gz",
+  "uncompressedSha256": "8f13065a4d54bb03a5f78f31694badeccc978a29a3fe5bc4f0a48c1331a2e67f",
+  "sampledFunctions": [
+    {
+      "function": "(idle)",
+      "source": "",
+      "line": 0,
+      "sampledSelfMs": 1287.132
+    },
+    {
+      "function": "(program)",
+      "source": "",
+      "line": 0,
+      "sampledSelfMs": 609.779
+    },
+    {
+      "function": "onFirstUse",
+      "source": "chunk-RRWAP4QR.js",
+      "line": 36754,
+      "sampledSelfMs": 160.414
+    },
+    {
+      "function": "(garbage collector)",
+      "source": "",
+      "line": 0,
+      "sampledSelfMs": 69.478
+    },
+    {
+      "function": "onFirstUse",
+      "source": "chunk-RRWAP4QR.js",
+      "line": 36754,
+      "sampledSelfMs": 58.63
+    },
+    {
+      "function": "exports.createElement",
+      "source": "chunk-WI6KZE3V.js",
+      "line": 802,
+      "sampledSelfMs": 42.58
+    },
+    {
+      "function": "getContext",
+      "source": "",
+      "line": 0,
+      "sampledSelfMs": 38.504
+    },
+    {
+      "function": "intersect",
+      "source": "chunk-RRWAP4QR.js",
+      "line": 30193,
+      "sampledSelfMs": 37.353
+    },
+    {
+      "function": "exports.createElement",
+      "source": "chunk-WI6KZE3V.js",
+      "line": 802,
+      "sampledSelfMs": 32.01
+    },
+    {
+      "function": "exports.jsxDEV",
+      "source": "react_jsx-dev-runtime.js",
+      "line": 241,
+      "sampledSelfMs": 31.549
+    },
+    {
+      "function": "onFirstUse",
+      "source": "chunk-RRWAP4QR.js",
+      "line": 36754,
+      "sampledSelfMs": 24.447
+    },
+    {
+      "function": "addEventListener",
+      "source": "",
+      "line": 0,
+      "sampledSelfMs": 19.556
+    },
+    {
+      "function": "WebGLRenderer.setSize",
+      "source": "chunk-RRWAP4QR.js",
+      "line": 42493,
+      "sampledSelfMs": 17.692
+    },
+    {
+      "function": "onFirstUse",
+      "source": "chunk-RRWAP4QR.js",
+      "line": 36754,
+      "sampledSelfMs": 16.536
+    },
+    {
+      "function": "getExtension",
+      "source": "chunk-RRWAP4QR.js",
+      "line": 35033,
+      "sampledSelfMs": 16.432
+    },
+    {
+      "function": "exports.jsxDEV",
+      "source": "react_jsx-dev-runtime.js",
+      "line": 241,
+      "sampledSelfMs": 13.399
+    },
+    {
+      "function": "intersectObjects",
+      "source": "chunk-RRWAP4QR.js",
+      "line": 30182,
+      "sampledSelfMs": 12.986
+    },
+    {
+      "function": "getCurrentViewport",
+      "source": "chunk-ZQXTZ5TI.js",
+      "line": 1483,
+      "sampledSelfMs": 12.813
+    },
+    {
+      "function": "update",
+      "source": "chunk-ZQXTZ5TI.js",
+      "line": 10998,
+      "sampledSelfMs": 12.727
+    },
+    {
+      "function": "exports.createElement",
+      "source": "chunk-WI6KZE3V.js",
+      "line": 802,
+      "sampledSelfMs": 12.189
+    }
+  ],
+  "limitations": [
+    "Sampled self time does not include descendant costs.",
+    "GPU work is not captured by the JS CPU profiler.",
+    "Physical-device attribution and sustained walkthroughs remain pending."
+  ]
+}

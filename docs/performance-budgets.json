@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "status": "provisional; physical-device baselines pending",
+  "units": { "frameTime": "ms", "loading": "ms", "memory": "bytes" },
+  "deviceClasses": [
+    { "class": "lower-end-phone", "targetFPS": 30, "targetFrameMs": 33.33 },
+    { "class": "midrange-phone", "targetFPS": 30, "targetFrameMs": 33.33 },
+    { "class": "tablet", "targetFPS": 30, "targetFrameMs": 33.33 },
+    { "class": "integrated-GPU-laptop", "targetFPS": 60, "targetFrameMs": 16.67 },
+    { "class": "desktop", "targetFPS": 60, "targetFrameMs": 16.67 }
+  ],
+  "measurementRequired": {
+    "p95FrameMs": null,
+    "p99FrameMs": null,
+    "firstUsableViewMs": null,
+    "downloadBytes": null,
+    "decodeMs": null,
+    "collisionPreparationMs": null,
+    "drawCalls": null,
+    "triangles": null,
+    "textureRgba8EquivalentBytes": null,
+    "jsHeapBytes": null,
+    "regressionPercent": null
+  },
+  "policy": "Null values are unestablished budgets, never passes. Set per scene and device class after three repeatable physical-device runs; include spread and reviewed visual/navigation behavior. Headless or emulated measurements cannot establish production budgets."
+}

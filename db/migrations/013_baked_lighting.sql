@@ -1,0 +1,4 @@
+ALTER TABLE assets DROP CONSTRAINT assets_file_type_check;
+ALTER TABLE assets ADD CONSTRAINT assets_file_type_check CHECK (file_type IN ('GLB','PANORAMA','IMAGE','TEXTURE_BASE_COLOR','TEXTURE_NORMAL','TEXTURE_ROUGHNESS','TEXTURE_AO','TEXTURE_LIGHTMAP'));
+ALTER TABLE scene_texture_refs DROP CONSTRAINT scene_texture_refs_role_check;
+ALTER TABLE scene_texture_refs ADD CONSTRAINT scene_texture_refs_role_check CHECK (role IN ('TEXTURE_BASE_COLOR','TEXTURE_NORMAL','TEXTURE_ROUGHNESS','TEXTURE_AO','TEXTURE_LIGHTMAP'));

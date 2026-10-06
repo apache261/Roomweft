@@ -1,0 +1,121 @@
+{
+  "execution": "Chromium ANGLE SwiftShader; mocked API/atlas inputs; shader correctness and provisional pass costs, not physical-device budgets",
+  "rendered": {
+    "dim": [
+      73,
+      73,
+      73,
+      255
+    ],
+    "bright": [
+      73,
+      73,
+      73,
+      255
+    ],
+    "unbaked": [
+      255,
+      255,
+      255,
+      255
+    ],
+    "base": {
+      "calls": 2,
+      "triangles": 14
+    },
+    "shadow": {
+      "calls": 3,
+      "triangles": 26,
+      "mapWidth": 1024
+    },
+    "memory": [
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3
+    ]
+  },
+  "shadows": {
+    "active": {
+      "shadows": true,
+      "shadowSize": 1024,
+      "screenSpaceAO": false,
+      "reason": "Provisional bounded HQ shadows",
+      "bakedLighting": {
+        "lightMappedMeshes": 0,
+        "aoMappedMeshes": 0,
+        "staleMeshes": 0,
+        "missingUV": 0,
+        "dynamicMeshes": 0
+      },
+      "activeShadowCasters": 5,
+      "casterTriangles": 60,
+      "waitingForContributors": false,
+      "shadowTextureBytes": 8388608
+    },
+    "low": {
+      "shadows": false,
+      "shadowSize": 1024,
+      "screenSpaceAO": false,
+      "reason": "Shadows require HQ",
+      "bakedLighting": {
+        "lightMappedMeshes": 0,
+        "aoMappedMeshes": 0,
+        "staleMeshes": 0,
+        "missingUV": 0,
+        "dynamicMeshes": 0
+      },
+      "activeShadowCasters": 0,
+      "casterTriangles": 0,
+      "waitingForContributors": false,
+      "shadowTextureBytes": 0
+    },
+    "posePreserved": true
+  },
+  "integration": {
+    "modes": [
+      "public",
+      "embed",
+      "builder",
+      "preview"
+    ],
+    "tiers": [
+      "low",
+      "balanced",
+      "hq"
+    ],
+    "stale": {
+      "lightMappedMeshes": 0,
+      "aoMappedMeshes": 0,
+      "staleMeshes": 1,
+      "missingUV": 0,
+      "dynamicMeshes": 0
+    },
+    "positions": [
+      [
+        0,
+        1.75,
+        0
+      ],
+      [
+        0,
+        1.75,
+        0
+      ],
+      [
+        7.43700880730956,
+        7.008733678043317,
+        10.14137564633122
+      ]
+    ],
+    "fallback": true
+  }
+}

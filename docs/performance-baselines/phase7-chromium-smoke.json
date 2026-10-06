@@ -1,0 +1,1690 @@
+[
+  {
+    "schema": 1,
+    "date": "2026-10-06T04:44:14.524Z",
+    "elapsedMs": 2709.10000000149,
+    "sampleElapsedMs": 2709.10000000149,
+    "metadata": {
+      "sceneId": "00000000-0000-4000-8000-000000000010",
+      "sceneName": "Small house",
+      "sceneRevision": "ad1c50b3",
+      "layoutRevision": 1,
+      "quality": "auto",
+      "qualityTier": "balanced",
+      "mode": "public",
+      "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "device": "chromium-swiftshader-emulation",
+      "physicalDevice": "unverified",
+      "assetTier": "balanced",
+      "textureVariantBudget": {
+        "tier": "balanced",
+        "bytes": 0,
+        "budget": 201326592,
+        "unknown": 1,
+        "overBudget": false
+      },
+      "hotspotRevision": "741638a5",
+      "hotspotCount": 0,
+      "runtimeRevision": "7d807aa",
+      "walking": true,
+      "revealHiddenHotspots": false,
+      "frameloop": "demand",
+      "pageVisible": true,
+      "hqRendering": {
+        "shadows": false,
+        "shadowSize": 1024,
+        "screenSpaceAO": false,
+        "reason": "Shadows off",
+        "bakedLighting": {
+          "lightMappedMeshes": 0,
+          "aoMappedMeshes": 0,
+          "staleMeshes": 0,
+          "missingUV": 0,
+          "dynamicMeshes": 0
+        },
+        "activeShadowCasters": 0,
+        "casterTriangles": 0,
+        "waitingForContributors": false,
+        "shadowTextureBytes": 0
+      },
+      "canvas": {
+        "width": 1280,
+        "height": 900,
+        "top": 0,
+        "left": 0
+      },
+      "pixelRatio": 1,
+      "renderer": "WebKit WebGL",
+      "activeRenderTasks": 0,
+      "cameraPosition": [
+        0,
+        1.75,
+        0
+      ],
+      "cameraQuaternion": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "autoTier": "balanced",
+      "autoReason": "Collecting sustained frame samples",
+      "cpuProfilerEnabled": false
+    },
+    "totalFrames": 0,
+    "renderedFrames": 3,
+    "idleWakeFrames": 3,
+    "retainedFrameLimit": 36000,
+    "hiddenFrames": 0,
+    "firstUsableViewMs": 1717.2000000029802,
+    "frameMs": {
+      "samples": 0,
+      "median": null,
+      "p95": null,
+      "p99": null,
+      "max": null
+    },
+    "cpuSubmissionMs": {
+      "samples": 3,
+      "median": 2.100000001490116,
+      "p95": 211.60000000149012,
+      "p99": 211.60000000149012,
+      "max": 211.60000000149012
+    },
+    "drawCalls": {
+      "samples": 3,
+      "median": 4,
+      "p95": 4,
+      "p99": 4,
+      "max": 4
+    },
+    "triangles": {
+      "samples": 3,
+      "median": 96,
+      "p95": 96,
+      "p99": 96,
+      "max": 96
+    },
+    "timings": [
+      {
+        "stage": "gltf-decode",
+        "ms": 9.700000002980232,
+        "bytes": 2316,
+        "status": "ok"
+      },
+      {
+        "stage": "collision-preparation",
+        "ms": 2.0999999940395355,
+        "status": "ok"
+      }
+    ],
+    "resources": {
+      "geometries": 1,
+      "textures": 2,
+      "programs": 2,
+      "textureInventory": [
+        {
+          "name": "PMREM.cubeUv",
+          "width": 768,
+          "height": 1024,
+          "faces": 1,
+          "rgba8EquivalentBytes": 3145728
+        }
+      ],
+      "textureRgba8EquivalentBytes": 3145728,
+      "inventoryScope": "Textures referenced by scene materials/background/environment; renderer-internal targets and cached loader assets excluded.",
+      "jsHeapBytes": 27600000
+    },
+    "limitations": [
+      "CPU submission time is not GPU time.",
+      "Texture bytes and resource counts are proxies, not exact VRAM.",
+      "Frame-time samples exclude demand-rendering idle gaps; renderedFrames includes idle wakes.",
+      "Frame distributions retain at most the last 36000 visible rendered frames.",
+      "Decode includes GLTF parsing and embedded image decoding, not network fetch."
+    ],
+    "downloads": [
+      {
+        "kind": "fetch",
+        "durationMs": 6.200000002980232,
+        "transferBytes": 515,
+        "encodedBytes": 215,
+        "decodedBytes": 215,
+        "timingAvailable": true
+      },
+      {
+        "kind": "fetch",
+        "durationMs": 7.299999997019768,
+        "transferBytes": 302,
+        "encodedBytes": 2,
+        "decodedBytes": 2,
+        "timingAvailable": true
+      },
+      {
+        "kind": "fetch",
+        "durationMs": 19.399999998509884,
+        "transferBytes": 2616,
+        "encodedBytes": 2316,
+        "decodedBytes": 2316,
+        "timingAvailable": true
+      }
+    ],
+    "downloadNote": "Zero sizes can mean cache hits or missing Timing-Allow-Origin. Decoded body size is HTTP payload, not decoded geometry/texture memory. Includes API and ancillary requests; URLs omitted.",
+    "benchmarkVersion": 1,
+    "execution": "headless software renderer; instrumentation smoke only; not a physical-device baseline"
+  },
+  {
+    "schema": 1,
+    "date": "2026-10-06T04:44:19.278Z",
+    "elapsedMs": 4825.9000000059605,
+    "sampleElapsedMs": 4825.9000000059605,
+    "metadata": {
+      "sceneId": "00000000-0000-4000-8000-000000000011",
+      "sceneName": "Large modular interior (25 rooms)",
+      "sceneRevision": "fcd47ab6",
+      "layoutRevision": 1,
+      "quality": "auto",
+      "qualityTier": "balanced",
+      "mode": "public",
+      "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "device": "chromium-swiftshader-emulation",
+      "physicalDevice": "unverified",
+      "assetTier": "balanced",
+      "textureVariantBudget": {
+        "tier": "balanced",
+        "bytes": 0,
+        "budget": 201326592,
+        "unknown": 0,
+        "overBudget": false
+      },
+      "hotspotRevision": "741638a5",
+      "hotspotCount": 0,
+      "runtimeRevision": "e2d4dc5c",
+      "walking": true,
+      "revealHiddenHotspots": false,
+      "roomStreaming": {
+        "wantedRooms": 10,
+        "blockedRooms": 0,
+        "readyChunks": 0,
+        "failed": false,
+        "pending": false,
+        "states": []
+      },
+      "frameloop": "demand",
+      "pageVisible": true,
+      "hqRendering": {
+        "shadows": false,
+        "shadowSize": 1024,
+        "screenSpaceAO": false,
+        "reason": "Shadows off",
+        "bakedLighting": {
+          "lightMappedMeshes": 0,
+          "aoMappedMeshes": 0,
+          "staleMeshes": 0,
+          "missingUV": 0,
+          "dynamicMeshes": 0
+        },
+        "activeShadowCasters": 0,
+        "casterTriangles": 0,
+        "waitingForContributors": false,
+        "shadowTextureBytes": 0
+      },
+      "canvas": {
+        "width": 1280,
+        "height": 900,
+        "top": 0,
+        "left": 0
+      },
+      "pixelRatio": 1,
+      "renderer": "WebKit WebGL",
+      "activeRenderTasks": 0,
+      "cameraPosition": [
+        0,
+        1.650000001490116,
+        0
+      ],
+      "cameraQuaternion": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "autoTier": "balanced",
+      "autoReason": "Collecting sustained frame samples",
+      "cpuProfilerEnabled": false
+    },
+    "totalFrames": 0,
+    "renderedFrames": 3,
+    "idleWakeFrames": 3,
+    "retainedFrameLimit": 36000,
+    "hiddenFrames": 0,
+    "firstUsableViewMs": 440.40000000596046,
+    "frameMs": {
+      "samples": 0,
+      "median": null,
+      "p95": null,
+      "p99": null,
+      "max": null
+    },
+    "cpuSubmissionMs": {
+      "samples": 3,
+      "median": 8.299999997019768,
+      "p95": 17.799999997019768,
+      "p99": 17.799999997019768,
+      "max": 17.799999997019768
+    },
+    "drawCalls": {
+      "samples": 3,
+      "median": 197,
+      "p95": 197,
+      "p99": 197,
+      "max": 197
+    },
+    "triangles": {
+      "samples": 3,
+      "median": 444,
+      "p95": 444,
+      "p99": 444,
+      "max": 444
+    },
+    "timings": [
+      {
+        "stage": "collision-preparation",
+        "ms": 32.600000001490116,
+        "status": "ok"
+      },
+      {
+        "stage": "collision-preparation",
+        "ms": 46.899999998509884,
+        "status": "ok"
+      }
+    ],
+    "resources": {
+      "geometries": 37,
+      "textures": 2,
+      "programs": 1,
+      "textureInventory": [
+        {
+          "name": "PMREM.cubeUv",
+          "width": 768,
+          "height": 1024,
+          "faces": 1,
+          "rgba8EquivalentBytes": 3145728
+        }
+      ],
+      "textureRgba8EquivalentBytes": 3145728,
+      "inventoryScope": "Textures referenced by scene materials/background/environment; renderer-internal targets and cached loader assets excluded.",
+      "jsHeapBytes": 27600000
+    },
+    "limitations": [
+      "CPU submission time is not GPU time.",
+      "Texture bytes and resource counts are proxies, not exact VRAM.",
+      "Frame-time samples exclude demand-rendering idle gaps; renderedFrames includes idle wakes.",
+      "Frame distributions retain at most the last 36000 visible rendered frames.",
+      "Decode includes GLTF parsing and embedded image decoding, not network fetch."
+    ],
+    "downloads": [
+      {
+        "kind": "fetch",
+        "durationMs": 3.7000000029802322,
+        "transferBytes": 302,
+        "encodedBytes": 2,
+        "decodedBytes": 2,
+        "timingAvailable": true
+      }
+    ],
+    "downloadNote": "Zero sizes can mean cache hits or missing Timing-Allow-Origin. Decoded body size is HTTP payload, not decoded geometry/texture memory. Includes API and ancillary requests; URLs omitted.",
+    "benchmarkVersion": 1,
+    "execution": "headless software renderer; instrumentation smoke only; not a physical-device baseline"
+  },
+  {
+    "schema": 1,
+    "date": "2026-10-06T04:44:24.859Z",
+    "elapsedMs": 4494.70000000298,
+    "sampleElapsedMs": 4494.70000000298,
+    "metadata": {
+      "sceneId": "00000000-0000-4000-8000-000000000012",
+      "sceneName": "Repeated furniture (64 tables)",
+      "sceneRevision": "a8f700d6",
+      "layoutRevision": 1,
+      "quality": "auto",
+      "qualityTier": "balanced",
+      "mode": "public",
+      "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "device": "chromium-swiftshader-emulation",
+      "physicalDevice": "unverified",
+      "assetTier": "balanced",
+      "textureVariantBudget": {
+        "tier": "balanced",
+        "bytes": 0,
+        "budget": 201326592,
+        "unknown": 1,
+        "overBudget": false
+      },
+      "hotspotRevision": "741638a5",
+      "hotspotCount": 0,
+      "runtimeRevision": "648239f6",
+      "walking": true,
+      "revealHiddenHotspots": false,
+      "roomStreaming": {
+        "wantedRooms": 1,
+        "blockedRooms": 0,
+        "readyChunks": 1,
+        "failed": false,
+        "pending": false,
+        "states": [
+          [
+            "00000000-0000-4000-8000-000000000003",
+            "ready"
+          ]
+        ]
+      },
+      "frameloop": "demand",
+      "pageVisible": true,
+      "hqRendering": {
+        "shadows": false,
+        "shadowSize": 1024,
+        "screenSpaceAO": false,
+        "reason": "Shadows off",
+        "bakedLighting": {
+          "lightMappedMeshes": 0,
+          "aoMappedMeshes": 0,
+          "staleMeshes": 0,
+          "missingUV": 0,
+          "dynamicMeshes": 0
+        },
+        "activeShadowCasters": 0,
+        "casterTriangles": 0,
+        "waitingForContributors": false,
+        "shadowTextureBytes": 0
+      },
+      "canvas": {
+        "width": 1280,
+        "height": 900,
+        "top": 0,
+        "left": 0
+      },
+      "pixelRatio": 1,
+      "renderer": "WebKit WebGL",
+      "activeRenderTasks": 0,
+      "cameraPosition": [
+        0,
+        1.650000001490116,
+        0
+      ],
+      "cameraQuaternion": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "autoTier": "balanced",
+      "autoReason": "Collecting sustained frame samples",
+      "cpuProfilerEnabled": false
+    },
+    "totalFrames": 0,
+    "renderedFrames": 6,
+    "idleWakeFrames": 6,
+    "retainedFrameLimit": 36000,
+    "hiddenFrames": 0,
+    "firstUsableViewMs": 4361.20000000298,
+    "frameMs": {
+      "samples": 0,
+      "median": null,
+      "p95": null,
+      "p99": null,
+      "max": null
+    },
+    "cpuSubmissionMs": {
+      "samples": 6,
+      "median": 1.8500000014901161,
+      "p95": 103.89999999850988,
+      "p99": 103.89999999850988,
+      "max": 103.89999999850988
+    },
+    "drawCalls": {
+      "samples": 6,
+      "median": 29,
+      "p95": 29,
+      "p99": 29,
+      "max": 29
+    },
+    "triangles": {
+      "samples": 6,
+      "median": 3900,
+      "p95": 3900,
+      "p99": 3900,
+      "max": 3900
+    },
+    "timings": [
+      {
+        "stage": "gltf-decode",
+        "ms": 25.19999999552965,
+        "bytes": 3296,
+        "status": "ok"
+      },
+      {
+        "stage": "collision-preparation",
+        "ms": 63.5,
+        "status": "ok"
+      }
+    ],
+    "resources": {
+      "geometries": 6,
+      "textures": 3,
+      "programs": 2,
+      "textureInventory": [
+        {
+          "name": "",
+          "width": 64,
+          "height": 64,
+          "faces": 1,
+          "rgba8EquivalentBytes": 21844
+        },
+        {
+          "name": "PMREM.cubeUv",
+          "width": 768,
+          "height": 1024,
+          "faces": 1,
+          "rgba8EquivalentBytes": 3145728
+        }
+      ],
+      "textureRgba8EquivalentBytes": 3167572,
+      "inventoryScope": "Textures referenced by scene materials/background/environment; renderer-internal targets and cached loader assets excluded.",
+      "jsHeapBytes": 27600000
+    },
+    "limitations": [
+      "CPU submission time is not GPU time.",
+      "Texture bytes and resource counts are proxies, not exact VRAM.",
+      "Frame-time samples exclude demand-rendering idle gaps; renderedFrames includes idle wakes.",
+      "Frame distributions retain at most the last 36000 visible rendered frames.",
+      "Decode includes GLTF parsing and embedded image decoding, not network fetch."
+    ],
+    "downloads": [
+      {
+        "kind": "fetch",
+        "durationMs": 5.300000004470348,
+        "transferBytes": 529,
+        "encodedBytes": 229,
+        "decodedBytes": 229,
+        "timingAvailable": true
+      },
+      {
+        "kind": "fetch",
+        "durationMs": 5.899999998509884,
+        "transferBytes": 302,
+        "encodedBytes": 2,
+        "decodedBytes": 2,
+        "timingAvailable": true
+      },
+      {
+        "kind": "fetch",
+        "durationMs": 15,
+        "transferBytes": 3596,
+        "encodedBytes": 3296,
+        "decodedBytes": 3296,
+        "timingAvailable": true
+      }
+    ],
+    "downloadNote": "Zero sizes can mean cache hits or missing Timing-Allow-Origin. Decoded body size is HTTP payload, not decoded geometry/texture memory. Includes API and ancillary requests; URLs omitted.",
+    "benchmarkVersion": 1,
+    "execution": "headless software renderer; instrumentation smoke only; not a physical-device baseline"
+  },
+  {
+    "schema": 1,
+    "date": "2026-10-06T04:44:30.370Z",
+    "elapsedMs": 6846.19999999553,
+    "sampleElapsedMs": 6846.19999999553,
+    "metadata": {
+      "sceneId": "00000000-0000-4000-8000-000000000013",
+      "sceneName": "Texture-heavy uploads (4 \u00d7 2048)",
+      "sceneRevision": "faf4f8f6",
+      "layoutRevision": 1,
+      "quality": "auto",
+      "qualityTier": "balanced",
+      "mode": "public",
+      "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "device": "chromium-swiftshader-emulation",
+      "physicalDevice": "unverified",
+      "assetTier": "balanced",
+      "textureVariantBudget": {
+        "tier": "balanced",
+        "bytes": 0,
+        "budget": 201326592,
+        "unknown": 4,
+        "overBudget": false
+      },
+      "hotspotRevision": "741638a5",
+      "hotspotCount": 0,
+      "runtimeRevision": "ae6664ae",
+      "walking": true,
+      "revealHiddenHotspots": false,
+      "frameloop": "demand",
+      "pageVisible": true,
+      "hqRendering": {
+        "shadows": false,
+        "shadowSize": 1024,
+        "screenSpaceAO": false,
+        "reason": "Shadows off",
+        "bakedLighting": {
+          "lightMappedMeshes": 0,
+          "aoMappedMeshes": 0,
+          "staleMeshes": 0,
+          "missingUV": 0,
+          "dynamicMeshes": 0
+        },
+        "activeShadowCasters": 0,
+        "casterTriangles": 0,
+        "waitingForContributors": false,
+        "shadowTextureBytes": 0
+      },
+      "canvas": {
+        "width": 1280,
+        "height": 900,
+        "top": 0,
+        "left": 0
+      },
+      "pixelRatio": 1,
+      "renderer": "WebKit WebGL",
+      "activeRenderTasks": 0,
+      "cameraPosition": [
+        0,
+        1.650000001490116,
+        0
+      ],
+      "cameraQuaternion": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "autoTier": "balanced",
+      "autoReason": "Collecting sustained frame samples",
+      "roomStreaming": {
+        "wantedRooms": 4,
+        "blockedRooms": 0,
+        "readyChunks": 0,
+        "failed": false,
+        "pending": false,
+        "states": []
+      },
+      "cpuProfilerEnabled": false
+    },
+    "totalFrames": 0,
+    "renderedFrames": 5,
+    "idleWakeFrames": 5,
+    "retainedFrameLimit": 36000,
+    "hiddenFrames": 0,
+    "firstUsableViewMs": 6753.79999999702,
+    "frameMs": {
+      "samples": 0,
+      "median": null,
+      "p95": null,
+      "p99": null,
+      "max": null
+    },
+    "cpuSubmissionMs": {
+      "samples": 5,
+      "median": 2.1999999955296516,
+      "p95": 499.8999999985099,
+      "p99": 499.8999999985099,
+      "max": 499.8999999985099
+    },
+    "drawCalls": {
+      "samples": 5,
+      "median": 68,
+      "p95": 68,
+      "p99": 68,
+      "max": 68
+    },
+    "triangles": {
+      "samples": 5,
+      "median": 156,
+      "p95": 156,
+      "p99": 156,
+      "max": 156
+    },
+    "timings": [
+      {
+        "stage": "collision-preparation",
+        "ms": 5.899999998509884,
+        "status": "ok"
+      },
+      {
+        "stage": "collision-preparation",
+        "ms": 3.2000000029802322,
+        "status": "ok"
+      }
+    ],
+    "resources": {
+      "geometries": 13,
+      "textures": 6,
+      "programs": 1,
+      "textureInventory": [
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "",
+          "width": 2048,
+          "height": 2048,
+          "faces": 1,
+          "rgba8EquivalentBytes": 22369620
+        },
+        {
+          "name": "PMREM.cubeUv",
+          "width": 768,
+          "height": 1024,
+          "faces": 1,
+          "rgba8EquivalentBytes": 3145728
+        }
+      ],
+      "textureRgba8EquivalentBytes": 1255844448,
+      "inventoryScope": "Textures referenced by scene materials/background/environment; renderer-internal targets and cached loader assets excluded.",
+      "jsHeapBytes": 27600000
+    },
+    "limitations": [
+      "CPU submission time is not GPU time.",
+      "Texture bytes and resource counts are proxies, not exact VRAM.",
+      "Frame-time samples exclude demand-rendering idle gaps; renderedFrames includes idle wakes.",
+      "Frame distributions retain at most the last 36000 visible rendered frames.",
+      "Decode includes GLTF parsing and embedded image decoding, not network fetch."
+    ],
+    "downloads": [
+      {
+        "kind": "fetch",
+        "durationMs": 8.799999997019768,
+        "transferBytes": 552,
+        "encodedBytes": 252,
+        "decodedBytes": 252,
+        "timingAvailable": true
+      },
+      {
+        "kind": "fetch",
+        "durationMs": 12.300000004470348,
+        "transferBytes": 552,
+        "encodedBytes": 252,
+        "decodedBytes": 252,
+        "timingAvailable": true
+      },
+      {
+        "kind": "fetch",
+        "durationMs": 12.399999998509884,
+        "transferBytes": 552,
+        "encodedBytes": 252,
+        "decodedBytes": 252,
+        "timingAvailable": true
+      },
+      {
+        "kind": "fetch",
+        "durationMs": 12.100000001490116,
+        "transferBytes": 552,
+        "encodedBytes": 252,
+        "decodedBytes": 252,
+        "timingAvailable": true
+      },
+      {
+        "kind": "fetch",
+        "durationMs": 12.100000001490116,
+        "transferBytes": 302,
+        "encodedBytes": 2,
+        "decodedBytes": 2,
+        "timingAvailable": true
+      },
+      {
+        "kind": "img",
+        "durationMs": 184.80000000447035,
+        "transferBytes": 3603110,
+        "encodedBytes": 3602810,
+        "decodedBytes": 3602810,
+        "timingAvailable": true
+      },
+      {
+        "kind": "img",
+        "durationMs": 236,
+        "transferBytes": 3789617,
+        "encodedBytes": 3789317,
+        "decodedBytes": 3789317,
+        "timingAvailable": true
+      },
+      {
+        "kind": "img",
+        "durationMs": 304.29999999701977,
+        "transferBytes": 3817773,
+        "encodedBytes": 3817473,
+        "decodedBytes": 3817473,
+        "timingAvailable": true
+      },
+      {
+        "kind": "img",
+        "durationMs": 362.1000000014901,
+        "transferBytes": 3898585,
+        "encodedBytes": 3898285,
+        "decodedBytes": 3898285,
+        "timingAvailable": true
+      }
+    ],
+    "downloadNote": "Zero sizes can mean cache hits or missing Timing-Allow-Origin. Decoded body size is HTTP payload, not decoded geometry/texture memory. Includes API and ancillary requests; URLs omitted.",
+    "benchmarkVersion": 1,
+    "execution": "headless software renderer; instrumentation smoke only; not a physical-device baseline"
+  },
+  {
+    "schema": 1,
+    "date": "2026-10-06T04:44:39.476Z",
+    "elapsedMs": 3013.5,
+    "sampleElapsedMs": 3013.5,
+    "metadata": {
+      "sceneId": "00000000-0000-4000-8000-000000000014",
+      "sceneName": "Animated fan room",
+      "sceneRevision": "23eba39a",
+      "layoutRevision": 1,
+      "quality": "auto",
+      "qualityTier": "balanced",
+      "mode": "public",
+      "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "device": "chromium-swiftshader-emulation",
+      "physicalDevice": "unverified",
+      "assetTier": "balanced",
+      "textureVariantBudget": {
+        "tier": "balanced",
+        "bytes": 0,
+        "budget": 201326592,
+        "unknown": 1,
+        "overBudget": false
+      },
+      "hotspotRevision": "741638a5",
+      "hotspotCount": 0,
+      "runtimeRevision": "16c675fb",
+      "walking": true,
+      "revealHiddenHotspots": false,
+      "frameloop": "demand",
+      "pageVisible": true,
+      "hqRendering": {
+        "shadows": false,
+        "shadowSize": 1024,
+        "screenSpaceAO": false,
+        "reason": "Shadows off",
+        "bakedLighting": {
+          "lightMappedMeshes": 0,
+          "aoMappedMeshes": 0,
+          "staleMeshes": 0,
+          "missingUV": 0,
+          "dynamicMeshes": 0
+        },
+        "activeShadowCasters": 0,
+        "casterTriangles": 0,
+        "waitingForContributors": false,
+        "shadowTextureBytes": 0
+      },
+      "canvas": {
+        "width": 1280,
+        "height": 900,
+        "top": 0,
+        "left": 0
+      },
+      "pixelRatio": 1,
+      "renderer": "WebKit WebGL",
+      "activeRenderTasks": 1,
+      "cameraPosition": [
+        0,
+        1.65,
+        0
+      ],
+      "cameraQuaternion": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "autoTier": "balanced",
+      "autoReason": "Collecting sustained frame samples",
+      "cpuProfilerEnabled": false
+    },
+    "totalFrames": 7,
+    "renderedFrames": 9,
+    "idleWakeFrames": 2,
+    "retainedFrameLimit": 36000,
+    "hiddenFrames": 0,
+    "firstUsableViewMs": 2882.2999999970198,
+    "frameMs": {
+      "samples": 7,
+      "median": 17.30000000447035,
+      "p95": 54.5,
+      "p99": 54.5,
+      "max": 54.5
+    },
+    "cpuSubmissionMs": {
+      "samples": 9,
+      "median": 1.0999999940395355,
+      "p95": 27.399999998509884,
+      "p99": 27.399999998509884,
+      "max": 27.399999998509884
+    },
+    "drawCalls": {
+      "samples": 9,
+      "median": 11,
+      "p95": 12,
+      "p99": 12,
+      "max": 12
+    },
+    "triangles": {
+      "samples": 9,
+      "median": 132,
+      "p95": 144,
+      "p99": 144,
+      "max": 144
+    },
+    "timings": [
+      {
+        "stage": "gltf-decode",
+        "ms": 13.399999998509884,
+        "bytes": 9888,
+        "status": "ok"
+      },
+      {
+        "stage": "collision-preparation",
+        "ms": 21.400000005960464,
+        "status": "ok"
+      }
+    ],
+    "resources": {
+      "geometries": 1,
+      "textures": 2,
+      "programs": 1,
+      "textureInventory": [
+        {
+          "name": "PMREM.cubeUv",
+          "width": 768,
+          "height": 1024,
+          "faces": 1,
+          "rgba8EquivalentBytes": 3145728
+        }
+      ],
+      "textureRgba8EquivalentBytes": 3145728,
+      "inventoryScope": "Textures referenced by scene materials/background/environment; renderer-internal targets and cached loader assets excluded.",
+      "jsHeapBytes": 27600000
+    },
+    "limitations": [
+      "CPU submission time is not GPU time.",
+      "Texture bytes and resource counts are proxies, not exact VRAM.",
+      "Frame-time samples exclude demand-rendering idle gaps; renderedFrames includes idle wakes.",
+      "Frame distributions retain at most the last 36000 visible rendered frames.",
+      "Decode includes GLTF parsing and embedded image decoding, not network fetch."
+    ],
+    "downloads": [
+      {
+        "kind": "fetch",
+        "durationMs": 4.799999997019768,
+        "transferBytes": 521,
+        "encodedBytes": 221,
+        "decodedBytes": 221,
+        "timingAvailable": true
+      },
+      {
+        "kind": "fetch",
+        "durationMs": 4.5999999940395355,
+        "transferBytes": 302,
+        "encodedBytes": 2,
+        "decodedBytes": 2,
+        "timingAvailable": true
+      },
+      {
+        "kind": "fetch",
+        "durationMs": 7.200000002980232,
+        "transferBytes": 10188,
+        "encodedBytes": 9888,
+        "decodedBytes": 9888,
+        "timingAvailable": true
+      }
+    ],
+    "downloadNote": "Zero sizes can mean cache hits or missing Timing-Allow-Origin. Decoded body size is HTTP payload, not decoded geometry/texture memory. Includes API and ancillary requests; URLs omitted.",
+    "benchmarkVersion": 1,
+    "execution": "headless software renderer; instrumentation smoke only; not a physical-device baseline"
+  },
+  {
+    "schema": 1,
+    "date": "2026-10-06T04:44:45.502Z",
+    "elapsedMs": 5320,
+    "sampleElapsedMs": 5320,
+    "metadata": {
+      "sceneId": "00000000-0000-4000-8000-000000000015",
+      "sceneName": "Many hotspots (160)",
+      "sceneRevision": "4c3f40dc",
+      "layoutRevision": 1,
+      "quality": "auto",
+      "qualityTier": "balanced",
+      "mode": "public",
+      "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "device": "chromium-swiftshader-emulation",
+      "physicalDevice": "unverified",
+      "assetTier": "balanced",
+      "textureVariantBudget": {
+        "tier": "balanced",
+        "bytes": 0,
+        "budget": 201326592,
+        "unknown": 0,
+        "overBudget": false
+      },
+      "hotspotRevision": "73c995de",
+      "hotspotCount": 160,
+      "runtimeRevision": "6fa6322e",
+      "walking": true,
+      "revealHiddenHotspots": false,
+      "roomStreaming": {
+        "wantedRooms": 4,
+        "blockedRooms": 0,
+        "readyChunks": 0,
+        "failed": false,
+        "pending": false,
+        "states": []
+      },
+      "frameloop": "demand",
+      "pageVisible": true,
+      "hqRendering": {
+        "shadows": false,
+        "shadowSize": 1024,
+        "screenSpaceAO": false,
+        "reason": "Shadows off",
+        "bakedLighting": {
+          "lightMappedMeshes": 0,
+          "aoMappedMeshes": 0,
+          "staleMeshes": 0,
+          "missingUV": 0,
+          "dynamicMeshes": 0
+        },
+        "activeShadowCasters": 0,
+        "casterTriangles": 0,
+        "waitingForContributors": false,
+        "shadowTextureBytes": 0
+      },
+      "canvas": {
+        "width": 1280,
+        "height": 900,
+        "top": 0,
+        "left": 0
+      },
+      "pixelRatio": 1,
+      "renderer": "WebKit WebGL",
+      "activeRenderTasks": 0,
+      "cameraPosition": [
+        0,
+        1.650000001490116,
+        0
+      ],
+      "cameraQuaternion": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "autoTier": "balanced",
+      "autoReason": "Collecting sustained frame samples",
+      "cpuProfilerEnabled": false
+    },
+    "totalFrames": 0,
+    "renderedFrames": 3,
+    "idleWakeFrames": 3,
+    "retainedFrameLimit": 36000,
+    "hiddenFrames": 0,
+    "firstUsableViewMs": 3693.10000000149,
+    "frameMs": {
+      "samples": 0,
+      "median": null,
+      "p95": null,
+      "p99": null,
+      "max": null
+    },
+    "cpuSubmissionMs": {
+      "samples": 3,
+      "median": 14.899999998509884,
+      "p95": 30.80000000447035,
+      "p99": 30.80000000447035,
+      "max": 30.80000000447035
+    },
+    "drawCalls": {
+      "samples": 3,
+      "median": 68,
+      "p95": 68,
+      "p99": 68,
+      "max": 68
+    },
+    "triangles": {
+      "samples": 3,
+      "median": 156,
+      "p95": 156,
+      "p99": 156,
+      "max": 156
+    },
+    "timings": [
+      {
+        "stage": "collision-preparation",
+        "ms": 5.699999995529652,
+        "status": "ok"
+      },
+      {
+        "stage": "collision-preparation",
+        "ms": 3.5,
+        "status": "ok"
+      }
+    ],
+    "resources": {
+      "geometries": 13,
+      "textures": 2,
+      "programs": 1,
+      "textureInventory": [
+        {
+          "name": "PMREM.cubeUv",
+          "width": 768,
+          "height": 1024,
+          "faces": 1,
+          "rgba8EquivalentBytes": 3145728
+        }
+      ],
+      "textureRgba8EquivalentBytes": 3145728,
+      "inventoryScope": "Textures referenced by scene materials/background/environment; renderer-internal targets and cached loader assets excluded.",
+      "jsHeapBytes": 27600000
+    },
+    "limitations": [
+      "CPU submission time is not GPU time.",
+      "Texture bytes and resource counts are proxies, not exact VRAM.",
+      "Frame-time samples exclude demand-rendering idle gaps; renderedFrames includes idle wakes.",
+      "Frame distributions retain at most the last 36000 visible rendered frames.",
+      "Decode includes GLTF parsing and embedded image decoding, not network fetch."
+    ],
+    "downloads": [
+      {
+        "kind": "fetch",
+        "durationMs": 5.100000001490116,
+        "transferBytes": 35785,
+        "encodedBytes": 35485,
+        "decodedBytes": 35485,
+        "timingAvailable": true
+      }
+    ],
+    "downloadNote": "Zero sizes can mean cache hits or missing Timing-Allow-Origin. Decoded body size is HTTP payload, not decoded geometry/texture memory. Includes API and ancillary requests; URLs omitted.",
+    "benchmarkVersion": 1,
+    "execution": "headless software renderer; instrumentation smoke only; not a physical-device baseline"
+  },
+  {
+    "schema": 1,
+    "date": "2026-10-06T04:44:51.748Z",
+    "elapsedMs": 4438.29999999702,
+    "sampleElapsedMs": 4438.29999999702,
+    "metadata": {
+      "sceneId": "00000000-0000-4000-8000-000000000010",
+      "sceneName": "Small house",
+      "sceneRevision": "ad1c50b3",
+      "layoutRevision": 1,
+      "quality": "auto",
+      "qualityTier": "balanced",
+      "mode": "embed",
+      "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "device": "chromium-swiftshader-emulation",
+      "physicalDevice": "unverified",
+      "assetTier": "balanced",
+      "textureVariantBudget": {
+        "tier": "balanced",
+        "bytes": 0,
+        "budget": 201326592,
+        "unknown": 1,
+        "overBudget": false
+      },
+      "hotspotRevision": "741638a5",
+      "hotspotCount": 0,
+      "runtimeRevision": "7d807aa",
+      "walking": true,
+      "revealHiddenHotspots": false,
+      "frameloop": "demand",
+      "pageVisible": true,
+      "hqRendering": {
+        "shadows": false,
+        "shadowSize": 1024,
+        "screenSpaceAO": false,
+        "reason": "Shadows off",
+        "bakedLighting": {
+          "lightMappedMeshes": 0,
+          "aoMappedMeshes": 0,
+          "staleMeshes": 0,
+          "missingUV": 0,
+          "dynamicMeshes": 0
+        },
+        "activeShadowCasters": 0,
+        "casterTriangles": 0,
+        "waitingForContributors": false,
+        "shadowTextureBytes": 0
+      },
+      "canvas": {
+        "width": 1280,
+        "height": 900,
+        "top": 0,
+        "left": 0
+      },
+      "pixelRatio": 1,
+      "renderer": "WebKit WebGL",
+      "activeRenderTasks": 0,
+      "cameraPosition": [
+        0,
+        1.75,
+        0
+      ],
+      "cameraQuaternion": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "autoTier": "balanced",
+      "autoReason": "Collecting sustained frame samples",
+      "cpuProfilerEnabled": false
+    },
+    "totalFrames": 0,
+    "renderedFrames": 3,
+    "idleWakeFrames": 3,
+    "retainedFrameLimit": 36000,
+    "hiddenFrames": 0,
+    "firstUsableViewMs": 2861.0999999940395,
+    "frameMs": {
+      "samples": 0,
+      "median": null,
+      "p95": null,
+      "p99": null,
+      "max": null
+    },
+    "cpuSubmissionMs": {
+      "samples": 3,
+      "median": 1.1999999955296516,
+      "p95": 82.69999999552965,
+      "p99": 82.69999999552965,
+      "max": 82.69999999552965
+    },
+    "drawCalls": {
+      "samples": 3,
+      "median": 4,
+      "p95": 4,
+      "p99": 4,
+      "max": 4
+    },
+    "triangles": {
+      "samples": 3,
+      "median": 96,
+      "p95": 96,
+      "p99": 96,
+      "max": 96
+    },
+    "timings": [
+      {
+        "stage": "gltf-decode",
+        "ms": 3.5,
+        "bytes": 2316,
+        "status": "ok"
+      },
+      {
+        "stage": "collision-preparation",
+        "ms": 2.2999999970197678,
+        "status": "ok"
+      }
+    ],
+    "resources": {
+      "geometries": 1,
+      "textures": 2,
+      "programs": 2,
+      "textureInventory": [
+        {
+          "name": "PMREM.cubeUv",
+          "width": 768,
+          "height": 1024,
+          "faces": 1,
+          "rgba8EquivalentBytes": 3145728
+        }
+      ],
+      "textureRgba8EquivalentBytes": 3145728,
+      "inventoryScope": "Textures referenced by scene materials/background/environment; renderer-internal targets and cached loader assets excluded.",
+      "jsHeapBytes": 27600000
+    },
+    "limitations": [
+      "CPU submission time is not GPU time.",
+      "Texture bytes and resource counts are proxies, not exact VRAM.",
+      "Frame-time samples exclude demand-rendering idle gaps; renderedFrames includes idle wakes.",
+      "Frame distributions retain at most the last 36000 visible rendered frames.",
+      "Decode includes GLTF parsing and embedded image decoding, not network fetch."
+    ],
+    "downloads": [
+      {
+        "kind": "fetch",
+        "durationMs": 4.399999998509884,
+        "transferBytes": 515,
+        "encodedBytes": 215,
+        "decodedBytes": 215,
+        "timingAvailable": true
+      },
+      {
+        "kind": "fetch",
+        "durationMs": 5.399999998509884,
+        "transferBytes": 302,
+        "encodedBytes": 2,
+        "decodedBytes": 2,
+        "timingAvailable": true
+      },
+      {
+        "kind": "fetch",
+        "durationMs": 11.5,
+        "transferBytes": 2616,
+        "encodedBytes": 2316,
+        "decodedBytes": 2316,
+        "timingAvailable": true
+      }
+    ],
+    "downloadNote": "Zero sizes can mean cache hits or missing Timing-Allow-Origin. Decoded body size is HTTP payload, not decoded geometry/texture memory. Includes API and ancillary requests; URLs omitted.",
+    "benchmarkVersion": 1,
+    "execution": "headless software renderer; instrumentation smoke only; not a physical-device baseline"
+  }
+]

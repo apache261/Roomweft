@@ -1,0 +1,28 @@
+{
+  "execution": "Chromium SwiftShader, mocked GLB delivery with failed/400ms room requests; not physical-device evidence",
+  "totalChunks": 6,
+  "startingChunks": 2,
+  "initialDeliveredBytes": 3296,
+  "fullDeliveredBytes": 19776,
+  "failedBoundaryPosition": [
+    2.3166235283870825e-16,
+    1.650000001490116,
+    -1.7749999999999988
+  ],
+  "readyRoomPosition": [
+    7.225416114969428e-16,
+    1.650000001490116,
+    -5.78333333333332
+  ],
+  "inspectionChunks": 6,
+  "checks": [
+    "starting-area priority",
+    "failed-room boundary",
+    "retry",
+    "delayed requests",
+    "progressive doorway entry",
+    "inspection loads all",
+    "builder preview",
+    "public and embed fallback"
+  ]
+}

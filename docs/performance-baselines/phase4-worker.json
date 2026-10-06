@@ -1,0 +1,144 @@
+{
+  "execution": "Local Go API + PostgreSQL + private MinIO storage + native Node processor",
+  "checks": [
+    "upload confirmation",
+    "persistent queue",
+    "background processing",
+    "atomic manifest",
+    "original byte preservation",
+    "variant integrity",
+    "collision integrity",
+    "public reference policy",
+    "unpublish denies URL refresh",
+    "external normal-map variants",
+    "texture alpha/aspect",
+    "texture original preservation"
+  ],
+  "manifest": {
+    "version": "runtime-v1",
+    "source_sha256": "2d6ce16c892d3c4a703bd73eef506914e12ee12994f7d5d4d1d2d49a6d743567",
+    "source_bytes": 2316,
+    "bounds": {
+      "max": [
+        3.2,
+        3.25,
+        2.7
+      ],
+      "min": [
+        -3.2,
+        -0.1,
+        -2.7
+      ]
+    },
+    "surfaces": [
+      {
+        "uv": false,
+        "name": "Floor",
+        "source": "0/0",
+        "runtime": "0/0"
+      },
+      {
+        "uv": false,
+        "name": "Back_wall",
+        "source": "0/1",
+        "runtime": "0/1"
+      },
+      {
+        "uv": false,
+        "name": "Left_wall",
+        "source": "0/2",
+        "runtime": "0/2"
+      },
+      {
+        "uv": false,
+        "name": "Right_wall",
+        "source": "0/3",
+        "runtime": "0/3"
+      },
+      {
+        "uv": false,
+        "name": "Front_left",
+        "source": "0/4",
+        "runtime": "0/4"
+      },
+      {
+        "uv": false,
+        "name": "Front_right",
+        "source": "0/5",
+        "runtime": "0/5"
+      },
+      {
+        "uv": false,
+        "name": "Door_lintel",
+        "source": "0/6",
+        "runtime": "0/6"
+      },
+      {
+        "uv": false,
+        "name": "Roof",
+        "source": "0/7",
+        "runtime": "0/7"
+      }
+    ],
+    "collision": {
+      "sha256": "9c4f40e158d61eb1428d03a39e7a710e8fc7af370804f1bd3d0fe85d8394e69d",
+      "bytes": 1564,
+      "texture_rgba8_bytes": 0,
+      "max_texture": 0,
+      "geometry_sha256": "db7d599951e8cb5a236f0a35c73d4500492ffb51413054fea356d0e0b83136e9",
+      "strategy": "verified-exact-geometry",
+      "floor_approval": "authored-only"
+    },
+    "variants": {
+      "balanced": {
+        "sha256": "a3cf8bd3f333d7da35e2038465b4f7acf8982001f831507a835d8c23829b713b",
+        "bytes": 2232,
+        "texture_rgba8_bytes": 0,
+        "max_texture": 0
+      },
+      "hq": {
+        "sha256": "a3cf8bd3f333d7da35e2038465b4f7acf8982001f831507a835d8c23829b713b",
+        "bytes": 2232,
+        "texture_rgba8_bytes": 0,
+        "max_texture": 0
+      },
+      "low": {
+        "sha256": "a3cf8bd3f333d7da35e2038465b4f7acf8982001f831507a835d8c23829b713b",
+        "bytes": 2232,
+        "texture_rgba8_bytes": 0,
+        "max_texture": 0
+      }
+    }
+  },
+  "textureManifest": {
+    "version": "runtime-v1",
+    "source_sha256": "d1698c24002938986849077da1e44d99310e522253541acd49c7ecb1097204db",
+    "source_max_texture": 2048,
+    "source_bytes": 44092,
+    "bounds": {
+      "width": 2048,
+      "height": 1024
+    },
+    "surfaces": [],
+    "variants": {
+      "balanced": {
+        "sha256": "d1698c24002938986849077da1e44d99310e522253541acd49c7ecb1097204db",
+        "bytes": 44092,
+        "texture_rgba8_bytes": 11184811,
+        "max_texture": 2048
+      },
+      "hq": {
+        "sha256": "d1698c24002938986849077da1e44d99310e522253541acd49c7ecb1097204db",
+        "bytes": 44092,
+        "texture_rgba8_bytes": 11184811,
+        "max_texture": 2048
+      },
+      "low": {
+        "sha256": "55fac2d00ce206fa1eaa3adf23051b7f69bbc0d669a4be50962483097e115a18",
+        "bytes": 11577,
+        "texture_rgba8_bytes": 2796203,
+        "max_texture": 1024
+      }
+    }
+  }
+}
