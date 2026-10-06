@@ -1,0 +1,17 @@
+server {
+    listen 80;
+    server_name ${CERTBOT_DOMAIN};
+
+    location = /health {
+        access_log off;
+        return 200 "ok\n";
+    }
+    location ^~ /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+        default_type text/plain;
+        try_files $uri =404;
+    }
+    location / {
+        return 301 https://${CERTBOT_DOMAIN}$request_uri;
+    }
+}

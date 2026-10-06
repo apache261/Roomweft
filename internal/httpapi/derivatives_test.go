@@ -127,6 +127,7 @@ func TestDerivativeQueuePublicationAndPrivateFallback(t *testing.T) {
 	if err != nil || original.StorageKey != asset.StorageKey || original.UploadStatus != "ready" {
 		t.Fatal("source changed")
 	}
+	verifyChunkDatabaseLifecycle(t, ctx, pool, q, handler, asset, project.Slug)
 	if _, err = q.UnpublishProject(ctx, project.ID); err != nil {
 		t.Fatal(err)
 	}

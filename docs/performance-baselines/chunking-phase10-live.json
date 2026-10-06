@@ -1,0 +1,16 @@
+{
+  "execution": "Chromium SwiftShader plus live PostgreSQL, Node worker and local S3-compatible storage; generated upload; not real-building or physical-device acceptance",
+  "checks": [
+    "actual upload/inventory/review/job/publication",
+    "all tiers, exact indexes and shared-image objects verified from storage",
+    "public scope and refreshed signed descriptors",
+    "live /t/ streamed usable view",
+    "live /embed/ streamed usable view",
+    "builder complete tree and private preview chunks",
+    "complete-view rollback",
+    "animation complete-original fallback",
+    "unpublication blocks descriptor refresh",
+    "partition rollback hides retired manifest"
+  ],
+  "generatedPayloadBytes": 78021
+}

@@ -1,0 +1,56 @@
+name: virtual-tour-certbot
+
+x-certbot: &certbot
+  image: ${CERTBOT_IMAGE:-certbot/certbot:v5.8.0}
+  volumes:
+    - ${CERTBOT_DATA_DIR:-./data/certbot}/etc:/etc/letsencrypt
+    - ${CERTBOT_DATA_DIR:-./data/certbot}/lib:/var/lib/letsencrypt
+    - ${CERTBOT_DATA_DIR:-./data/certbot}/logs:/var/log/letsencrypt
+    - ${CERTBOT_DATA_DIR:-./data/certbot}/webroot:/var/www/certbot
+
+services:
+  challenge:
+    image: nginx:1.28-alpine
+    restart: unless-stopped
+    ports:
+      - "${CERTBOT_BIND_ADDRESS:-0.0.0.0}:${CERTBOT_HTTP_PORT:-80}:80"
+    volumes:
+      - ./docker/certbot/challenge.conf:/etc/nginx/conf.d/default.conf:ro
+      - ${CERTBOT_DATA_DIR:-./data/certbot}/webroot:/var/www/certbot:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  certbot:
+    <<: *certbot
+    profiles: [tools]
+    command:
+      - certonly
+      - --webroot
+      - --webroot-path=/var/www/certbot
+      - --non-interactive
+      - --agree-tos
+      - --email=${CERTBOT_EMAIL:?Set CERTBOT_EMAIL in .env.production}
+      - --domain=${CERTBOT_DOMAIN:?Set CERTBOT_DOMAIN in .env.production}
+      - --cert-name=${CERTBOT_DOMAIN:?Set CERTBOT_DOMAIN in .env.production}
+    depends_on:
+      challenge:
+        condition: service_healthy
+
+  renew:
+    <<: *certbot
+    restart: unless-stopped
+    entrypoint: [/bin/sh, /opt/certbot/renew.sh]
+    environment:
+      CERTBOT_RENEW_INTERVAL_SECONDS: ${CERTBOT_RENEW_INTERVAL_SECONDS:-43200}
+    volumes:
+      - ${CERTBOT_DATA_DIR:-./data/certbot}/etc:/etc/letsencrypt
+      - ${CERTBOT_DATA_DIR:-./data/certbot}/lib:/var/lib/letsencrypt
+      - ${CERTBOT_DATA_DIR:-./data/certbot}/logs:/var/log/letsencrypt
+      - ${CERTBOT_DATA_DIR:-./data/certbot}/webroot:/var/www/certbot
+      - ./docker/certbot/renew.sh:/opt/certbot/renew.sh:ro
+    depends_on:
+      challenge:
+        condition: service_healthy

@@ -23,6 +23,7 @@ func (a *API) publicationRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/v1/projects/{id}/unpublish", a.unpublish)
 	mux.HandleFunc("GET /api/v1/public/tours/{slug}", a.publicTour)
 	mux.HandleFunc("GET /api/v1/public/tours/{slug}/assets/{id}", a.publicAsset)
+	a.registerChunks(mux, "/api/v1/public/tours/{slug}/assets/{id}")
 	mux.HandleFunc("GET /api/v1/public/tours/{slug}/scenes/{id}/hotspots", a.publicHotspots)
 	mux.HandleFunc("GET /api/v1/public/tours/{slug}/scenes/{id}/layout", a.getLayout)
 }
@@ -111,9 +112,10 @@ func (a *API) publicAsset(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	respond(w, 200, struct {
-		URL     string               `json:"url"`
-		Runtime *database.Derivative `json:"runtime,omitempty"`
-	}{url, a.runtimeAsset(r.Context(), asset, true)})
+		URL       string               `json:"url"`
+		Runtime   *database.Derivative `json:"runtime,omitempty"`
+		Streaming *chunkAdvertisement  `json:"streaming,omitempty"`
+	}{url, a.runtimeAsset(r.Context(), asset, true), a.chunkAsset(r, asset, true)})
 }
 func (a *API) publicHotspots(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-store")

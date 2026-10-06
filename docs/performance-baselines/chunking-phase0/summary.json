@@ -1,0 +1,134 @@
+{
+  "fixtureVersion": 1,
+  "execution": "Chromium SwiftShader; mocked delivery; short walkthroughs; not physical-device acceptance",
+  "viewport": {
+    "width": 900,
+    "height": 650
+  },
+  "quality": "balanced",
+  "physicalDeviceMeasurements": "pending",
+  "shaderUploadTraceReview": "pending",
+  "productionBudgets": "unset",
+  "cases": [
+    {
+      "report": "00000000-0000-4000-9000-000000000010-cold.json",
+      "scene": "authored-rooms.glb",
+      "sceneRevision": "d6f327d",
+      "cache": "cold",
+      "firstRenderedViewMs": 1379.1000000014901,
+      "firstSafelyUsableWalkingViewMs": 1535.1000000014901,
+      "observedStartupTransferBytes": 7465,
+      "deliveredSourcePayloadBytes": 6004,
+      "additionalTourPayloadBytes": 0,
+      "frameMs": {
+        "samples": 182,
+        "median": 20.950000002980232,
+        "p95": 349.79999999701977,
+        "p99": 899.8999999985099,
+        "max": 1414.8999999985099
+      },
+      "residentGeometryBytes": 2544,
+      "decodedAssetCacheBytes": 2565.3333333333335
+    },
+    {
+      "report": "00000000-0000-4000-9000-000000000010-warm.json",
+      "scene": "authored-rooms.glb",
+      "sceneRevision": "d6f327d",
+      "cache": "warm",
+      "firstRenderedViewMs": 787.8999999985099,
+      "firstSafelyUsableWalkingViewMs": 798.8999999985099,
+      "observedStartupTransferBytes": 1161,
+      "deliveredSourcePayloadBytes": 26104,
+      "additionalTourPayloadBytes": 0,
+      "frameMs": {
+        "samples": 211,
+        "median": 32.80000000447035,
+        "p95": 337.3999999985099,
+        "p99": 1046.6000000014901,
+        "max": 1273.8999999985099
+      },
+      "residentGeometryBytes": 2544,
+      "decodedAssetCacheBytes": 18066.666666666668
+    },
+    {
+      "report": "00000000-0000-4000-9000-000000000011-cold.json",
+      "scene": "giant-static.glb",
+      "sceneRevision": "6c6a1a58",
+      "cache": "cold",
+      "firstRenderedViewMs": 2941.6999999955297,
+      "firstSafelyUsableWalkingViewMs": 3318.2999999970198,
+      "observedStartupTransferBytes": 21321,
+      "deliveredSourcePayloadBytes": 20100,
+      "additionalTourPayloadBytes": 0,
+      "frameMs": {
+        "samples": 101,
+        "median": 21.900000005960464,
+        "p95": 163.60000000149012,
+        "p99": 220.29999999701977,
+        "max": 230.39999999850988
+      },
+      "residentGeometryBytes": 15480,
+      "decodedAssetCacheBytes": 15501.333333333334
+    },
+    {
+      "report": "00000000-0000-4000-9000-000000000011-warm.json",
+      "scene": "giant-static.glb",
+      "sceneRevision": "6c6a1a58",
+      "cache": "warm",
+      "firstRenderedViewMs": 5653.19999999553,
+      "firstSafelyUsableWalkingViewMs": 5920.10000000149,
+      "observedStartupTransferBytes": 921,
+      "deliveredSourcePayloadBytes": 26104,
+      "additionalTourPayloadBytes": 0,
+      "frameMs": {
+        "samples": 103,
+        "median": 19.100000001490116,
+        "p95": 216.59999999403954,
+        "p99": 241.39999999850988,
+        "max": 258.20000000298023
+      },
+      "residentGeometryBytes": 15480,
+      "decodedAssetCacheBytes": 18066.666666666668
+    },
+    {
+      "report": "00000000-0000-4000-9000-000000000012-cold.json",
+      "scene": "Attached hotspot and explicit exit",
+      "sceneRevision": "b86d6c02",
+      "cache": "cold",
+      "firstRenderedViewMs": 391.79999999701977,
+      "firstSafelyUsableWalkingViewMs": 2988.39999999851,
+      "observedStartupTransferBytes": 649,
+      "deliveredSourcePayloadBytes": 0,
+      "additionalTourPayloadBytes": 0,
+      "frameMs": {
+        "samples": 105,
+        "median": 21.799999997019768,
+        "p95": 275.3999999985099,
+        "p99": 279.90000000596046,
+        "max": 296.19999999552965
+      },
+      "residentGeometryBytes": 9240,
+      "decodedAssetCacheBytes": 0
+    },
+    {
+      "report": "00000000-0000-4000-9000-000000000012-warm.json",
+      "scene": "Attached hotspot and explicit exit",
+      "sceneRevision": "b86d6c02",
+      "cache": "warm",
+      "firstRenderedViewMs": 2830.89999999851,
+      "firstSafelyUsableWalkingViewMs": 2924.5,
+      "observedStartupTransferBytes": 649,
+      "deliveredSourcePayloadBytes": 6004,
+      "additionalTourPayloadBytes": 0,
+      "frameMs": {
+        "samples": 100,
+        "median": 43.600000001490116,
+        "p95": 241.10000000149012,
+        "p99": 254.69999999552965,
+        "max": 1105.8999999985099
+      },
+      "residentGeometryBytes": 9240,
+      "decodedAssetCacheBytes": 2565.3333333333335
+    }
+  ]
+}

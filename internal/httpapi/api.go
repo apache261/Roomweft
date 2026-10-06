@@ -26,16 +26,23 @@ type Store interface {
 }
 
 type API struct {
-	layouts     LayoutStore
-	publication PublicationStore
-	store       Store
-	ping        func(context.Context) error
-	assets      AssetStore
-	storage     ObjectStorage
+	chunkStreaming ChunkRollout
+	layouts        LayoutStore
+	publication    PublicationStore
+	store          Store
+	ping           func(context.Context) error
+	assets         AssetStore
+	storage        ObjectStorage
 }
 
 func New(store Store, ping func(context.Context) error, storage ...ObjectStorage) http.Handler {
-	a := &API{store: store, ping: ping}
+	return NewWithOptions(store, ping, Options{ChunkStreaming: ChunkReviewed}, storage...)
+}
+func NewWithOptions(store Store, ping func(context.Context) error, options Options, storage ...ObjectStorage) http.Handler {
+	if options.ChunkStreaming == "" {
+		options.ChunkStreaming = ChunkOff
+	}
+	a := &API{store: store, ping: ping, chunkStreaming: options.ChunkStreaming}
 	a.assets, _ = store.(AssetStore)
 	a.layouts, _ = store.(LayoutStore)
 	a.publication, _ = store.(PublicationStore)

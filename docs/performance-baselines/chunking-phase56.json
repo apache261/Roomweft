@@ -1,0 +1,44 @@
+{
+  "execution": "Chromium SwiftShader with actual generated GLBs and mocked scoped API; not physical-device evidence",
+  "checks": [
+    "exact bootstrap",
+    "starting visuals only",
+    "parent-scoped payloads",
+    "failed-neighbor capsule boundary",
+    "targeted retry",
+    "quality pose retention",
+    "HQ full contributors",
+    "reset target readiness",
+    "invalid saved start recovery",
+    "inspection full contributors",
+    "layout parent chunks",
+    "embed",
+    "malformed-manifest fallback"
+  ],
+  "blocked": [
+    4.0428652456851975e-16,
+    1.650000001490116,
+    -1.7758333333333323
+  ],
+  "entered": [
+    8.524562261064934e-16,
+    1.650000001490116,
+    -5.4354166666666535
+  ],
+  "beforeQuality": [
+    8.524562261064934e-16,
+    1.650000001490116,
+    -5.4354166666666535
+  ],
+  "afterQuality": [
+    8.524562261064934e-16,
+    1.650000001490116,
+    -5.4354166666666535
+  ],
+  "originalBytes": 10676,
+  "firstSafelyUsableWalkingViewMs": 2655.2999999970198,
+  "startupVerifiedPayloadBytes": 21712,
+  "startupBytesDefinition": "Successful verified payload bodies completed before walking readiness, including exact indexes; excludes failed bodies/HTTP overhead",
+  "exactStartupBytes": 16516,
+  "sourceFallbackReason": "malformed manifest"
+}

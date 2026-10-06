@@ -1,0 +1,1789 @@
+{
+  "$defs": {
+    "Bounds": {
+      "additionalProperties": false,
+      "properties": {
+        "max": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Vec3"
+            }
+          ]
+        },
+        "min": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Vec3"
+            }
+          ]
+        }
+      },
+      "required": [
+        "max",
+        "min"
+      ],
+      "type": "object"
+    },
+    "Chunk": {
+      "additionalProperties": false,
+      "properties": {
+        "bounds": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Bounds"
+            }
+          ]
+        },
+        "dependencies": {
+          "allOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 10000,
+              "type": "array"
+            }
+          ]
+        },
+        "id": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}$"
+        },
+        "local_to_source": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Matrix"
+            }
+          ]
+        },
+        "primitive_count": {
+          "allOf": [
+            {
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            }
+          ],
+          "minimum": 1
+        },
+        "surface_map": {
+          "allOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/SurfaceMap"
+              },
+              "maxItems": 10000,
+              "type": "array"
+            }
+          ]
+        },
+        "triangle_count": {
+          "allOf": [
+            {
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            }
+          ],
+          "minimum": 1
+        },
+        "variants": {
+          "additionalProperties": false,
+          "properties": {
+            "balanced": {
+              "$ref": "#/$defs/Payload"
+            },
+            "hq": {
+              "$ref": "#/$defs/Payload"
+            },
+            "low": {
+              "$ref": "#/$defs/Payload"
+            }
+          },
+          "required": [
+            "low",
+            "balanced",
+            "hq"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "bounds",
+        "dependencies",
+        "id",
+        "local_to_source",
+        "primitive_count",
+        "surface_map",
+        "triangle_count",
+        "variants"
+      ],
+      "type": "object"
+    },
+    "DeliveredChunk": {
+      "additionalProperties": false,
+      "properties": {
+        "bounds": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Bounds"
+            }
+          ]
+        },
+        "dependencies": {
+          "allOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 10000,
+              "type": "array"
+            }
+          ]
+        },
+        "id": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}$"
+        },
+        "local_to_source": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Matrix"
+            }
+          ]
+        },
+        "primitive_count": {
+          "allOf": [
+            {
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            }
+          ],
+          "minimum": 1
+        },
+        "surface_map": {
+          "allOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/SurfaceMap"
+              },
+              "maxItems": 10000,
+              "type": "array"
+            }
+          ]
+        },
+        "triangle_count": {
+          "allOf": [
+            {
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            }
+          ],
+          "minimum": 1
+        },
+        "variants": {
+          "additionalProperties": false,
+          "properties": {
+            "balanced": {
+              "$ref": "#/$defs/DeliveredPayload"
+            },
+            "hq": {
+              "$ref": "#/$defs/DeliveredPayload"
+            },
+            "low": {
+              "$ref": "#/$defs/DeliveredPayload"
+            }
+          },
+          "required": [
+            "low",
+            "balanced",
+            "hq"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "bounds",
+        "dependencies",
+        "id",
+        "local_to_source",
+        "primitive_count",
+        "surface_map",
+        "triangle_count",
+        "variants"
+      ],
+      "type": "object"
+    },
+    "DeliveredDependency": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}$"
+        },
+        "kind": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "enum": [
+            "texture",
+            "animation",
+            "shared-contributor"
+          ]
+        },
+        "requires": {
+          "allOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 10000,
+              "type": "array"
+            }
+          ]
+        },
+        "source_clip_indices": {
+          "allOf": [
+            {
+              "items": {
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "maxItems": 10000,
+              "type": "array"
+            }
+          ]
+        },
+        "source_node_paths": {
+          "allOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 10000,
+              "type": "array"
+            }
+          ],
+          "items": {
+            "pattern": "^0(/(0|[1-9][0-9]*))*$",
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "source_skin_indices": {
+          "allOf": [
+            {
+              "items": {
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "maxItems": 10000,
+              "type": "array"
+            }
+          ]
+        },
+        "variants": {
+          "additionalProperties": false,
+          "properties": {
+            "balanced": {
+              "$ref": "#/$defs/DeliveredPayload"
+            },
+            "hq": {
+              "$ref": "#/$defs/DeliveredPayload"
+            },
+            "low": {
+              "$ref": "#/$defs/DeliveredPayload"
+            }
+          },
+          "required": [
+            "low",
+            "balanced",
+            "hq"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "requires",
+        "source_clip_indices",
+        "source_node_paths",
+        "source_skin_indices",
+        "variants"
+      ],
+      "type": "object"
+    },
+    "DeliveredIndex": {
+      "additionalProperties": false,
+      "properties": {
+        "authored_semantics": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "floor_source_paths": {
+          "allOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 10000,
+              "type": "array"
+            }
+          ],
+          "items": {
+            "pattern": "^0(/(0|[1-9][0-9]*))*$",
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "payload": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/DeliveredPayload"
+            }
+          ]
+        },
+        "strategy": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "required": [
+        "authored_semantics",
+        "floor_source_paths",
+        "payload",
+        "strategy"
+      ],
+      "type": "object"
+    },
+    "DeliveredManifest": {
+      "additionalProperties": false,
+      "properties": {
+        "chunks": {
+          "allOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/DeliveredChunk"
+              },
+              "maxItems": 10000,
+              "type": "array"
+            }
+          ]
+        },
+        "coordinates": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "const": "source-space"
+        },
+        "dependencies": {
+          "allOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/DeliveredDependency"
+              },
+              "maxItems": 10000,
+              "type": "array"
+            }
+          ]
+        },
+        "fallback": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "const": "complete-original"
+        },
+        "global_chunks": {
+          "allOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 10000,
+              "type": "array"
+            }
+          ]
+        },
+        "navigation": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/DeliveredIndex"
+            }
+          ],
+          "properties": {
+            "authored_semantics": {
+              "const": "authored-only-floors"
+            },
+            "strategy": {
+              "const": "verified-exact-geometry"
+            }
+          }
+        },
+        "occlusion": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/DeliveredIndex"
+            }
+          ],
+          "properties": {
+            "authored_semantics": {
+              "const": "authored-material-visibility-sidedness"
+            },
+            "strategy": {
+              "const": "verified-authored-occluders"
+            }
+          }
+        },
+        "parent_asset_id": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+        },
+        "partition": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Partition"
+            }
+          ]
+        },
+        "partition_revision": {
+          "allOf": [
+            {
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            }
+          ],
+          "minimum": 1
+        },
+        "processor_version": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "const": "chunks-v1"
+        },
+        "regions": {
+          "allOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Region"
+              },
+              "maxItems": 10000,
+              "type": "array"
+            }
+          ],
+          "maxItems": 512
+        },
+        "schema": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "const": "streaming-v1"
+        },
+        "source_clip_count": {
+          "allOf": [
+            {
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            }
+          ]
+        },
+        "source_node_paths": {
+          "allOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 10000,
+              "type": "array"
+            }
+          ],
+          "items": {
+            "pattern": "^0(/(0|[1-9][0-9]*))*$",
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "source_sha256": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "source_skin_count": {
+          "allOf": [
+            {
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            }
+          ]
+        },
+        "source_surfaces": {
+          "allOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Surface"
+              },
+              "maxItems": 10000,
+              "type": "array"
+            }
+          ]
+        }
+      },
+      "required": [
+        "chunks",
+        "coordinates",
+        "dependencies",
+        "fallback",
+        "global_chunks",
+        "navigation",
+        "occlusion",
+        "parent_asset_id",
+        "partition",
+        "partition_revision",
+        "processor_version",
+        "regions",
+        "schema",
+        "source_clip_count",
+        "source_node_paths",
+        "source_sha256",
+        "source_skin_count",
+        "source_surfaces"
+      ],
+      "type": "object"
+    },
+    "DeliveredPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "bytes": {
+          "allOf": [
+            {
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            }
+          ],
+          "minimum": 20
+        },
+        "max_texture": {
+          "allOf": [
+            {
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            }
+          ]
+        },
+        "sha256": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "texture_rgba8_bytes": {
+          "allOf": [
+            {
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            }
+          ]
+        },
+        "url": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "format": "uri",
+          "maxLength": 16384,
+          "pattern": "^https?://"
+        }
+      },
+      "required": [
+        "bytes",
+        "max_texture",
+        "sha256",
+        "texture_rgba8_bytes",
+        "url"
+      ],
+      "type": "object"
+    },
+    "Dependency": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}$"
+        },
+        "kind": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "const": "authored-hierarchy"
+        },
+        "node_paths": {
+          "allOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 10000,
+              "type": "array"
+            }
+          ],
+          "items": {
+            "pattern": "^0(/(0|[1-9][0-9]*))*$",
+            "type": "string"
+          },
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "node_paths"
+      ],
+      "type": "object"
+    },
+    "ExactIndex": {
+      "additionalProperties": false,
+      "properties": {
+        "authored_semantics": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "floor_source_paths": {
+          "allOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 10000,
+              "type": "array"
+            }
+          ],
+          "items": {
+            "pattern": "^0(/(0|[1-9][0-9]*))*$",
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "payload": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Payload"
+            }
+          ]
+        },
+        "strategy": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "required": [
+        "authored_semantics",
+        "floor_source_paths",
+        "payload",
+        "strategy"
+      ],
+      "type": "object"
+    },
+    "Inventory": {
+      "additionalProperties": false,
+      "properties": {
+        "bounds": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Bounds"
+            }
+          ]
+        },
+        "clip_count": {
+          "allOf": [
+            {
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            }
+          ]
+        },
+        "conservative_reasons": {
+          "allOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 10000,
+              "type": "array"
+            }
+          ]
+        },
+        "coordinates": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "const": "source-space"
+        },
+        "dependencies": {
+          "allOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Dependency"
+              },
+              "maxItems": 10000,
+              "type": "array"
+            }
+          ]
+        },
+        "nodes": {
+          "allOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Node"
+              },
+              "maxItems": 10000,
+              "type": "array"
+            }
+          ]
+        },
+        "schema": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "const": "source-inventory-v1"
+        },
+        "skin_count": {
+          "allOf": [
+            {
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            }
+          ]
+        },
+        "source_bytes": {
+          "allOf": [
+            {
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            }
+          ],
+          "minimum": 20
+        },
+        "source_sha256": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "bounds",
+        "clip_count",
+        "conservative_reasons",
+        "coordinates",
+        "dependencies",
+        "nodes",
+        "schema",
+        "skin_count",
+        "source_bytes",
+        "source_sha256"
+      ],
+      "type": "object"
+    },
+    "Manifest": {
+      "additionalProperties": false,
+      "properties": {
+        "chunks": {
+          "allOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Chunk"
+              },
+              "maxItems": 10000,
+              "type": "array"
+            }
+          ]
+        },
+        "coordinates": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "const": "source-space"
+        },
+        "dependencies": {
+          "allOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/ResourceDependency"
+              },
+              "maxItems": 10000,
+              "type": "array"
+            }
+          ]
+        },
+        "fallback": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "const": "complete-original"
+        },
+        "global_chunks": {
+          "allOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 10000,
+              "type": "array"
+            }
+          ]
+        },
+        "navigation": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/ExactIndex"
+            }
+          ],
+          "properties": {
+            "authored_semantics": {
+              "const": "authored-only-floors"
+            },
+            "strategy": {
+              "const": "verified-exact-geometry"
+            }
+          }
+        },
+        "occlusion": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/ExactIndex"
+            }
+          ],
+          "properties": {
+            "authored_semantics": {
+              "const": "authored-material-visibility-sidedness"
+            },
+            "strategy": {
+              "const": "verified-authored-occluders"
+            }
+          }
+        },
+        "parent_asset_id": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+        },
+        "partition": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Partition"
+            }
+          ]
+        },
+        "partition_revision": {
+          "allOf": [
+            {
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            }
+          ],
+          "minimum": 1
+        },
+        "processor_version": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "const": "chunks-v1"
+        },
+        "regions": {
+          "allOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Region"
+              },
+              "maxItems": 10000,
+              "type": "array"
+            }
+          ],
+          "maxItems": 512
+        },
+        "schema": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "const": "streaming-v1"
+        },
+        "source_clip_count": {
+          "allOf": [
+            {
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            }
+          ]
+        },
+        "source_node_paths": {
+          "allOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 10000,
+              "type": "array"
+            }
+          ],
+          "items": {
+            "pattern": "^0(/(0|[1-9][0-9]*))*$",
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "source_sha256": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "source_skin_count": {
+          "allOf": [
+            {
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            }
+          ]
+        },
+        "source_surfaces": {
+          "allOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Surface"
+              },
+              "maxItems": 10000,
+              "type": "array"
+            }
+          ]
+        }
+      },
+      "required": [
+        "chunks",
+        "coordinates",
+        "dependencies",
+        "fallback",
+        "global_chunks",
+        "navigation",
+        "occlusion",
+        "parent_asset_id",
+        "partition",
+        "partition_revision",
+        "processor_version",
+        "regions",
+        "schema",
+        "source_clip_count",
+        "source_node_paths",
+        "source_sha256",
+        "source_skin_count",
+        "source_surfaces"
+      ],
+      "type": "object"
+    },
+    "Matrix": {
+      "items": {
+        "type": "number"
+      },
+      "maxItems": 16,
+      "minItems": 16,
+      "type": "array"
+    },
+    "Node": {
+      "additionalProperties": false,
+      "properties": {
+        "bounds": {
+          "allOf": [
+            {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Bounds"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          ]
+        },
+        "dependency_group": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}$"
+        },
+        "embedded_image_bytes": {
+          "allOf": [
+            {
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            }
+          ]
+        },
+        "geometry_bytes": {
+          "allOf": [
+            {
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            }
+          ]
+        },
+        "matrix": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Matrix"
+            }
+          ]
+        },
+        "name": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "parent": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "pattern": "^0(/(0|[1-9][0-9]*))*$"
+        },
+        "path": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "pattern": "^0(/(0|[1-9][0-9]*))*$"
+        },
+        "renderable": {
+          "allOf": [
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "source_node": {
+          "allOf": [
+            {
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            }
+          ]
+        },
+        "source_primitive": {
+          "allOf": [
+            {
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            }
+          ]
+        },
+        "triangles": {
+          "allOf": [
+            {
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            }
+          ]
+        }
+      },
+      "required": [
+        "bounds",
+        "embedded_image_bytes",
+        "geometry_bytes",
+        "matrix",
+        "name",
+        "path",
+        "renderable",
+        "triangles"
+      ],
+      "type": "object"
+    },
+    "Opening": {
+      "additionalProperties": false,
+      "properties": {
+        "corners": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Quad"
+            }
+          ]
+        },
+        "from": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "id": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}$"
+        },
+        "kind": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "enum": [
+            "doorway",
+            "window"
+          ]
+        },
+        "reviewed": {
+          "allOf": [
+            {
+              "type": "boolean"
+            }
+          ],
+          "const": true
+        },
+        "to": {
+          "allOf": [
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "required": [
+        "corners",
+        "from",
+        "id",
+        "kind",
+        "reviewed",
+        "to"
+      ],
+      "type": "object"
+    },
+    "Partition": {
+      "additionalProperties": false,
+      "properties": {
+        "global_node_paths": {
+          "allOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 10000,
+              "type": "array"
+            }
+          ],
+          "items": {
+            "pattern": "^0(/(0|[1-9][0-9]*))*$",
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "openings": {
+          "allOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Opening"
+              },
+              "maxItems": 10000,
+              "type": "array"
+            }
+          ],
+          "maxItems": 2048
+        },
+        "policy": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "enum": [
+            "complete",
+            "reviewed-rooms"
+          ]
+        },
+        "rooms": {
+          "allOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Room"
+              },
+              "maxItems": 10000,
+              "type": "array"
+            }
+          ],
+          "maxItems": 512
+        },
+        "schema": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "const": "partition-v1"
+        },
+        "source_sha256": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "spatial_cell_size": {
+          "allOf": [
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "visibility": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "enum": [
+            "conservative",
+            "reviewed-openings"
+          ]
+        }
+      },
+      "required": [
+        "global_node_paths",
+        "openings",
+        "policy",
+        "rooms",
+        "schema",
+        "source_sha256",
+        "visibility"
+      ],
+      "type": "object"
+    },
+    "Payload": {
+      "additionalProperties": false,
+      "properties": {
+        "bytes": {
+          "allOf": [
+            {
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            }
+          ],
+          "minimum": 20
+        },
+        "key": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "maxLength": 1024,
+          "minLength": 1,
+          "pattern": "^(?!/)(?!.*\\.\\.)(?!.*[\\\\?:#]).+$"
+        },
+        "max_texture": {
+          "allOf": [
+            {
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            }
+          ]
+        },
+        "sha256": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "texture_rgba8_bytes": {
+          "allOf": [
+            {
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            }
+          ]
+        }
+      },
+      "required": [
+        "bytes",
+        "key",
+        "max_texture",
+        "sha256",
+        "texture_rgba8_bytes"
+      ],
+      "type": "object"
+    },
+    "Quad": {
+      "items": {
+        "$ref": "#/$defs/Vec3"
+      },
+      "maxItems": 4,
+      "minItems": 4,
+      "type": "array"
+    },
+    "Region": {
+      "additionalProperties": false,
+      "properties": {
+        "chunks": {
+          "allOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 10000,
+              "type": "array"
+            }
+          ]
+        },
+        "display_requires": {
+          "allOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 10000,
+              "type": "array"
+            }
+          ]
+        },
+        "id": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}$"
+        },
+        "movement_requires": {
+          "allOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 10000,
+              "type": "array"
+            }
+          ]
+        }
+      },
+      "required": [
+        "chunks",
+        "display_requires",
+        "id",
+        "movement_requires"
+      ],
+      "type": "object"
+    },
+    "ResourceDependency": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}$"
+        },
+        "kind": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "enum": [
+            "texture",
+            "animation",
+            "shared-contributor"
+          ]
+        },
+        "requires": {
+          "allOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 10000,
+              "type": "array"
+            }
+          ]
+        },
+        "source_clip_indices": {
+          "allOf": [
+            {
+              "items": {
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "maxItems": 10000,
+              "type": "array"
+            }
+          ]
+        },
+        "source_node_paths": {
+          "allOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 10000,
+              "type": "array"
+            }
+          ],
+          "items": {
+            "pattern": "^0(/(0|[1-9][0-9]*))*$",
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "source_skin_indices": {
+          "allOf": [
+            {
+              "items": {
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "maxItems": 10000,
+              "type": "array"
+            }
+          ]
+        },
+        "variants": {
+          "additionalProperties": false,
+          "properties": {
+            "balanced": {
+              "$ref": "#/$defs/Payload"
+            },
+            "hq": {
+              "$ref": "#/$defs/Payload"
+            },
+            "low": {
+              "$ref": "#/$defs/Payload"
+            }
+          },
+          "required": [
+            "low",
+            "balanced",
+            "hq"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "requires",
+        "source_clip_indices",
+        "source_node_paths",
+        "source_skin_indices",
+        "variants"
+      ],
+      "type": "object"
+    },
+    "Room": {
+      "additionalProperties": false,
+      "properties": {
+        "bounds": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Bounds"
+            }
+          ]
+        },
+        "id": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}$"
+        },
+        "name": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "node_paths": {
+          "allOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 10000,
+              "type": "array"
+            }
+          ],
+          "items": {
+            "pattern": "^0(/(0|[1-9][0-9]*))*$",
+            "type": "string"
+          },
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "bounds",
+        "id",
+        "name",
+        "node_paths"
+      ],
+      "type": "object"
+    },
+    "Surface": {
+      "additionalProperties": false,
+      "properties": {
+        "bounds": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Bounds"
+            }
+          ]
+        },
+        "path": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "pattern": "^0(/(0|[1-9][0-9]*))*$"
+        },
+        "primitive": {
+          "allOf": [
+            {
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            }
+          ]
+        },
+        "triangles": {
+          "allOf": [
+            {
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            }
+          ]
+        }
+      },
+      "required": [
+        "bounds",
+        "path",
+        "primitive",
+        "triangles"
+      ],
+      "type": "object"
+    },
+    "SurfaceMap": {
+      "additionalProperties": false,
+      "properties": {
+        "chunk_path": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "pattern": "^0(/(0|[1-9][0-9]*))*$"
+        },
+        "chunk_primitive": {
+          "allOf": [
+            {
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            }
+          ]
+        },
+        "chunk_triangle_start": {
+          "allOf": [
+            {
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            }
+          ]
+        },
+        "source_path": {
+          "allOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "pattern": "^0(/(0|[1-9][0-9]*))*$"
+        },
+        "source_primitive": {
+          "allOf": [
+            {
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            }
+          ]
+        },
+        "source_triangle_start": {
+          "allOf": [
+            {
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            }
+          ]
+        },
+        "triangle_count": {
+          "allOf": [
+            {
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            }
+          ],
+          "minimum": 1
+        }
+      },
+      "required": [
+        "chunk_path",
+        "chunk_primitive",
+        "chunk_triangle_start",
+        "source_path",
+        "source_primitive",
+        "source_triangle_start",
+        "triangle_count"
+      ],
+      "type": "object"
+    },
+    "Vec3": {
+      "items": {
+        "type": "number"
+      },
+      "maxItems": 3,
+      "minItems": 3,
+      "type": "array"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/Manifest"
+    },
+    {
+      "$ref": "#/$defs/DeliveredManifest"
+    },
+    {
+      "$ref": "#/$defs/Inventory"
+    },
+    {
+      "$ref": "#/$defs/Partition"
+    }
+  ],
+  "title": "Source inventory, reviewed partition and streaming-v1 contracts"
+}

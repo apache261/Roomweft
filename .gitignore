@@ -1,5 +1,6 @@
 .env
 .env.production
+data/certbot/
 node_modules/
 web/dist/
 *.log
@@ -7,3 +8,5 @@ web/dist/
 # Generated, version-matched Basis decoders are copied by npm postinstall.
 web/public/decoders/
 asset-tools/node_modules/
+/tests/testdata/chunking/over-admission.glb
+*.pem

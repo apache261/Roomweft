@@ -1,3 +1,4 @@
+import { chunkingFixtures } from './chunking-fixtures.mjs';
 import { writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { performanceFixtures, performanceFiles, benchmarkVersion } from './performance-fixtures.mjs';
@@ -7,8 +8,9 @@ async function request(path, method = 'GET', data) {
   if (!response.ok) throw new Error(`${method} ${path}: ${await response.text()}`);
   return response.status === 204 ? undefined : response.json();
 }
-const fixtures = performanceFixtures(), files = await performanceFiles();
-const project = await request('/projects', 'POST', { name: fixtures.project.name, description: 'Versioned phase 1 benchmark suite. Synthetic stress cases; see docs/performance-benchmarks.md.' });
+const chunking = process.argv.includes('--chunking');
+const fixtures = chunking ? await chunkingFixtures() : performanceFixtures(), files = chunking ? fixtures.files : await performanceFiles();
+const project = await request('/projects', 'POST', { name: fixtures.project.name, description: chunking ? 'GLB chunking Phase 0 correctness references; see docs/chunking-baselines.md.' : 'Versioned phase 1 benchmark suite. Synthetic stress cases; see docs/performance-benchmarks.md.' });
 try {
   const assets = new Map(), scenes = new Map();
   for (const asset of fixtures.assets) {
@@ -26,7 +28,7 @@ try {
     scenes.set(fixture.id, saved);
   }
   for (const h of fixtures.hotspots) await request(`/scenes/${scenes.get(h.scene_id).id}/hotspots`, 'POST', { type: h.type, title: h.title, description: h.description, position: h.position });
-  const manifest = { benchmarkVersion, projectId: project.id, origin, scenes: [...scenes.values()], assets: [...files].map(([name, bytes]) => ({ name, bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex') })) };
-  const output = process.env.PERFORMANCE_MANIFEST || '/tmp/performance-benchmarks.json'; await writeFile(output, JSON.stringify(manifest, null, 2));
+  const manifest = { benchmarkVersion, fixtureSuite: chunking ? 'chunking-phase0-v1' : 'performance-v1', projectId: project.id, origin, scenes: [...scenes.values()], assets: [...files].map(([name, bytes]) => ({ name, bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex') })) };
+  const output = process.env.PERFORMANCE_MANIFEST || (chunking ? '/tmp/chunking-demo.json' : '/tmp/performance-benchmarks.json'); await writeFile(output, JSON.stringify(manifest, null, 2));
   console.log(`Created ${fixtures.scenes.length} benchmarks: ${origin}/projects/${project.id}?perf=1\nManifest: ${output}`);
 } catch (error) { await request(`/projects/${project.id}`, 'DELETE'); throw error; }

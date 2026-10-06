@@ -25,6 +25,10 @@ func main() {
 }
 
 func run() error {
+	chunkMode, err := httpapi.ParseChunkRollout(os.Getenv("ASSET_CHUNK_STREAMING"))
+	if err != nil {
+		return err
+	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	pool, err := pgxpool.New(ctx, os.Getenv("DATABASE_URL"))
@@ -54,7 +58,7 @@ func run() error {
 		go func() { defer close(workerDone); derivatives.Run(ctx, queries, objects, script) }()
 		defer func() { stop(); <-workerDone }()
 	}
-	server := &http.Server{Addr: addr, Handler: httpapi.New(queries, pool.Ping, objects), ReadHeaderTimeout: 5 * time.Second}
+	server := &http.Server{Addr: addr, Handler: httpapi.NewWithOptions(queries, pool.Ping, httpapi.Options{ChunkStreaming: chunkMode}, objects), ReadHeaderTimeout: 5 * time.Second}
 	result := make(chan error, 1)
 	go func() { slog.Info("API listening", "address", addr); result <- server.ListenAndServe() }()
 	select {

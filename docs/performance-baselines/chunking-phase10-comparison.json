@@ -1,0 +1,1226 @@
+{
+  "schema": 1,
+  "execution": "Chromium SwiftShader; generated same-source GLB; scoped API mocks; not physical-device acceptance",
+  "network": "Artificial per-binary-response latency; no throughput shaping. Successful measured binary bodies exclude failed bodies, HTTP overhead and descriptors.",
+  "sourceBytes": 12960,
+  "comparisons": [
+    {
+      "latencyMs": 0,
+      "startupPayloadByteDifference": 11549,
+      "startupSavingObserved": false,
+      "firstWalkingMsDifference": -1244.8999999910593,
+      "visitedPayloadByteDifference": 22813
+    },
+    {
+      "latencyMs": 120,
+      "startupPayloadByteDifference": 11549,
+      "startupSavingObserved": false,
+      "firstWalkingMsDifference": 90.09999999403954,
+      "visitedPayloadByteDifference": 22813
+    }
+  ],
+  "records": [
+    {
+      "mode": "complete",
+      "cache": "cold",
+      "latencyMs": 0,
+      "source_sha256": "a80461c4537e5fe0e6527d00548b49cbd85f26a7233e836af9c6377a4362a8ea",
+      "partition_revision": 1,
+      "quality": "balanced",
+      "viewport": [
+        900,
+        650
+      ],
+      "route": {
+        "visits": 2,
+        "poses": [
+          [
+            1.2317905721423927e-15,
+            1.6500000014901162,
+            -10.058333333333414
+          ],
+          [
+            1.2338316501409717e-15,
+            1.6500000014901162,
+            -10.075000000000081
+          ]
+        ],
+        "return": "Reset view",
+        "turn": "separate correctness suites"
+      },
+      "firstRenderedViewMs": 4137.79999999702,
+      "firstSafelyUsableWalkingViewMs": 4424.20000000298,
+      "startupPayloadBytes": 12960,
+      "visitedPayloadBytes": 12960,
+      "frameMs": {
+        "samples": 245,
+        "median": 47.5,
+        "p95": 73.5,
+        "p99": 106.59999999403954,
+        "max": 148.70000000298023
+      },
+      "cpuSubmissionMs": {
+        "samples": 251,
+        "median": 1.2000000029802322,
+        "p95": 2.699999988079071,
+        "p99": 6.200000002980232,
+        "max": 42.29999999701977
+      },
+      "preparation": [
+        {
+          "stage": "gltf-decode",
+          "startMs": 1236.7999999970198,
+          "endMs": 1263.5,
+          "ms": 26.700000002980232,
+          "bytes": 12960,
+          "status": "ok"
+        },
+        {
+          "stage": "model-preparation",
+          "startMs": 1266.7000000029802,
+          "endMs": 1272.0999999940395,
+          "ms": 5.399999991059303,
+          "status": "ok"
+        },
+        {
+          "stage": "collision-preparation",
+          "startMs": 4083.7000000029802,
+          "endMs": 4088.0999999940395,
+          "ms": 4.399999991059303,
+          "status": "ok"
+        }
+      ],
+      "resources": {
+        "decodedAssetCache": {
+          "entries": 1,
+          "owners": 1,
+          "bytes": 27405.333333333332
+        },
+        "navigationCache": {
+          "entries": 1,
+          "owners": 1,
+          "triangles": 180
+        },
+        "geometries": 5,
+        "textures": 3,
+        "programs": 1,
+        "residentGeometryBytes": 15864,
+        "textureInventory": [
+          {
+            "name": "",
+            "width": 2,
+            "height": 2,
+            "faces": 1,
+            "rgba8EquivalentBytes": 20
+          },
+          {
+            "name": "PMREM.cubeUv",
+            "width": 768,
+            "height": 1024,
+            "faces": 1,
+            "rgba8EquivalentBytes": 3145728
+          }
+        ],
+        "textureRgba8EquivalentBytes": 3145748,
+        "inventoryScope": "Textures referenced by scene materials/background/environment; renderer-internal targets and cached loader assets excluded.",
+        "jsHeapBytes": 31200000
+      },
+      "shaderUploadStalls": null,
+      "gpuTimeMs": null
+    },
+    {
+      "mode": "complete",
+      "cache": "warm",
+      "latencyMs": 0,
+      "source_sha256": "a80461c4537e5fe0e6527d00548b49cbd85f26a7233e836af9c6377a4362a8ea",
+      "partition_revision": 1,
+      "quality": "balanced",
+      "viewport": [
+        900,
+        650
+      ],
+      "route": {
+        "visits": 2,
+        "poses": [
+          [
+            1.2379138061381296e-15,
+            1.6500000014901162,
+            -10.108333333333416
+          ],
+          [
+            1.2338316501409717e-15,
+            1.6500000014901162,
+            -10.075000000000081
+          ]
+        ],
+        "return": "Reset view",
+        "turn": "separate correctness suites"
+      },
+      "firstRenderedViewMs": 5657.70000000298,
+      "firstSafelyUsableWalkingViewMs": 5804.4000000059605,
+      "startupPayloadBytes": 0,
+      "visitedPayloadBytes": 0,
+      "frameMs": {
+        "samples": 258,
+        "median": 45.55000000447035,
+        "p95": 64.59999999403954,
+        "p99": 73.90000000596046,
+        "max": 126.40000000596046
+      },
+      "cpuSubmissionMs": {
+        "samples": 262,
+        "median": 1.0999999940395355,
+        "p95": 2,
+        "p99": 3.2999999970197678,
+        "max": 7.299999997019768
+      },
+      "preparation": [
+        {
+          "stage": "model-preparation",
+          "startMs": 3254.4000000059605,
+          "endMs": 3255.6000000089407,
+          "ms": 1.2000000029802322,
+          "status": "ok"
+        },
+        {
+          "stage": "collision-preparation",
+          "startMs": 5637.9000000059605,
+          "endMs": 5638.20000000298,
+          "ms": 0.29999999701976776,
+          "status": "ok"
+        }
+      ],
+      "resources": {
+        "decodedAssetCache": {
+          "entries": 1,
+          "owners": 1,
+          "bytes": 27405.333333333332
+        },
+        "navigationCache": {
+          "entries": 2,
+          "owners": 1,
+          "triangles": 302
+        },
+        "geometries": 4,
+        "textures": 3,
+        "programs": 1,
+        "residentGeometryBytes": 15864,
+        "textureInventory": [
+          {
+            "name": "",
+            "width": 2,
+            "height": 2,
+            "faces": 1,
+            "rgba8EquivalentBytes": 20
+          },
+          {
+            "name": "PMREM.cubeUv",
+            "width": 768,
+            "height": 1024,
+            "faces": 1,
+            "rgba8EquivalentBytes": 3145728
+          }
+        ],
+        "textureRgba8EquivalentBytes": 3145748,
+        "inventoryScope": "Textures referenced by scene materials/background/environment; renderer-internal targets and cached loader assets excluded.",
+        "jsHeapBytes": 31200000
+      },
+      "shaderUploadStalls": null,
+      "gpuTimeMs": null
+    },
+    {
+      "mode": "chunked",
+      "cache": "cold",
+      "latencyMs": 0,
+      "source_sha256": "a80461c4537e5fe0e6527d00548b49cbd85f26a7233e836af9c6377a4362a8ea",
+      "partition_revision": 1,
+      "quality": "balanced",
+      "viewport": [
+        900,
+        650
+      ],
+      "route": {
+        "visits": 2,
+        "poses": [
+          [
+            1.231790572142392e-15,
+            1.650000001490116,
+            -10.058333333333417
+          ],
+          [
+            1.2481191961310234e-15,
+            1.650000001490116,
+            -10.191666666666755
+          ]
+        ],
+        "return": "Reset view",
+        "turn": "separate correctness suites"
+      },
+      "firstRenderedViewMs": 2947.7000000029802,
+      "firstSafelyUsableWalkingViewMs": 3179.300000011921,
+      "startupPayloadBytes": 24509,
+      "visitedPayloadBytes": 35773,
+      "frameMs": {
+        "samples": 447,
+        "median": 16.799999997019768,
+        "p95": 65.40000000596046,
+        "p99": 1100.5,
+        "max": 1749.5
+      },
+      "cpuSubmissionMs": {
+        "samples": 465,
+        "median": 1.2000000029802322,
+        "p95": 3.2000000029802322,
+        "p99": 6.300000011920929,
+        "max": 12.299999997019768
+      },
+      "preparation": [
+        {
+          "stage": "gltf-decode",
+          "startMs": 475.1000000089407,
+          "endMs": 481,
+          "ms": 5.899999991059303,
+          "bytes": 5808,
+          "status": "ok"
+        },
+        {
+          "stage": "gltf-decode",
+          "startMs": 497.40000000596046,
+          "endMs": 505.40000000596046,
+          "ms": 8,
+          "bytes": 12960,
+          "status": "ok"
+        },
+        {
+          "stage": "model-preparation",
+          "startMs": 506,
+          "endMs": 507.80000001192093,
+          "ms": 1.800000011920929,
+          "status": "ok"
+        },
+        {
+          "stage": "model-preparation",
+          "startMs": 508.1000000089407,
+          "endMs": 508.90000000596046,
+          "ms": 0.7999999970197678,
+          "status": "ok"
+        },
+        {
+          "stage": "collision-preparation",
+          "startMs": 509.30000001192093,
+          "endMs": 511.30000001192093,
+          "ms": 2,
+          "status": "ok"
+        },
+        {
+          "stage": "gltf-decode",
+          "startMs": 554.2000000029802,
+          "endMs": 562.7000000029802,
+          "ms": 8.5,
+          "bytes": 2804,
+          "status": "ok"
+        },
+        {
+          "stage": "gltf-decode",
+          "startMs": 580.4000000059605,
+          "endMs": 586.3000000119209,
+          "ms": 5.9000000059604645,
+          "bytes": 2800,
+          "status": "ok"
+        },
+        {
+          "stage": "model-preparation",
+          "startMs": 588.5,
+          "endMs": 589.8000000119209,
+          "ms": 1.300000011920929,
+          "status": "ok"
+        },
+        {
+          "stage": "collision-preparation",
+          "startMs": 2930.9000000059605,
+          "endMs": 2931.2000000029802,
+          "ms": 0.29999999701976776,
+          "status": "ok"
+        },
+        {
+          "stage": "model-preparation",
+          "startMs": 2967.4000000059605,
+          "endMs": 2968.1000000089407,
+          "ms": 0.7000000029802322,
+          "status": "ok"
+        },
+        {
+          "stage": "model-preparation",
+          "startMs": 3201.4000000059605,
+          "endMs": 3202.5,
+          "ms": 1.0999999940395355,
+          "status": "ok"
+        },
+        {
+          "stage": "gltf-decode",
+          "startMs": 3284.5,
+          "endMs": 3303,
+          "ms": 18.5,
+          "bytes": 2796,
+          "status": "ok"
+        },
+        {
+          "stage": "model-preparation",
+          "startMs": 3329.1000000089407,
+          "endMs": 3330.7000000029802,
+          "ms": 1.5999999940395355,
+          "status": "ok"
+        },
+        {
+          "stage": "gltf-decode",
+          "startMs": 4561.70000000298,
+          "endMs": 4569.9000000059605,
+          "ms": 8.200000002980232,
+          "bytes": 2796,
+          "status": "ok"
+        },
+        {
+          "stage": "model-preparation",
+          "startMs": 4588.300000011921,
+          "endMs": 4589.9000000059605,
+          "ms": 1.5999999940395355,
+          "status": "ok"
+        },
+        {
+          "stage": "model-preparation",
+          "startMs": 6536.9000000059605,
+          "endMs": 6537.9000000059605,
+          "ms": 1,
+          "status": "ok"
+        },
+        {
+          "stage": "gltf-decode",
+          "startMs": 9458.5,
+          "endMs": 9463.5,
+          "ms": 5,
+          "bytes": 2796,
+          "status": "ok"
+        },
+        {
+          "stage": "model-preparation",
+          "startMs": 9481.60000000894,
+          "endMs": 9490.60000000894,
+          "ms": 9,
+          "status": "ok"
+        },
+        {
+          "stage": "model-preparation",
+          "startMs": 11414.90000000596,
+          "endMs": 11415.5,
+          "ms": 0.5999999940395355,
+          "status": "ok"
+        },
+        {
+          "stage": "gltf-decode",
+          "startMs": 14282.800000011921,
+          "endMs": 14288.300000011921,
+          "ms": 5.5,
+          "bytes": 2796,
+          "status": "ok"
+        },
+        {
+          "stage": "model-preparation",
+          "startMs": 14306.20000000298,
+          "endMs": 14308.40000000596,
+          "ms": 2.2000000029802322,
+          "status": "ok"
+        },
+        {
+          "stage": "model-preparation",
+          "startMs": 19218.90000000596,
+          "endMs": 19219.80000001192,
+          "ms": 0.9000000059604645,
+          "status": "ok"
+        },
+        {
+          "stage": "model-preparation",
+          "startMs": 21239.70000000298,
+          "endMs": 21240.90000000596,
+          "ms": 1.2000000029802322,
+          "status": "ok"
+        }
+      ],
+      "resources": {
+        "decodedAssetCache": {
+          "entries": 8,
+          "owners": 16,
+          "bytes": 36245.333333333336
+        },
+        "navigationCache": {
+          "entries": 1,
+          "owners": 1,
+          "triangles": 180
+        },
+        "geometries": 5,
+        "textures": 3,
+        "programs": 1,
+        "residentGeometryBytes": 6192,
+        "textureInventory": [
+          {
+            "name": "blob:http://localhost:5183/6ca707f7-fd2d-4d35-97f6-8576785fa0eb",
+            "width": 2,
+            "height": 2,
+            "faces": 1,
+            "rgba8EquivalentBytes": 20
+          },
+          {
+            "name": "PMREM.cubeUv",
+            "width": 768,
+            "height": 1024,
+            "faces": 1,
+            "rgba8EquivalentBytes": 3145728
+          }
+        ],
+        "textureRgba8EquivalentBytes": 3145748,
+        "inventoryScope": "Textures referenced by scene materials/background/environment; renderer-internal targets and cached loader assets excluded.",
+        "jsHeapBytes": 29400000
+      },
+      "shaderUploadStalls": null,
+      "gpuTimeMs": null
+    },
+    {
+      "mode": "chunked",
+      "cache": "warm",
+      "latencyMs": 0,
+      "source_sha256": "a80461c4537e5fe0e6527d00548b49cbd85f26a7233e836af9c6377a4362a8ea",
+      "partition_revision": 1,
+      "quality": "balanced",
+      "viewport": [
+        900,
+        650
+      ],
+      "route": {
+        "visits": 2,
+        "poses": [
+          [
+            1.2266878771459448e-15,
+            1.650000001490116,
+            -10.016666666666746
+          ],
+          [
+            1.2256673381466559e-15,
+            1.650000001490116,
+            -10.008333333333411
+          ]
+        ],
+        "return": "Reset view",
+        "turn": "separate correctness suites"
+      },
+      "firstRenderedViewMs": 5551.399999991059,
+      "firstSafelyUsableWalkingViewMs": 5780.0999999940395,
+      "startupPayloadBytes": 0,
+      "visitedPayloadBytes": 0,
+      "frameMs": {
+        "samples": 277,
+        "median": 39.6000000089407,
+        "p95": 70.3999999910593,
+        "p99": 118,
+        "max": 1615.5
+      },
+      "cpuSubmissionMs": {
+        "samples": 287,
+        "median": 1.5,
+        "p95": 2.7999999970197678,
+        "p99": 4.5999999940395355,
+        "max": 10.700000002980232
+      },
+      "preparation": [
+        {
+          "stage": "model-preparation",
+          "startMs": 3112.8999999910593,
+          "endMs": 3113.5999999940395,
+          "ms": 0.7000000029802322,
+          "status": "ok"
+        },
+        {
+          "stage": "model-preparation",
+          "startMs": 3113.699999988079,
+          "endMs": 3114.0999999940395,
+          "ms": 0.4000000059604645,
+          "status": "ok"
+        },
+        {
+          "stage": "collision-preparation",
+          "startMs": 3114.199999988079,
+          "endMs": 3114.2999999970198,
+          "ms": 0.10000000894069672,
+          "status": "ok"
+        },
+        {
+          "stage": "model-preparation",
+          "startMs": 3116.5999999940395,
+          "endMs": 3117.199999988079,
+          "ms": 0.5999999940395355,
+          "status": "ok"
+        },
+        {
+          "stage": "collision-preparation",
+          "startMs": 5539.29999999702,
+          "endMs": 5539.5,
+          "ms": 0.20000000298023224,
+          "status": "ok"
+        },
+        {
+          "stage": "model-preparation",
+          "startMs": 5567.899999991059,
+          "endMs": 5568.899999991059,
+          "ms": 1,
+          "status": "ok"
+        },
+        {
+          "stage": "model-preparation",
+          "startMs": 5798.199999988079,
+          "endMs": 5803.29999999702,
+          "ms": 5.100000008940697,
+          "status": "ok"
+        },
+        {
+          "stage": "model-preparation",
+          "startMs": 9115.199999988079,
+          "endMs": 9115.89999999106,
+          "ms": 0.7000000029802322,
+          "status": "ok"
+        }
+      ],
+      "resources": {
+        "decodedAssetCache": {
+          "entries": 8,
+          "owners": 16,
+          "bytes": 36245.333333333336
+        },
+        "navigationCache": {
+          "entries": 3,
+          "owners": 1,
+          "triangles": 424
+        },
+        "geometries": 5,
+        "textures": 3,
+        "programs": 1,
+        "residentGeometryBytes": 6192,
+        "textureInventory": [
+          {
+            "name": "blob:http://localhost:5183/6ca707f7-fd2d-4d35-97f6-8576785fa0eb",
+            "width": 2,
+            "height": 2,
+            "faces": 1,
+            "rgba8EquivalentBytes": 20
+          },
+          {
+            "name": "PMREM.cubeUv",
+            "width": 768,
+            "height": 1024,
+            "faces": 1,
+            "rgba8EquivalentBytes": 3145728
+          }
+        ],
+        "textureRgba8EquivalentBytes": 3145748,
+        "inventoryScope": "Textures referenced by scene materials/background/environment; renderer-internal targets and cached loader assets excluded.",
+        "jsHeapBytes": 29400000
+      },
+      "shaderUploadStalls": null,
+      "gpuTimeMs": null
+    },
+    {
+      "mode": "complete",
+      "cache": "cold",
+      "latencyMs": 120,
+      "source_sha256": "a80461c4537e5fe0e6527d00548b49cbd85f26a7233e836af9c6377a4362a8ea",
+      "partition_revision": 1,
+      "quality": "balanced",
+      "viewport": [
+        900,
+        650
+      ],
+      "route": {
+        "visits": 2,
+        "poses": [
+          [
+            1.2338316501409717e-15,
+            1.6500000014901162,
+            -10.075000000000081
+          ],
+          [
+            1.2358727281395506e-15,
+            1.650000001490116,
+            -10.091666666666748
+          ]
+        ],
+        "return": "Reset view",
+        "turn": "separate correctness suites"
+      },
+      "firstRenderedViewMs": 2908.7000000029802,
+      "firstSafelyUsableWalkingViewMs": 3105,
+      "startupPayloadBytes": 12960,
+      "visitedPayloadBytes": 12960,
+      "frameMs": {
+        "samples": 252,
+        "median": 47.44999999552965,
+        "p95": 65.1000000089407,
+        "p99": 89.70000000298023,
+        "max": 117
+      },
+      "cpuSubmissionMs": {
+        "samples": 258,
+        "median": 1.2000000029802322,
+        "p95": 3.2999999970197678,
+        "p99": 5.299999997019768,
+        "max": 11.300000011920929
+      },
+      "preparation": [
+        {
+          "stage": "gltf-decode",
+          "startMs": 520,
+          "endMs": 544.3999999910593,
+          "ms": 24.399999991059303,
+          "bytes": 12960,
+          "status": "ok"
+        },
+        {
+          "stage": "model-preparation",
+          "startMs": 547,
+          "endMs": 549.0999999940395,
+          "ms": 2.0999999940395355,
+          "status": "ok"
+        },
+        {
+          "stage": "collision-preparation",
+          "startMs": 2891.0999999940395,
+          "endMs": 2893.0999999940395,
+          "ms": 2,
+          "status": "ok"
+        }
+      ],
+      "resources": {
+        "decodedAssetCache": {
+          "entries": 1,
+          "owners": 1,
+          "bytes": 27405.333333333332
+        },
+        "navigationCache": {
+          "entries": 1,
+          "owners": 1,
+          "triangles": 180
+        },
+        "geometries": 5,
+        "textures": 3,
+        "programs": 1,
+        "residentGeometryBytes": 15864,
+        "textureInventory": [
+          {
+            "name": "",
+            "width": 2,
+            "height": 2,
+            "faces": 1,
+            "rgba8EquivalentBytes": 20
+          },
+          {
+            "name": "PMREM.cubeUv",
+            "width": 768,
+            "height": 1024,
+            "faces": 1,
+            "rgba8EquivalentBytes": 3145728
+          }
+        ],
+        "textureRgba8EquivalentBytes": 3145748,
+        "inventoryScope": "Textures referenced by scene materials/background/environment; renderer-internal targets and cached loader assets excluded.",
+        "jsHeapBytes": 27600000
+      },
+      "shaderUploadStalls": null,
+      "gpuTimeMs": null
+    },
+    {
+      "mode": "complete",
+      "cache": "warm",
+      "latencyMs": 120,
+      "source_sha256": "a80461c4537e5fe0e6527d00548b49cbd85f26a7233e836af9c6377a4362a8ea",
+      "partition_revision": 1,
+      "quality": "balanced",
+      "viewport": [
+        900,
+        650
+      ],
+      "route": {
+        "visits": 2,
+        "poses": [
+          [
+            1.2338316501409717e-15,
+            1.6500000014901162,
+            -10.075000000000081
+          ],
+          [
+            1.2277084161452348e-15,
+            1.6500000014901162,
+            -10.025000000000079
+          ]
+        ],
+        "return": "Reset view",
+        "turn": "separate correctness suites"
+      },
+      "firstRenderedViewMs": 5429.399999991059,
+      "firstSafelyUsableWalkingViewMs": 5571.899999991059,
+      "startupPayloadBytes": 0,
+      "visitedPayloadBytes": 0,
+      "frameMs": {
+        "samples": 254,
+        "median": 46.75,
+        "p95": 68,
+        "p99": 86.30000001192093,
+        "max": 141.1000000089407
+      },
+      "cpuSubmissionMs": {
+        "samples": 258,
+        "median": 1.1000000089406967,
+        "p95": 1.9000000059604645,
+        "p99": 4.299999997019768,
+        "max": 7.899999991059303
+      },
+      "preparation": [
+        {
+          "stage": "model-preparation",
+          "startMs": 3050.5999999940395,
+          "endMs": 3051.199999988079,
+          "ms": 0.5999999940395355,
+          "status": "ok"
+        },
+        {
+          "stage": "collision-preparation",
+          "startMs": 5408.899999991059,
+          "endMs": 5409.199999988079,
+          "ms": 0.29999999701976776,
+          "status": "ok"
+        }
+      ],
+      "resources": {
+        "decodedAssetCache": {
+          "entries": 1,
+          "owners": 1,
+          "bytes": 27405.333333333332
+        },
+        "navigationCache": {
+          "entries": 2,
+          "owners": 1,
+          "triangles": 302
+        },
+        "geometries": 4,
+        "textures": 3,
+        "programs": 1,
+        "residentGeometryBytes": 15864,
+        "textureInventory": [
+          {
+            "name": "",
+            "width": 2,
+            "height": 2,
+            "faces": 1,
+            "rgba8EquivalentBytes": 20
+          },
+          {
+            "name": "PMREM.cubeUv",
+            "width": 768,
+            "height": 1024,
+            "faces": 1,
+            "rgba8EquivalentBytes": 3145728
+          }
+        ],
+        "textureRgba8EquivalentBytes": 3145748,
+        "inventoryScope": "Textures referenced by scene materials/background/environment; renderer-internal targets and cached loader assets excluded.",
+        "jsHeapBytes": 27600000
+      },
+      "shaderUploadStalls": null,
+      "gpuTimeMs": null
+    },
+    {
+      "mode": "chunked",
+      "cache": "cold",
+      "latencyMs": 120,
+      "source_sha256": "a80461c4537e5fe0e6527d00548b49cbd85f26a7233e836af9c6377a4362a8ea",
+      "partition_revision": 1,
+      "quality": "balanced",
+      "viewport": [
+        900,
+        650
+      ],
+      "route": {
+        "visits": 2,
+        "poses": [
+          [
+            1.224646799147366e-15,
+            1.650000001490116,
+            -10.00000000000008
+          ],
+          [
+            1.2266878771459448e-15,
+            1.650000001490116,
+            -10.016666666666746
+          ]
+        ],
+        "return": "Reset view",
+        "turn": "separate correctness suites"
+      },
+      "firstRenderedViewMs": 2948.5999999940395,
+      "firstSafelyUsableWalkingViewMs": 3195.0999999940395,
+      "startupPayloadBytes": 24509,
+      "visitedPayloadBytes": 35773,
+      "frameMs": {
+        "samples": 403,
+        "median": 17.099999994039536,
+        "p95": 62.1000000089407,
+        "p99": 1246,
+        "max": 1686.199999988079
+      },
+      "cpuSubmissionMs": {
+        "samples": 420,
+        "median": 1.3999999910593033,
+        "p95": 3.0999999940395355,
+        "p99": 5.799999997019768,
+        "max": 11.199999988079071
+      },
+      "preparation": [
+        {
+          "stage": "gltf-decode",
+          "startMs": 597.0999999940395,
+          "endMs": 604.2000000029802,
+          "ms": 7.100000008940697,
+          "bytes": 5808,
+          "status": "ok"
+        },
+        {
+          "stage": "gltf-decode",
+          "startMs": 620.5999999940395,
+          "endMs": 633.7999999970198,
+          "ms": 13.200000002980232,
+          "bytes": 12960,
+          "status": "ok"
+        },
+        {
+          "stage": "model-preparation",
+          "startMs": 634.9000000059605,
+          "endMs": 637.5,
+          "ms": 2.5999999940395355,
+          "status": "ok"
+        },
+        {
+          "stage": "model-preparation",
+          "startMs": 637.7000000029802,
+          "endMs": 638.5999999940395,
+          "ms": 0.8999999910593033,
+          "status": "ok"
+        },
+        {
+          "stage": "collision-preparation",
+          "startMs": 639,
+          "endMs": 640.9000000059605,
+          "ms": 1.9000000059604645,
+          "status": "ok"
+        },
+        {
+          "stage": "gltf-decode",
+          "startMs": 923.7000000029802,
+          "endMs": 931,
+          "ms": 7.299999997019768,
+          "bytes": 2804,
+          "status": "ok"
+        },
+        {
+          "stage": "gltf-decode",
+          "startMs": 948.7000000029802,
+          "endMs": 954.7000000029802,
+          "ms": 6,
+          "bytes": 2800,
+          "status": "ok"
+        },
+        {
+          "stage": "model-preparation",
+          "startMs": 956.7999999970198,
+          "endMs": 958,
+          "ms": 1.2000000029802322,
+          "status": "ok"
+        },
+        {
+          "stage": "collision-preparation",
+          "startMs": 2932.7000000029802,
+          "endMs": 2933,
+          "ms": 0.29999999701976776,
+          "status": "ok"
+        },
+        {
+          "stage": "model-preparation",
+          "startMs": 2965.7999999970198,
+          "endMs": 2966.5,
+          "ms": 0.7000000029802322,
+          "status": "ok"
+        },
+        {
+          "stage": "model-preparation",
+          "startMs": 3229.0999999940395,
+          "endMs": 3230.5,
+          "ms": 1.4000000059604645,
+          "status": "ok"
+        },
+        {
+          "stage": "gltf-decode",
+          "startMs": 3354.7000000029802,
+          "endMs": 3359,
+          "ms": 4.299999997019768,
+          "bytes": 2796,
+          "status": "ok"
+        },
+        {
+          "stage": "model-preparation",
+          "startMs": 3376.2999999970198,
+          "endMs": 3376.9000000059605,
+          "ms": 0.6000000089406967,
+          "status": "ok"
+        },
+        {
+          "stage": "gltf-decode",
+          "startMs": 4802.20000000298,
+          "endMs": 4810.20000000298,
+          "ms": 8,
+          "bytes": 2796,
+          "status": "ok"
+        },
+        {
+          "stage": "model-preparation",
+          "startMs": 4827.70000000298,
+          "endMs": 4828.29999999702,
+          "ms": 0.5999999940395355,
+          "status": "ok"
+        },
+        {
+          "stage": "model-preparation",
+          "startMs": 6638.5,
+          "endMs": 6639.70000000298,
+          "ms": 1.2000000029802322,
+          "status": "ok"
+        },
+        {
+          "stage": "gltf-decode",
+          "startMs": 9541.20000000298,
+          "endMs": 9548.20000000298,
+          "ms": 7,
+          "bytes": 2796,
+          "status": "ok"
+        },
+        {
+          "stage": "model-preparation",
+          "startMs": 9565.5,
+          "endMs": 9566.59999999404,
+          "ms": 1.0999999940395355,
+          "status": "ok"
+        },
+        {
+          "stage": "gltf-decode",
+          "startMs": 13265.40000000596,
+          "endMs": 13271.90000000596,
+          "ms": 6.5,
+          "bytes": 2796,
+          "status": "ok"
+        },
+        {
+          "stage": "model-preparation",
+          "startMs": 13289.59999999404,
+          "endMs": 13294.09999999404,
+          "ms": 4.5,
+          "status": "ok"
+        },
+        {
+          "stage": "model-preparation",
+          "startMs": 18071.20000000298,
+          "endMs": 18072.20000000298,
+          "ms": 1,
+          "status": "ok"
+        }
+      ],
+      "resources": {
+        "decodedAssetCache": {
+          "entries": 8,
+          "owners": 16,
+          "bytes": 36245.333333333336
+        },
+        "navigationCache": {
+          "entries": 1,
+          "owners": 1,
+          "triangles": 180
+        },
+        "geometries": 5,
+        "textures": 3,
+        "programs": 1,
+        "residentGeometryBytes": 6192,
+        "textureInventory": [
+          {
+            "name": "blob:http://localhost:5183/341da25e-d123-4ed8-96c7-62ab0103ad8b",
+            "width": 2,
+            "height": 2,
+            "faces": 1,
+            "rgba8EquivalentBytes": 20
+          },
+          {
+            "name": "PMREM.cubeUv",
+            "width": 768,
+            "height": 1024,
+            "faces": 1,
+            "rgba8EquivalentBytes": 3145728
+          }
+        ],
+        "textureRgba8EquivalentBytes": 3145748,
+        "inventoryScope": "Textures referenced by scene materials/background/environment; renderer-internal targets and cached loader assets excluded.",
+        "jsHeapBytes": 29400000
+      },
+      "shaderUploadStalls": null,
+      "gpuTimeMs": null
+    },
+    {
+      "mode": "chunked",
+      "cache": "warm",
+      "latencyMs": 120,
+      "source_sha256": "a80461c4537e5fe0e6527d00548b49cbd85f26a7233e836af9c6377a4362a8ea",
+      "partition_revision": 1,
+      "quality": "balanced",
+      "viewport": [
+        900,
+        650
+      ],
+      "route": {
+        "visits": 2,
+        "poses": [
+          [
+            1.2246467991473659e-15,
+            1.650000001490116,
+            -10.000000000000078
+          ],
+          [
+            1.2317905721423927e-15,
+            1.650000001490116,
+            -10.058333333333414
+          ]
+        ],
+        "return": "Reset view",
+        "turn": "separate correctness suites"
+      },
+      "firstRenderedViewMs": 5543.5,
+      "firstSafelyUsableWalkingViewMs": 5763.20000000298,
+      "startupPayloadBytes": 0,
+      "visitedPayloadBytes": 0,
+      "frameMs": {
+        "samples": 274,
+        "median": 44.5,
+        "p95": 65.69999998807907,
+        "p99": 98.80000001192093,
+        "max": 1564.2999999970198
+      },
+      "cpuSubmissionMs": {
+        "samples": 284,
+        "median": 1.5,
+        "p95": 2.6000000089406967,
+        "p99": 5.299999997019768,
+        "max": 8.899999991059303
+      },
+      "preparation": [
+        {
+          "stage": "model-preparation",
+          "startMs": 3100.7999999970198,
+          "endMs": 3101.2999999970198,
+          "ms": 0.5,
+          "status": "ok"
+        },
+        {
+          "stage": "model-preparation",
+          "startMs": 3101.2999999970198,
+          "endMs": 3101.5,
+          "ms": 0.20000000298023224,
+          "status": "ok"
+        },
+        {
+          "stage": "collision-preparation",
+          "startMs": 3101.6000000089407,
+          "endMs": 3101.6000000089407,
+          "ms": 0,
+          "status": "ok"
+        },
+        {
+          "stage": "model-preparation",
+          "startMs": 3102.6000000089407,
+          "endMs": 3103,
+          "ms": 0.3999999910593033,
+          "status": "ok"
+        },
+        {
+          "stage": "collision-preparation",
+          "startMs": 5532.70000000298,
+          "endMs": 5533,
+          "ms": 0.29999999701976776,
+          "status": "ok"
+        },
+        {
+          "stage": "model-preparation",
+          "startMs": 5560.29999999702,
+          "endMs": 5561,
+          "ms": 0.7000000029802322,
+          "status": "ok"
+        },
+        {
+          "stage": "model-preparation",
+          "startMs": 5780.100000008941,
+          "endMs": 5782.4000000059605,
+          "ms": 2.2999999970197678,
+          "status": "ok"
+        },
+        {
+          "stage": "model-preparation",
+          "startMs": 9106,
+          "endMs": 9108,
+          "ms": 2,
+          "status": "ok"
+        }
+      ],
+      "resources": {
+        "decodedAssetCache": {
+          "entries": 8,
+          "owners": 16,
+          "bytes": 36245.333333333336
+        },
+        "navigationCache": {
+          "entries": 3,
+          "owners": 1,
+          "triangles": 424
+        },
+        "geometries": 5,
+        "textures": 3,
+        "programs": 1,
+        "residentGeometryBytes": 6192,
+        "textureInventory": [
+          {
+            "name": "blob:http://localhost:5183/341da25e-d123-4ed8-96c7-62ab0103ad8b",
+            "width": 2,
+            "height": 2,
+            "faces": 1,
+            "rgba8EquivalentBytes": 20
+          },
+          {
+            "name": "PMREM.cubeUv",
+            "width": 768,
+            "height": 1024,
+            "faces": 1,
+            "rgba8EquivalentBytes": 3145728
+          }
+        ],
+        "textureRgba8EquivalentBytes": 3145748,
+        "inventoryScope": "Textures referenced by scene materials/background/environment; renderer-internal targets and cached loader assets excluded.",
+        "jsHeapBytes": 29400000
+      },
+      "shaderUploadStalls": null,
+      "gpuTimeMs": null
+    }
+  ],
+  "productionAcceptance": false,
+  "limitations": [
+    "Complete authored occlusion and exact navigation remain startup-global; the small fixture may cost more than the complete source.",
+    "GPU time and shader/upload stalls require separate browser traces.",
+    "Real uploaded buildings, reviewed silhouettes/atlases and sustained physical-device budgets remain pending."
+  ]
+}

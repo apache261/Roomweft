@@ -1,0 +1,465 @@
+{
+  "schema": "streaming-v1",
+  "processor_version": "chunks-v1",
+  "parent_asset_id": "00000000-0000-4000-9000-000000000002",
+  "source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "partition_revision": 1,
+  "coordinates": "source-space",
+  "partition": {
+    "schema": "partition-v1",
+    "source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "policy": "reviewed-rooms",
+    "visibility": "reviewed-openings",
+    "rooms": [
+      {
+        "id": "room-a",
+        "name": "Room A",
+        "bounds": {
+          "min": [
+            -3,
+            -0.2,
+            -3
+          ],
+          "max": [
+            3,
+            3,
+            3
+          ]
+        },
+        "node_paths": [
+          "0/0"
+        ]
+      },
+      {
+        "id": "room-b",
+        "name": "Room B",
+        "bounds": {
+          "min": [
+            -3,
+            -0.2,
+            -9
+          ],
+          "max": [
+            3,
+            3,
+            -3
+          ]
+        },
+        "node_paths": [
+          "0/1"
+        ]
+      }
+    ],
+    "global_node_paths": [
+      "0/2"
+    ],
+    "openings": [
+      {
+        "id": "door-ab",
+        "from": "room-a",
+        "to": "room-b",
+        "kind": "doorway",
+        "corners": [
+          [
+            -1,
+            0,
+            -3
+          ],
+          [
+            1,
+            0,
+            -3
+          ],
+          [
+            1,
+            2.2,
+            -3
+          ],
+          [
+            -1,
+            2.2,
+            -3
+          ]
+        ],
+        "reviewed": true
+      }
+    ]
+  },
+  "source_surfaces": [
+    {
+      "path": "0/0",
+      "primitive": 0,
+      "triangles": 12,
+      "bounds": {
+        "min": [
+          -3,
+          -0.2,
+          -3
+        ],
+        "max": [
+          3,
+          0,
+          3
+        ]
+      }
+    },
+    {
+      "path": "0/1",
+      "primitive": 0,
+      "triangles": 12,
+      "bounds": {
+        "min": [
+          -3,
+          -0.2,
+          -9
+        ],
+        "max": [
+          3,
+          0,
+          -3
+        ]
+      }
+    },
+    {
+      "path": "0/2",
+      "primitive": 0,
+      "triangles": 12,
+      "bounds": {
+        "min": [
+          -0.2,
+          2.8,
+          -9
+        ],
+        "max": [
+          0.2,
+          3,
+          3
+        ]
+      }
+    }
+  ],
+  "global_chunks": [
+    "global-beam"
+  ],
+  "regions": [
+    {
+      "id": "room-a",
+      "chunks": [
+        "room-a-geometry"
+      ],
+      "display_requires": [
+        "room-a-geometry",
+        "global-beam"
+      ],
+      "movement_requires": [
+        "room-a-geometry",
+        "global-beam",
+        "navigation",
+        "occlusion"
+      ]
+    },
+    {
+      "id": "room-b",
+      "chunks": [
+        "room-b-geometry"
+      ],
+      "display_requires": [
+        "room-b-geometry",
+        "global-beam"
+      ],
+      "movement_requires": [
+        "room-b-geometry",
+        "global-beam",
+        "navigation",
+        "occlusion"
+      ]
+    }
+  ],
+  "chunks": [
+    {
+      "id": "room-a-geometry",
+      "bounds": {
+        "min": [
+          -3,
+          -0.2,
+          -3
+        ],
+        "max": [
+          3,
+          0,
+          3
+        ]
+      },
+      "primitive_count": 1,
+      "triangle_count": 12,
+      "local_to_source": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "dependencies": [
+        "shared-image"
+      ],
+      "surface_map": [
+        {
+          "source_path": "0/0",
+          "source_primitive": 0,
+          "source_triangle_start": 0,
+          "chunk_path": "0/0",
+          "chunk_primitive": 0,
+          "chunk_triangle_start": 0,
+          "triangle_count": 12
+        }
+      ],
+      "variants": {
+        "low": {
+          "key": "private/chunks-v1/room-a-geometry/low.glb",
+          "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "bytes": 1000,
+          "texture_rgba8_bytes": 20,
+          "max_texture": 2
+        },
+        "balanced": {
+          "key": "private/chunks-v1/room-a-geometry/balanced.glb",
+          "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "bytes": 1000,
+          "texture_rgba8_bytes": 20,
+          "max_texture": 2
+        },
+        "hq": {
+          "key": "private/chunks-v1/room-a-geometry/hq.glb",
+          "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "bytes": 1000,
+          "texture_rgba8_bytes": 20,
+          "max_texture": 2
+        }
+      }
+    },
+    {
+      "id": "room-b-geometry",
+      "bounds": {
+        "min": [
+          -3,
+          -0.2,
+          -9
+        ],
+        "max": [
+          3,
+          0,
+          -3
+        ]
+      },
+      "primitive_count": 1,
+      "triangle_count": 12,
+      "local_to_source": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "dependencies": [
+        "shared-image"
+      ],
+      "surface_map": [
+        {
+          "source_path": "0/1",
+          "source_primitive": 0,
+          "source_triangle_start": 0,
+          "chunk_path": "0/0",
+          "chunk_primitive": 0,
+          "chunk_triangle_start": 0,
+          "triangle_count": 12
+        }
+      ],
+      "variants": {
+        "low": {
+          "key": "private/chunks-v1/room-b-geometry/low.glb",
+          "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "bytes": 1000,
+          "texture_rgba8_bytes": 20,
+          "max_texture": 2
+        },
+        "balanced": {
+          "key": "private/chunks-v1/room-b-geometry/balanced.glb",
+          "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "bytes": 1000,
+          "texture_rgba8_bytes": 20,
+          "max_texture": 2
+        },
+        "hq": {
+          "key": "private/chunks-v1/room-b-geometry/hq.glb",
+          "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "bytes": 1000,
+          "texture_rgba8_bytes": 20,
+          "max_texture": 2
+        }
+      }
+    },
+    {
+      "id": "global-beam",
+      "bounds": {
+        "min": [
+          -0.2,
+          2.8,
+          -9
+        ],
+        "max": [
+          0.2,
+          3,
+          3
+        ]
+      },
+      "primitive_count": 1,
+      "triangle_count": 12,
+      "local_to_source": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "dependencies": [
+        "shared-image"
+      ],
+      "surface_map": [
+        {
+          "source_path": "0/2",
+          "source_primitive": 0,
+          "source_triangle_start": 0,
+          "chunk_path": "0/0",
+          "chunk_primitive": 0,
+          "chunk_triangle_start": 0,
+          "triangle_count": 12
+        }
+      ],
+      "variants": {
+        "low": {
+          "key": "private/chunks-v1/global-beam/low.glb",
+          "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "bytes": 1000,
+          "texture_rgba8_bytes": 20,
+          "max_texture": 2
+        },
+        "balanced": {
+          "key": "private/chunks-v1/global-beam/balanced.glb",
+          "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "bytes": 1000,
+          "texture_rgba8_bytes": 20,
+          "max_texture": 2
+        },
+        "hq": {
+          "key": "private/chunks-v1/global-beam/hq.glb",
+          "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "bytes": 1000,
+          "texture_rgba8_bytes": 20,
+          "max_texture": 2
+        }
+      }
+    }
+  ],
+  "dependencies": [
+    {
+      "id": "shared-image",
+      "kind": "texture",
+      "requires": [],
+      "variants": {
+        "low": {
+          "key": "private/chunks-v1/shared-image/low.glb",
+          "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "bytes": 1000,
+          "texture_rgba8_bytes": 20,
+          "max_texture": 2
+        },
+        "balanced": {
+          "key": "private/chunks-v1/shared-image/balanced.glb",
+          "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "bytes": 1000,
+          "texture_rgba8_bytes": 20,
+          "max_texture": 2
+        },
+        "hq": {
+          "key": "private/chunks-v1/shared-image/hq.glb",
+          "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "bytes": 1000,
+          "texture_rgba8_bytes": 20,
+          "max_texture": 2
+        }
+      },
+      "source_node_paths": [],
+      "source_clip_indices": [],
+      "source_skin_indices": []
+    }
+  ],
+  "navigation": {
+    "payload": {
+      "key": "private/chunks-v1/navigation.glb",
+      "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "bytes": 1000,
+      "texture_rgba8_bytes": 20,
+      "max_texture": 2
+    },
+    "strategy": "verified-exact-geometry",
+    "floor_source_paths": [
+      "0/0",
+      "0/1"
+    ],
+    "authored_semantics": "authored-only-floors"
+  },
+  "occlusion": {
+    "payload": {
+      "key": "private/chunks-v1/occlusion.glb",
+      "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "bytes": 1000,
+      "texture_rgba8_bytes": 20,
+      "max_texture": 2
+    },
+    "strategy": "verified-authored-occluders",
+    "floor_source_paths": [],
+    "authored_semantics": "authored-material-visibility-sidedness"
+  },
+  "fallback": "complete-original",
+  "source_node_paths": [
+    "0",
+    "0/0",
+    "0/1",
+    "0/2"
+  ],
+  "source_clip_count": 0,
+  "source_skin_count": 0
+}

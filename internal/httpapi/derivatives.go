@@ -94,5 +94,11 @@ func (a *API) processAsset(w http.ResponseWriter, r *http.Request) {
 		a.resourceError(w, err)
 		return
 	}
+	if store, ok := a.store.(ChunkStore); ok {
+		if err = store.QueueChunks(r.Context(), asset.ID, true); err != nil {
+			a.resourceError(w, err)
+			return
+		}
+	}
 	respond(w, 202, a.runtimeAsset(r.Context(), asset, false))
 }

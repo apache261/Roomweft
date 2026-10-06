@@ -1,0 +1,597 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="app.diagrams.net" agent="Virtual Tour Studio documentation" version="24.7.17" type="device" compressed="false">
+  <diagram id="page-1" name="01 • Architecture &amp; stack">
+    <mxGraphModel dx="1800" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="1-1" value="Virtual Tour Studio — architecture &amp;amp; technology stack" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Helvetica;fontSize=30;fontColor=#183153;fontStyle=1;spacing=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="40" y="25" width="1720" height="48" />
+        </mxCell>
+        <mxCell id="1-2" value="Metadata travels through the Go API. Upload/download bytes travel directly between the browser and private object storage." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Helvetica;fontSize=15;fontColor=#183153;fontStyle=0;spacing=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="40" y="80" width="1720" height="46" />
+        </mxCell>
+        <mxCell id="1-3" value="" style="rounded=1;html=1;fillColor=#dae8fc;fillOpacity=18;strokeColor=#6c8ebf;strokeWidth=1;dashed=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="40" y="145" width="390" height="800" />
+        </mxCell>
+        <mxCell id="1-4" value="BROWSER / FRONTEND" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Helvetica;fontSize=18;fontColor=#183153;fontStyle=1;spacing=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="55" y="155" width="360" height="35" />
+        </mxCell>
+        <mxCell id="1-5" value="" style="rounded=1;html=1;fillColor=#d5e8d4;fillOpacity=18;strokeColor=#82b366;strokeWidth=1;dashed=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="790" y="145" width="480" height="800" />
+        </mxCell>
+        <mxCell id="1-6" value="APPLICATION / PROCESSING" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Helvetica;fontSize=18;fontColor=#183153;fontStyle=1;spacing=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="805" y="155" width="450" height="35" />
+        </mxCell>
+        <mxCell id="1-7" value="&lt;b&gt;React authoring and visitor UI&lt;/b&gt;&lt;br&gt;&lt;br&gt;React 19 • TypeScript • React Router&lt;br&gt;/ • /projects/:id • /t/:slug • /embed/:slug" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="70" y="215" width="330" height="150" />
+        </mxCell>
+        <mxCell id="1-8" value="&lt;b&gt;Shared SceneViewer runtime&lt;/b&gt;&lt;br&gt;&lt;br&gt;Three.js • React Three Fiber 9.8.1 • Drei&lt;br&gt;GLB / generated layouts / panoramas&lt;br&gt;Walking • hotspots • quality • lighting" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d0ecea;strokeColor=#479c96;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="70" y="620" width="330" height="190" />
+        </mxCell>
+        <mxCell id="1-9" value="&lt;b&gt;Vite frontend service&lt;/b&gt;&lt;br&gt;&lt;br&gt;Port 5173 (default)&lt;br&gt;/api and /health → API proxy&lt;br&gt;Lazy-loaded viewer bundle" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="475" y="210" width="260" height="135" />
+        </mxCell>
+        <mxCell id="1-10" value="&lt;b&gt;Go HTTP API&lt;/b&gt;&lt;br&gt;&lt;br&gt;Go 1.26 • net/http&lt;br&gt;JSON validation • same-project references&lt;br&gt;pgx pool • sqlc + transaction helpers&lt;br&gt;Storage signing • public tour scope" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="820" y="215" width="420" height="175" />
+        </mxCell>
+        <mxCell id="1-11" value="&lt;b&gt;PostgreSQL 17&lt;/b&gt;&lt;br&gt;&lt;br&gt;Projects • assets • scenes • hotspots&lt;br&gt;Layout / texture / portal references&lt;br&gt;Derivative jobs and manifests&lt;br&gt;Ordered migrations + advisory lock" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;shape=cylinder;boundedLbl=1;backgroundOutline=1;size=20;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1390" y="215" width="350" height="185" />
+        </mxCell>
+        <mxCell id="1-12" value="&lt;b&gt;Private MinIO / S3 bucket&lt;/b&gt;&lt;br&gt;&lt;br&gt;Pending uploads • preserved originals&lt;br&gt;Low / Balanced / HQ derivatives&lt;br&gt;Exact collision proxy&lt;br&gt;Signed POST / GET: 15-minute expiry" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;shape=cylinder;boundedLbl=1;backgroundOutline=1;size=20;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1390" y="620" width="350" height="185" />
+        </mxCell>
+        <mxCell id="1-13" value="&lt;b&gt;Background worker inside API&lt;/b&gt;&lt;br&gt;&lt;br&gt;Go goroutine; optional script configuration&lt;br&gt;Durable DB claims • attempt UUID • leases&lt;br&gt;Download source → run Node → publish outputs" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="820" y="475" width="420" height="140" />
+        </mxCell>
+        <mxCell id="1-14" value="&lt;b&gt;Node.js asset processor&lt;/b&gt;&lt;br&gt;&lt;br&gt;glTF Transform • Meshoptimizer&lt;br&gt;Sharp • glTF Validator • Three.js&lt;br&gt;Verified GLB/PNG tiers + collision.glb&lt;br&gt;SHA-256 identity and integrity" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="820" y="735" width="420" height="165" />
+        </mxCell>
+        <mxCell id="1-15" value="Same-origin JSON" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="1-7" target="1-9">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="1-16" value="/api/v1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="1-9" target="1-10">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="1-17" value="Queries / transactions" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="1-10" target="1-11">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="1-18" value="Shared rendering" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="1-7" target="1-8">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="1-19" value="Direct signed file transfer" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#d79b00;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="1-8" target="1-12">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="570" y="965" />
+              <mxPoint x="1320" y="965" />
+              <mxPoint x="1320" y="712" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="1-20" value="Sign, validate, promote" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#d79b00;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.8;exitDx=0;exitDy=0;entryX=0;entryY=0.2;entryDx=0;entryDy=0;" edge="1" parent="1" source="1-10" target="1-12">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="1320" y="330" />
+              <mxPoint x="1320" y="660" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="1-21" value="Start when enabled" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;dashed=1;dashPattern=6 4;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="1-10" target="1-13">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="1-22" value="exec Node subprocess" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="1-13" target="1-14">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="1-23" value="Claim / finish job" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0.35;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="1-13" target="1-11">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="1290" y="500" />
+              <mxPoint x="1290" y="450" />
+              <mxPoint x="1515" y="450" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="1-24" value="Read / write private files" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#d79b00;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.8;exitDx=0;exitDy=0;entryX=0;entryY=0.2;entryDx=0;entryDy=0;" edge="1" parent="1" source="1-13" target="1-12">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="1-25" value="Deployment: Docker Compose = web + api + postgres + minio + minio-init. Named volumes retain database and object data.&lt;br&gt;Current builder has no authentication. Public scope checks do not protect ordinary builder endpoints." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="50" y="1020" width="1690" height="100" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="page-2" name="02 • Upload lifecycle">
+    <mxGraphModel dx="1800" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1450" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="2-1" value="Upload lifecycle — selection to usable original" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Helvetica;fontSize=30;fontColor=#183153;fontStyle=1;spacing=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="40" y="25" width="1720" height="48" />
+        </mxCell>
+        <mxCell id="2-2" value="Upload readiness and derivative processing are independent. A ready original can be viewed before optimization completes." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Helvetica;fontSize=15;fontColor=#183153;fontStyle=0;spacing=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="40" y="80" width="1720" height="46" />
+        </mxCell>
+        <mxCell id="2-3" value="" style="rounded=1;html=1;fillColor=#dae8fc;fillOpacity=18;strokeColor=#6c8ebf;strokeWidth=1;dashed=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="40" y="145" width="400" height="1160" />
+        </mxCell>
+        <mxCell id="2-4" value="BROWSER" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Helvetica;fontSize=18;fontColor=#183153;fontStyle=1;spacing=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="55" y="155" width="370" height="35" />
+        </mxCell>
+        <mxCell id="2-5" value="" style="rounded=1;html=1;fillColor=#d5e8d4;fillOpacity=18;strokeColor=#82b366;strokeWidth=1;dashed=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="480" y="145" width="400" height="1160" />
+        </mxCell>
+        <mxCell id="2-6" value="GO API" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Helvetica;fontSize=18;fontColor=#183153;fontStyle=1;spacing=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="495" y="155" width="370" height="35" />
+        </mxCell>
+        <mxCell id="2-7" value="" style="rounded=1;html=1;fillColor=#ffe6cc;fillOpacity=18;strokeColor=#d79b00;strokeWidth=1;dashed=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="920" y="145" width="400" height="1160" />
+        </mxCell>
+        <mxCell id="2-8" value="PRIVATE STORAGE" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Helvetica;fontSize=18;fontColor=#183153;fontStyle=1;spacing=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="935" y="155" width="370" height="35" />
+        </mxCell>
+        <mxCell id="2-9" value="" style="rounded=1;html=1;fillColor=#e1d5e7;fillOpacity=18;strokeColor=#9673a6;strokeWidth=1;dashed=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1360" y="145" width="400" height="1160" />
+        </mxCell>
+        <mxCell id="2-10" value="POSTGRESQL" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Helvetica;fontSize=18;fontColor=#183153;fontStyle=1;spacing=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1375" y="155" width="370" height="35" />
+        </mxCell>
+        <mxCell id="2-11" value="&lt;b&gt;1  Select GLB or image&lt;/b&gt;&lt;br&gt;&lt;br&gt;GLB ≤1000 MiB • images ≤100 MiB&lt;br&gt;Header / decoding / dimension checks" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="65" y="220" width="350" height="100" />
+        </mxCell>
+        <mxCell id="2-12" value="&lt;b&gt;2  Request upload ticket&lt;/b&gt;&lt;br&gt;&lt;br&gt;POST /projects/{id}/uploads&lt;br&gt;Filename • role • size • project checks" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="505" y="350" width="350" height="110" />
+        </mxCell>
+        <mxCell id="2-13" value="&lt;b&gt;3  Sign POST policy&lt;/b&gt;&lt;br&gt;&lt;br&gt;pending/{storage_key}&lt;br&gt;Exact size + content type + key&lt;br&gt;Expires in 15 minutes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="945" y="350" width="350" height="110" />
+        </mxCell>
+        <mxCell id="2-14" value="&lt;b&gt;4  Insert pending asset&lt;/b&gt;&lt;br&gt;&lt;br&gt;UUID • project • size • role&lt;br&gt;Generated final storage key&lt;br&gt;upload_status = pending" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1385" y="490" width="350" height="110" />
+        </mxCell>
+        <mxCell id="2-15" value="&lt;b&gt;5  Send bytes directly&lt;/b&gt;&lt;br&gt;&lt;br&gt;XHR multipart FormData&lt;br&gt;Signed fields + file • upload progress" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="65" y="630" width="350" height="110" />
+        </mxCell>
+        <mxCell id="2-16" value="&lt;b&gt;6  Store pending object&lt;/b&gt;&lt;br&gt;&lt;br&gt;Private bucket&lt;br&gt;Transfer success ≠ asset ready" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="945" y="630" width="350" height="110" />
+        </mxCell>
+        <mxCell id="2-17" value="&lt;b&gt;7  Request completion&lt;/b&gt;&lt;br&gt;&lt;br&gt;POST /assets/{id}/complete&lt;br&gt;Already ready → idempotent success" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="505" y="800" width="350" height="110" />
+        </mxCell>
+        <mxCell id="2-18" value="&lt;b&gt;8  Read and validate pending bytes&lt;/b&gt;&lt;br&gt;&lt;br&gt;Exact declared size&lt;br&gt;GLB 2.0 / embedded resources&lt;br&gt;Image format / pixels / dimensions" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="945" y="800" width="350" height="120" />
+        </mxCell>
+        <mxCell id="2-19" value="&lt;b&gt;Valid?&lt;/b&gt;&lt;br&gt;&lt;br&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;shape=rhombus;rounded=0;spacing=5;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1040" y="965" width="160" height="90" />
+        </mxCell>
+        <mxCell id="2-20" value="&lt;b&gt;422 • remains pending&lt;/b&gt;&lt;br&gt;&lt;br&gt;Missing / corrupt / mismatched object&lt;br&gt;Correct payload; retry completion" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="505" y="965" width="350" height="100" />
+        </mxCell>
+        <mxCell id="2-21" value="&lt;b&gt;9  Promote exact original&lt;/b&gt;&lt;br&gt;&lt;br&gt;Conditional copy using source ETag&lt;br&gt;Final key preserves uploaded bytes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="945" y="1100" width="350" height="100" />
+        </mxCell>
+        <mxCell id="2-22" value="&lt;b&gt;10  Mark ready + queue&lt;/b&gt;&lt;br&gt;&lt;br&gt;Asset usable for scene references&lt;br&gt;Queue GLB / TEXTURE_* processing&lt;br&gt;Panorama / IMAGE use originals" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1385" y="1100" width="350" height="120" />
+        </mxCell>
+        <mxCell id="2-23" value="JSON" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="2-11" target="2-12">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="2-24" value="Sign ticket" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="2-12" target="2-13">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="2-25" value="Policy created" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="2-13" target="2-14">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="1320" y="405" />
+              <mxPoint x="1320" y="540" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2-26" value="201 asset + ticket" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="2-14" target="2-15">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="1340" y="610" />
+              <mxPoint x="450" y="610" />
+              <mxPoint x="450" y="685" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2-27" value="Direct POST — bypasses API" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="2-15" target="2-16">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="2-28" value="Browser calls complete after success" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="2-16" target="2-17">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="890" y="760" />
+              <mxPoint x="680" y="760" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2-29" value="Server-side check" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="2-17" target="2-18">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="2-30" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="2-18" target="2-19">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="2-31" value="No" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#b85450;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="2-19" target="2-20">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="2-32" value="Yes" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="2-19" target="2-21">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="2-33" value="Copy succeeded" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="2-21" target="2-22">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="2-34" value="Recovery: a successful transfer with a lost completion response can use Confirm upload. Original completion does not wait for processing.&lt;br&gt;Admission: minimum 20 bytes; images ≤8192 × 4096; panorama exactly 2:1. No automatic resumable/chunked upload workflow." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="50" y="1330" width="1690" height="90" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="page-3" name="03 • Background processing">
+    <mxGraphModel dx="1800" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1480" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="3-1" value="Runtime asset processing — durable queue and verified publication" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Helvetica;fontSize=30;fontColor=#183153;fontStyle=1;spacing=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="40" y="25" width="1720" height="48" />
+        </mxCell>
+        <mxCell id="3-2" value="Worker runs inside the API process. Derivative failure preserves the ready original; no separate message broker is used." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Helvetica;fontSize=15;fontColor=#183153;fontStyle=0;spacing=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="40" y="80" width="1720" height="46" />
+        </mxCell>
+        <mxCell id="3-3" value="&lt;b&gt;QUEUED job&lt;/b&gt;&lt;br&gt;&lt;br&gt;asset_id + runtime-v1&lt;br&gt;Completed GLB or TEXTURE_*" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="60" y="170" width="310" height="110" />
+        </mxCell>
+        <mxCell id="3-4" value="&lt;b&gt;Atomic claim → PROCESSING&lt;/b&gt;&lt;br&gt;&lt;br&gt;FOR UPDATE SKIP LOCKED&lt;br&gt;Attempt UUID • lease: 15 min" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="470" y="170" width="350" height="110" />
+        </mxCell>
+        <mxCell id="3-5" value="&lt;b&gt;Download completed original&lt;/b&gt;&lt;br&gt;&lt;br&gt;Temporary directory • exact size&lt;br&gt;Worker source limit: 256 MiB" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="920" y="170" width="350" height="110" />
+        </mxCell>
+        <mxCell id="3-6" value="&lt;b&gt;Run Node subprocess&lt;/b&gt;&lt;br&gt;&lt;br&gt;10 min task timeout&lt;br&gt;1 GiB Node heap setting&lt;br&gt;Bounded logs" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1380" y="170" width="350" height="110" />
+        </mxCell>
+        <mxCell id="3-7" value="&lt;b&gt;Asset type?&lt;/b&gt;&lt;br&gt;&lt;br&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;shape=rhombus;rounded=0;spacing=5;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1455" y="345" width="190" height="110" />
+        </mxCell>
+        <mxCell id="3-8" value="&lt;b&gt;GLB processor&lt;/b&gt;&lt;br&gt;&lt;br&gt;glTF Validator + glTF Transform&lt;br&gt;Validate extensions and triangle input&lt;br&gt;Inventory source paths / geometry / semantics" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="830" y="525" width="410" height="130" />
+        </mxCell>
+        <mxCell id="3-9" value="&lt;b&gt;Texture processor&lt;/b&gt;&lt;br&gt;&lt;br&gt;Sharp decodes PNG / JPEG / WebP&lt;br&gt;Resize without upscaling&lt;br&gt;Check dimensions and alpha" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1320" y="525" width="410" height="130" />
+        </mxCell>
+        <mxCell id="3-10" value="&lt;b&gt;Create 3 verified visual GLBs&lt;/b&gt;&lt;br&gt;&lt;br&gt;Low 1024 • Balanced 2048 • HQ 4096&lt;br&gt;Meshopt encode • PNG image tiers&lt;br&gt;Decode and compare exact semantics" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="830" y="730" width="410" height="130" />
+        </mxCell>
+        <mxCell id="3-11" value="&lt;b&gt;Create 3 PNG image tiers&lt;/b&gt;&lt;br&gt;&lt;br&gt;Low 1024 • Balanced 2048 • HQ 4096&lt;br&gt;SHA-256 + bytes + texture estimates&lt;br&gt;No lighting bake generation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1320" y="730" width="410" height="130" />
+        </mxCell>
+        <mxCell id="3-12" value="&lt;b&gt;Create exact collision.glb&lt;/b&gt;&lt;br&gt;&lt;br&gt;Strip render-only data&lt;br&gt;Keep hierarchy and exact geometry&lt;br&gt;Floors remain authored-only" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="830" y="930" width="410" height="120" />
+        </mxCell>
+        <mxCell id="3-13" value="&lt;b&gt;Go verifies manifest and files&lt;/b&gt;&lt;br&gt;&lt;br&gt;Source / output hashes and byte counts&lt;br&gt;Expected version, filenames and tiers" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="340" y="930" width="370" height="120" />
+        </mxCell>
+        <mxCell id="3-14" value="&lt;b&gt;Upload complete private output set&lt;/b&gt;&lt;br&gt;&lt;br&gt;Keys include source SHA-256 + attempt UUID&lt;br&gt;Outputs undiscoverable before publication" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="340" y="1120" width="370" height="110" />
+        </mxCell>
+        <mxCell id="3-15" value="&lt;b&gt;Finish current attempt?&lt;/b&gt;&lt;br&gt;&lt;br&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;shape=rhombus;rounded=0;spacing=5;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="825" y="1125" width="240" height="110" />
+        </mxCell>
+        <mxCell id="3-16" value="&lt;b&gt;READY manifest&lt;/b&gt;&lt;br&gt;&lt;br&gt;Atomic attempt-matching DB update&lt;br&gt;API signs all available variants&lt;br&gt;Browser verifies hashes before parsing" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1270" y="1120" width="460" height="120" />
+        </mxCell>
+        <mxCell id="3-17" value="&lt;b&gt;FAILED / original retained&lt;/b&gt;&lt;br&gt;&lt;br&gt;Error in processing UI&lt;br&gt;POST /assets/{id}/process retries failed job&lt;br&gt;Unpublished attempted outputs cleaned" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="60" y="525" width="570" height="150" />
+        </mxCell>
+        <mxCell id="3-18" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="3-3" target="3-4">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="3-19" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="3-4" target="3-5">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="3-20" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="3-5" target="3-6">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="3-21" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="3-6" target="3-7">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="3-22" value="GLB" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="3-7" target="3-8">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="1035" y="400" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="3-23" value="TEXTURE_*" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="3-7" target="3-9">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="3-24" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="3-8" target="3-10">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="3-25" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="3-10" target="3-12">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="3-26" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="3-9" target="3-11">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="3-27" value="Identity retained" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="3-12" target="3-13">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="3-28" value="Image manifest" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="3-11" target="3-13">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="1760" y="900" />
+              <mxPoint x="740" y="900" />
+              <mxPoint x="740" y="990" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="3-29" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="3-13" target="3-14">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="3-30" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="3-14" target="3-15">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="3-31" value="Yes" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="3-15" target="3-16">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="3-32" value="No / expired claim" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#b85450;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;dashed=1;dashPattern=6 4;exitX=0;exitY=0.7;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="3-15" target="3-17">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="770" y="1250" />
+              <mxPoint x="20" y="1250" />
+              <mxPoint x="20" y="600" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="3-33" value="Timeout / processing error" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#b85450;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;dashed=1;dashPattern=6 4;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="3-6" target="3-17">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="1760" y="320" />
+              <mxPoint x="345" y="320" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="3-34" value="Expired lease → reclaim" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;dashed=1;dashPattern=6 4;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="3-4" target="3-3">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="645" y="305" />
+              <mxPoint x="215" y="305" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="3-35" value="Any processing / integrity / upload failure → FAILED; original remains usable. Texture estimates are provisional: 64 / 192 / 384 MiB per tier.&lt;br&gt;Processor extension support is narrower than the browser loader; outputs are validated rather than assumed equivalent." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="50" y="1320" width="1690" height="95" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="page-4" name="04 • Authoring &amp; publication">
+    <mxGraphModel dx="1800" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1330" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="4-1" value="Authoring to publication — saved metadata and scoped delivery" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Helvetica;fontSize=30;fontColor=#183153;fontStyle=1;spacing=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="40" y="25" width="1720" height="48" />
+        </mxCell>
+        <mxCell id="4-2" value="Scenes and layouts reference preserved assets. Publishing enables live saved metadata; it is not a static export or immutable snapshot." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Helvetica;fontSize=15;fontColor=#183153;fontStyle=0;spacing=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="40" y="80" width="1720" height="46" />
+        </mxCell>
+        <mxCell id="4-3" value="&lt;b&gt;Ready source assets&lt;/b&gt;&lt;br&gt;&lt;br&gt;GLB → 3D scene&lt;br&gt;2:1 image → PANORAMA scene&lt;br&gt;Material / info images are supporting assets" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="60" y="170" width="360" height="125" />
+        </mxCell>
+        <mxCell id="4-4" value="&lt;b&gt;Generated / modular layout&lt;/b&gt;&lt;br&gt;&lt;br&gt;Version 1 JSON&lt;br&gt;Rooms • floors • walls • doorways&lt;br&gt;Imported GLB instances" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="60" y="360" width="360" height="125" />
+        </mxCell>
+        <mxCell id="4-5" value="&lt;b&gt;Author scene or layout&lt;/b&gt;&lt;br&gt;&lt;br&gt;Prepare scale / axis / yaw&lt;br&gt;Materials • lighting • UV1 bake review&lt;br&gt;Reviewed floors • hotspots • exits" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="560" y="230" width="410" height="160" />
+        </mxCell>
+        <mxCell id="4-6" value="&lt;b&gt;Save validated draft&lt;/b&gt;&lt;br&gt;&lt;br&gt;3D settings: PATCH /scenes/{id}&lt;br&gt;Layout: PUT document + current revision&lt;br&gt;Start camera saved separately" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1110" y="230" width="590" height="160" />
+        </mxCell>
+        <mxCell id="4-7" value="&lt;b&gt;Transactional persistence&lt;/b&gt;&lt;br&gt;&lt;br&gt;Document + asset / texture / portal refs&lt;br&gt;Attached hotspot positions updated&lt;br&gt;Same-project, ready, matching roles" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1110" y="480" width="590" height="145" />
+        </mxCell>
+        <mxCell id="4-8" value="&lt;b&gt;409 • draft retained&lt;/b&gt;&lt;br&gt;&lt;br&gt;Stale layout revision / missing attachment&lt;br&gt;Reload and reconcile before saving" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="560" y="480" width="410" height="120" />
+        </mxCell>
+        <mxCell id="4-9" value="&lt;b&gt;Preview shared viewer&lt;/b&gt;&lt;br&gt;&lt;br&gt;Exact floor / collision / arrival checks&lt;br&gt;Builder drafts ≠ saved public metadata&lt;br&gt;Save valid start scene and pose" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d0ecea;strokeColor=#479c96;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="60" y="670" width="360" height="145" />
+        </mxCell>
+        <mxCell id="4-10" value="&lt;b&gt;Publish request&lt;/b&gt;&lt;br&gt;&lt;br&gt;POST /projects/{id}/publish&lt;br&gt;Validate start, usable scenes and references" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="560" y="680" width="410" height="125" />
+        </mxCell>
+        <mxCell id="4-11" value="&lt;b&gt;Published project&lt;/b&gt;&lt;br&gt;&lt;br&gt;published = true • stable slug&lt;br&gt;/t/{slug} and /embed/{slug}&lt;br&gt;Unpublish / republish retains slug" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1110" y="680" width="590" height="125" />
+        </mxCell>
+        <mxCell id="4-12" value="&lt;b&gt;Visitor opens share / embed&lt;/b&gt;&lt;br&gt;&lt;br&gt;GET /public/tours/{slug}&lt;br&gt;Ordered scenes + saved configuration" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="60" y="955" width="360" height="130" />
+        </mxCell>
+        <mxCell id="4-13" value="&lt;b&gt;Public scope check&lt;/b&gt;&lt;br&gt;&lt;br&gt;Published project + ready owned asset&lt;br&gt;Actual scene / hotspot / layout / material ref" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="560" y="955" width="410" height="130" />
+        </mxCell>
+        <mxCell id="4-14" value="&lt;b&gt;Signed read descriptors&lt;/b&gt;&lt;br&gt;&lt;br&gt;Original + available derivative URLs&lt;br&gt;No local filenames / storage keys&lt;br&gt;Public worker errors suppressed" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1110" y="955" width="590" height="130" />
+        </mxCell>
+        <mxCell id="4-15" value="Create imported scene" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.3;entryDx=0;entryDy=0;" edge="1" parent="1" source="4-3" target="4-5">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="4-16" value="Create layout" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.7;entryDx=0;entryDy=0;" edge="1" parent="1" source="4-4" target="4-5">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="4-17" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="4-5" target="4-6">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="4-18" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="4-6" target="4-7">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="4-19" value="Revision or attachment failure" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#b85450;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;dashed=1;dashPattern=6 4;exitX=0;exitY=0.8;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="4-6" target="4-8">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="1050" y="430" />
+              <mxPoint x="765" y="430" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="4-20" value="Saved geometry / settings" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.6;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="4-7" target="4-9">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="1050" y="640" />
+              <mxPoint x="240" y="640" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="4-21" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="4-9" target="4-10">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="4-22" value="All references valid" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="4-10" target="4-11">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="4-23" value="Share URL" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="4-11" target="4-12">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="1450" y="865" />
+              <mxPoint x="240" y="865" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="4-24" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="4-12" target="4-13">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="4-25" value="Referenced assets only" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="4-13" target="4-14">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="4-26" value="Save rules: transforms/navigation/layout edits can invalidate old start views; relevant edits disable external bakes until reviewed.&lt;br&gt;Unpublishing blocks new public reads/signing but cannot revoke downloaded bytes or issued GET URLs before their 15-minute expiry.&lt;br&gt;Metadata deletion is not comprehensive storage garbage collection. Builder authentication and physical-device acceptance remain pending." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="50" y="1170" width="1690" height="110" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="page-5" name="05 • Viewer runtime">
+    <mxGraphModel dx="1800" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1610" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="5-1" value="Viewer runtime — decode, prepare, navigate and render" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Helvetica;fontSize=30;fontColor=#183153;fontStyle=1;spacing=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="40" y="25" width="1720" height="48" />
+        </mxCell>
+        <mxCell id="5-2" value="Builder, preview, public and embed share SceneViewer. Visual optimization does not redefine approved floors or hotspot occlusion." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Helvetica;fontSize=15;fontColor=#183153;fontStyle=0;spacing=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="40" y="80" width="1720" height="46" />
+        </mxCell>
+        <mxCell id="5-3" value="&lt;b&gt;Open selected scene&lt;/b&gt;&lt;br&gt;&lt;br&gt;SceneViewer + scoped asset descriptors&lt;br&gt;Hotspots • material maps • instance IDs" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="60" y="170" width="370" height="115" />
+        </mxCell>
+        <mxCell id="5-4" value="&lt;b&gt;Quality and asset policy&lt;/b&gt;&lt;br&gt;&lt;br&gt;Auto / Low / Balanced / HQ&lt;br&gt;DPR caps: 1 / 1.5 / 2&lt;br&gt;Aggregate texture + capability envelopes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="570" y="170" width="420" height="115" />
+        </mxCell>
+        <mxCell id="5-5" value="&lt;b&gt;Verified derivative usable?&lt;/b&gt;&lt;br&gt;&lt;br&gt;Ready runtime-v1 • secure hash support&lt;br&gt;SHA-256 • supported parser / GPU caps" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1120" y="160" width="570" height="135" />
+        </mxCell>
+        <mxCell id="5-6" value="&lt;b&gt;PreparedGLTFLoader&lt;/b&gt;&lt;br&gt;&lt;br&gt;Meshopt decoder • local KTX2/Basis&lt;br&gt;Required extension / texture checks&lt;br&gt;Draco rejected; import error feedback" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="570" y="375" width="420" height="125" />
+        </mxCell>
+        <mxCell id="5-7" value="&lt;b&gt;Original fallback&lt;/b&gt;&lt;br&gt;&lt;br&gt;Missing / corrupt / unsupported derivative&lt;br&gt;Expired original URL → refresh SAME scope&lt;br&gt;Proxy failure → exact visual collision" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1120" y="375" width="570" height="125" />
+        </mxCell>
+        <mxCell id="5-8" value="&lt;b&gt;Prepare cloned GLB or layout&lt;/b&gt;&lt;br&gt;&lt;br&gt;Transforms • material clones • animation mixers&lt;br&gt;Exact proxy optional; authored floor approvals&lt;br&gt;Reviewed UV1 bakes or existing lighting" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="570" y="575" width="420" height="145" />
+        </mxCell>
+        <mxCell id="5-9" value="&lt;b&gt;PANORAMA branch&lt;/b&gt;&lt;br&gt;&lt;br&gt;sRGB inward sphere • basic material&lt;br&gt;Yaw / pitch • drag / pinch / FOV&lt;br&gt;Angular markers; no free movement" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d0ecea;strokeColor=#479c96;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="60" y="375" width="370" height="150" />
+        </mxCell>
+        <mxCell id="5-10" value="&lt;b&gt;Authored navigation world&lt;/b&gt;&lt;br&gt;&lt;br&gt;Exact collision + approved floor indexes&lt;br&gt;Validate start / arrival / clearance&lt;br&gt;Unready rooms block capsule support&lt;br&gt;120 Hz motion • bounded sweeps" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="60" y="835" width="420" height="175" />
+        </mxCell>
+        <mxCell id="5-11" value="&lt;b&gt;Separate visual tree&lt;/b&gt;&lt;br&gt;&lt;br&gt;Compatible static instancing / merge&lt;br&gt;Conservative runtime LOD&lt;br&gt;Room-owned visibility / streaming&lt;br&gt;Authored occlusion remains authoritative" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="690" y="835" width="420" height="175" />
+        </mxCell>
+        <mxCell id="5-12" value="&lt;b&gt;Lighting and effects&lt;/b&gt;&lt;br&gt;&lt;br&gt;PBR + PMREM reflections&lt;br&gt;Bakes replace indirect diffuse only&lt;br&gt;Opt-in bounded HQ moving shadows&lt;br&gt;No screen-space AO" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1320" y="835" width="420" height="175" />
+        </mxCell>
+        <mxCell id="5-13" value="&lt;b&gt;ViewerRuntime frame scheduling&lt;/b&gt;&lt;br&gt;&lt;br&gt;Visible: demand • hidden: never&lt;br&gt;Input / damping / motion / clips request frames&lt;br&gt;Idle resumes without integrating stale movement&lt;br&gt;Auto trials change DPR before committing assets" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d0ecea;strokeColor=#479c96;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="570" y="1140" width="600" height="160" />
+        </mxCell>
+        <mxCell id="5-14" value="&lt;b&gt;Interactive rendered view&lt;/b&gt;&lt;br&gt;&lt;br&gt;Walking / orbit / panorama • hotspots / reticle&lt;br&gt;Information popups pause movement&lt;br&gt;Explicit exits validate destination before switching" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="570" y="1400" width="600" height="120" />
+        </mxCell>
+        <mxCell id="5-15" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="5-3" target="5-4">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="5-16" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="5-4" target="5-5">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="5-17" value="Yes: verified bytes" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.8;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="5-5" target="5-6">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="1060" y="325" />
+              <mxPoint x="780" y="325" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="5-18" value="No / failed" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="5-5" target="5-7">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="5-19" value="Original parse" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="5-7" target="5-6">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="5-20" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="5-6" target="5-8">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="5-21" value="Image scene" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="5-3" target="5-9">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="5-22" value="Collision / permission tree" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.7;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="5-8" target="5-10">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="535" y="780" />
+              <mxPoint x="270" y="780" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="5-23" value="Render-only optimization" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.7;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="5-8" target="5-11">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="5-24" value="Apply appearance" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="5-8" target="5-12">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="1230" y="650" />
+              <mxPoint x="1530" y="650" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="5-25" value="Validated pose / motion" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.2;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="5-10" target="5-13">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="270" y="1075" />
+              <mxPoint x="680" y="1075" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="5-26" value="Visible ready geometry" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.55;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="5-11" target="5-13">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="5-27" value="Lighting / optional shadow pass" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.85;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="5-12" target="5-13">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="1530" y="1075" />
+              <mxPoint x="1080" y="1075" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="5-28" value="Angular interaction" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.8;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="5-9" target="5-13">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="35" y="650" />
+              <mxPoint x="35" y="1220" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="5-29" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#52708e;fontColor=#183153;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="5-13" target="5-14">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="5-30" value="Ownership: model cache 12 / ~512 MiB; texture cache 24 / ~256 MiB; unowned disposal grace 30 s. Navigation cache 8 / 500k triangles.&lt;br&gt;Room payloads: 2 concurrent requests; required resources are retained. Shadows / inspection / uncertain geometry may require full loading." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#183153;fontFamily=Helvetica;fontSize=14;spacing=12;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="40" y="1540" width="1720" height="60" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -69,6 +69,9 @@ func Process(ctx context.Context, store Store, objects Objects, script string, j
 	if err = objects.Download(ctx, job.Key, source, job.Size); err != nil {
 		return fmt.Errorf("could not read original; retry processing: %w", err)
 	}
+	if job.Version == "chunks-v1" {
+		return processChunks(ctx, store, objects, script, job, source, dir)
+	}
 	command := exec.CommandContext(ctx, "node", "--max-old-space-size=1024", script, source, dir, job.Kind)
 	// Input filenames are generated locally, never user-controlled shell commands.
 	output := &processLog{}
@@ -108,7 +111,7 @@ func Process(ctx context.Context, store Store, objects Objects, script string, j
 			cleanup, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 			defer cancel()
 			for _, key := range uploaded {
-				_ = objects.Delete(cleanup, key)
+				retireFailedObject(cleanup, store, objects, key)
 			}
 		}
 	}()
@@ -130,6 +133,11 @@ func Process(ctx context.Context, store Store, objects Objects, script string, j
 		}
 		v.Key = prefix + v.File
 		// Include attempted keys so interrupted multipart uploads/completed writes are cleaned too.
+		if r, ok := store.(retirementStore); ok {
+			if err = r.QueueStorageRetirement(ctx, v.Key); err != nil {
+				return err
+			}
+		}
 		uploaded = append(uploaded, v.Key)
 		if err = objects.PutFile(ctx, v.Key, filepath.Join(dir, v.File), contentType); err != nil {
 			return err
@@ -146,6 +154,11 @@ func Process(ctx context.Context, store Store, objects Objects, script string, j
 			return errors.New("processor collision integrity mismatch")
 		}
 		manifest.Collision.Key = prefix + "collision.glb"
+		if r, ok := store.(retirementStore); ok {
+			if err = r.QueueStorageRetirement(ctx, manifest.Collision.Key); err != nil {
+				return err
+			}
+		}
 		uploaded = append(uploaded, manifest.Collision.Key)
 		if err = objects.PutFile(ctx, manifest.Collision.Key, filepath.Join(dir, "collision.glb"), "model/gltf-binary"); err != nil {
 			return err
@@ -169,6 +182,9 @@ func Run(ctx context.Context, store Store, objects Objects, script string) {
 	ticker := time.NewTicker(3 * time.Second)
 	defer ticker.Stop()
 	for {
+		cleanup, cleanupCancel := context.WithTimeout(ctx, 30*time.Second)
+		cleanRetiredObjects(cleanup, store, objects)
+		cleanupCancel()
 		job, err := store.ClaimDerivative(ctx)
 		if err == nil {
 			task, cancel := context.WithTimeout(ctx, 10*time.Minute)

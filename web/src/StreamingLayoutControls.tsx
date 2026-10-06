@@ -1,5 +1,5 @@
 import { applyBakedLighting } from './hqRendering';
-import { currentRun } from './performanceMetrics';
+import { assetLoadMeasurement, currentRun } from './performanceMetrics';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useThree } from '@react-three/fiber';
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
@@ -20,20 +20,23 @@ export function StreamingLayoutControls({document,urls,textureURLs,...props}:Wal
  const occupied=useRef<string|undefined>(undefined);
  const starting=occupied.current||metadata.rooms.find(r=>initial&&r.box.containsPoint(new Vector3(...initial)))?.id||document.elements.find(e=>e.kind==='LOBBY')?.id||metadata.rooms[0]?.id;
  const wanted=useRef(new Set(starting?[starting]:[])),fingerprint=useRef(''),started=useRef(false),planningReady=useRef(false);
+ const roomEvents=useRef(new Map<string,ReturnType<typeof assetLoadMeasurement>>());
  const cache=useMemo(()=>new RoomChunkCache<GLTF>(id=>{
-  const entry=readModel(urls[id],gl);return {promise:entry.promise,release:retainModels([entry],gl)};
+  const event=assetLoadMeasurement('room-asset');event('requested');roomEvents.current.set(id,event);
+  const entry=readModel(urls[id],gl);return {promise:entry.promise.then(model=>{event('decoded-resource-ready');return model;},error=>{event('failed');throw error;}),release:retainModels([entry],gl)};
  },()=>{bump(n=>n+1);invalidate();}),[urls,gl,invalidate]);
  useEffect(()=>{const releases=Object.values(urls).map(retainAssetSource);return()=>{cache.dispose();releases.forEach(f=>f());};},[cache,urls]);
  const request=(rooms:Set<string>)=>{
   wanted.current=rooms;
-  const ids=[...new Set(document.elements.filter(e=>e.kind==='INSTANCE'&&e.asset_id&&(!e.room_id||rooms.has(e.room_id))).sort((a,b)=>Number(!!a.room_id)-Number(!!b.room_id)||Number(b.room_id===starting)-Number(a.room_id===starting)).map(e=>e.asset_id!))];
-  const key=JSON.stringify([...ids].sort());if(key!==fingerprint.current){fingerprint.current=key;cache.request(ids);bump(n=>n+1);invalidate();}
+  const ids=[...new Set(document.elements.filter(e=>e.kind==='INSTANCE'&&e.asset_id&&(!e.room_id||rooms.has(e.room_id))).sort((a,b)=>Number(!!a.room_id)-Number(!!b.room_id)||Number(b.room_id===(occupied.current||starting))-Number(a.room_id===(occupied.current||starting))).map(e=>e.asset_id!))];
+  const key=JSON.stringify(ids);if(key!==fingerprint.current){fingerprint.current=key;cache.request(ids);bump(n=>n+1);invalidate();}
  };
  useEffect(()=>{fingerprint.current='';request(props.walking&&!metadata.conservative&&!gl.shadowMap.enabled?preloadRooms(new Set(starting?[starting]:[]),metadata.openings):new Set(metadata.rooms.map(r=>r.id)));},[cache,document,props.walking]);
  const keys=useMemo(()=>Object.keys(textureURLs).sort(),[textureURLs]);
  // Material images remain shared/global until the layout has per-room presets.
  const textures=useAssetTextures(keys.map(id=>textureURLs[id]));
  const models=useMemo(()=>new Map([...cache.entries].filter(([id,e])=>e.status==='ready'&&JSON.parse(fingerprint.current||'[]').includes(id)).map(([id,e])=>[id,e.value!])),[cache,revision]);
+ const readyModels=useRef(models);readyModels.current=models;
  const blocked=new Set(document.elements.filter(e=>e.room_id&&e.asset_id&&!models.has(e.asset_id)).map(e=>e.room_id!));
  const globalReady=document.elements.filter(e=>e.kind==='INSTANCE'&&!e.room_id).every(e=>!!e.asset_id&&models.has(e.asset_id));
  const initialReady=globalReady&&(!starting||!blocked.has(starting));
@@ -56,7 +59,7 @@ export function StreamingLayoutControls({document,urls,textureURLs,...props}:Wal
  useAnimationFrames(seconds=>{clock.current+=seconds;prepared.updateAnimations(seconds);},prepared.hasAnimations);
  useEffect(()=>()=>prepared.dispose(),[prepared]);
  if(initialReady)started.current=true;
- const controlsReady=useCallback((actions:Parameters<WalkProps['ready']>[0])=>{planningReady.current=!!actions;props.ready(actions);},[props.ready]);
+ const controlsReady=useCallback((actions:Parameters<WalkProps['ready']>[0])=>{planningReady.current=!!actions;if(actions)for(const id of readyModels.current.keys()){const event=roomEvents.current.get(id);event?.('navigation-prepared');event?.('visuals-committed');event?.('movement-admitted');}props.ready(actions);},[props.ready]);
  useViewerFrame(({camera})=>{
   if(!planningReady.current)return;
   const visible=visibleRooms(camera,metadata.rooms,metadata.openings,!props.walking||prepared.root.userData.roomMetadata.conservative||gl.shadowMap.enabled);

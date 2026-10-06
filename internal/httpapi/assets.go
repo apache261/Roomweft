@@ -50,6 +50,10 @@ func (a *API) assetRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/v1/projects/{id}/assets", a.listAssets)
 	mux.HandleFunc("GET /api/v1/assets/{id}", a.getAsset)
 	mux.HandleFunc("POST /api/v1/assets/{id}/process", a.processAsset)
+	a.registerChunks(mux, "/api/v1/assets/{id}")
+	mux.HandleFunc("GET /api/v1/assets/{id}/partition", a.getPartition)
+	mux.HandleFunc("POST /api/v1/assets/{id}/partition/inventory", a.inspectPartition)
+	mux.HandleFunc("PUT /api/v1/assets/{id}/partition", a.putPartition)
 	mux.HandleFunc("DELETE /api/v1/assets/{id}", a.deleteAsset)
 	mux.HandleFunc("POST /api/v1/assets/{id}/complete", a.complete)
 	mux.HandleFunc("GET /api/v1/projects/{id}/scenes", a.listScenes)
@@ -316,9 +320,10 @@ func (a *API) getAsset(w http.ResponseWriter, r *http.Request) {
 	}
 	respond(w, 200, struct {
 		database.Asset
-		URL     string               `json:"url"`
-		Runtime *database.Derivative `json:"runtime,omitempty"`
-	}{asset, url, a.runtimeAsset(r.Context(), asset, false)})
+		URL       string               `json:"url"`
+		Runtime   *database.Derivative `json:"runtime,omitempty"`
+		Streaming *chunkAdvertisement  `json:"streaming,omitempty"`
+	}{asset, url, a.runtimeAsset(r.Context(), asset, false), a.chunkAsset(r, asset, false)})
 }
 func (a *API) complete(w http.ResponseWriter, r *http.Request) {
 	id, ok := projectID(w, r)

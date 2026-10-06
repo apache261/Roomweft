@@ -493,3 +493,10 @@ body:has(.editor-shell)>#root>header .theme-switch select { background:#34424d; 
 .quality-control select { width:auto; min-width:108px; min-height:38px; padding:6px 8px; font-size:12px; }
 .visitor-scene .quality-control select { background:#101820e8; color:#f2f6fc; border:1px solid #ffffff30; border-radius:10px; }
 @media(max-width:700px) { .visitor-scene .quality-control select { min-width:96px; min-height:36px; font-size:10px; } }
+
+.partition-inspector fieldset { min-width: 0; }
+.partition-inspector details { margin: .65rem 0; padding: .6rem; border: 1px solid var(--border, #999); border-radius: .4rem; }
+.partition-inspector summary { cursor: pointer; overflow-wrap: anywhere; }
+.partition-node-list { max-height: 26rem; overflow: auto; }
+.partition-bounds { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .4rem; }
+.partition-hash { overflow-wrap: anywhere; }

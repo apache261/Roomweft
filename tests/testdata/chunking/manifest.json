@@ -1,0 +1,93 @@
+{
+  "version": 1,
+  "coordinates": "source-space",
+  "fixtures": [
+    {
+      "file": "authored-rooms.glb",
+      "bytes": 6004,
+      "sha256": "f8e8ef58e557c6b40880b3187546702b656ccbe4e8c0da0d3149626468739f98"
+    },
+    {
+      "file": "giant-static.glb",
+      "bytes": 20100,
+      "sha256": "e9b3090e976bd1ac00a7edb6621047b2b8f8cdee6d1a1b15e169be3a90d515a9"
+    }
+  ],
+  "reviewedFloorPaths": [
+    "0/0/0/0",
+    "0/0/1/0"
+  ],
+  "giantReviewedFloorPaths": [
+    "0/0"
+  ],
+  "start": {
+    "position": [
+      0,
+      1.65,
+      0
+    ],
+    "yaw": 0,
+    "pitch": 0
+  },
+  "tourRoute": [
+    [
+      0,
+      1.65,
+      0
+    ],
+    [
+      0,
+      1.65,
+      -2
+    ],
+    [
+      0,
+      1.65,
+      -4
+    ],
+    [
+      0,
+      1.65,
+      -6
+    ],
+    [
+      0,
+      1.65,
+      -4
+    ],
+    [
+      0,
+      1.65,
+      -2
+    ],
+    [
+      0,
+      1.65,
+      0
+    ]
+  ],
+  "visibilityOpening": {
+    "center": [
+      0,
+      1.9,
+      3
+    ],
+    "walkingExit": false
+  },
+  "explicitExit": {
+    "from": "room-a",
+    "to": "room-b",
+    "center": [
+      0,
+      0,
+      -3
+    ],
+    "width": 2
+  },
+  "oversized": {
+    "file": "over-admission.glb",
+    "bytes": 268435460,
+    "generatedOnDemand": true,
+    "expected": "processor rejects before download; original descriptor remains usable"
+  }
+}

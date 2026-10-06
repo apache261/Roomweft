@@ -19,10 +19,11 @@ export class WalkWorld implements NavigationWorld {
  private collision=new TriangleIndex();private floors=new Map<string,TriangleIndex>();private starts:number[][];
  private cacheKey="";private disposed=false;
  private blockedRooms:{left:number;right:number;top:number;bottom:number}[]=[];
+ private admits:((p:Vector3,radius:number,eyeHeight:number)=>boolean)|undefined;
  private exterior:string|undefined;private entryPose:CameraView|undefined;
  constructor(model:Object3D,settings?:NavigationSettings) {
   const finish = performanceStage('collision-preparation');
-  this.settings=navigationSettings(settings||model.userData.navigation);this.blockedRooms=model.userData.blockedRooms||[];
+  this.admits=model.userData.admitsMovement;this.settings=navigationSettings(settings||model.userData.navigation);this.blockedRooms=model.userData.blockedRooms||[];
   model.updateWorldMatrix(true,true);this.bounds=new Box3().setFromObject(model);this.starts=model.userData.walkStarts||[];
   this.regions=model.userData.walkRegions||this.settings.regions;
   const signature:string[]=[];
@@ -56,7 +57,7 @@ export class WalkWorld implements NavigationWorld {
  private capsule(p:Vector3){const feet=p.y-this.settings.eye_height;return new Capsule(new Vector3(p.x,feet+WALK_RADIUS+SKIN,p.z),new Vector3(p.x,p.y+0.1-WALK_RADIUS,p.z),WALK_RADIUS);}
  private contacts(p:Vector3){const cap=this.capsule(p),triangles:Triangle[]=[];this.collision.getCapsuleTriangles(cap,triangles);return triangles.flatMap(t=>{const hit=this.collision.triangleCapsuleIntersect(cap,t);return hit&&hit.depth>SKIN?[hit]:[];});}
  grounded(p:Vector3,regionId?:string):Vector3|undefined {
-  if(!p.toArray().every(Number.isFinite))return;
+  if(!p.toArray().every(Number.isFinite)||this.admits&&!this.admits(p,WALK_RADIUS+SKIN*2,this.settings.eye_height))return;
   const radius=WALK_RADIUS+SKIN*2;if(this.blockedRooms.some(r=>p.x+radius>r.left&&p.x-radius<r.right&&p.z+radius>r.top&&p.z-radius<r.bottom))return;
   const heights:number[]=[];
   for(let i=-1;i<8;i++){const a=i*Math.PI/4,r=i===-1?0:WALK_RADIUS+SKIN*2;const y=this.floor(new Vector3(p.x+Math.sin(a)*r,p.y,p.z+Math.cos(a)*r),regionId);if(y===undefined)return;heights.push(y);}

@@ -1,4 +1,7 @@
 import { applyBakedLighting } from './hqRendering';
+import { supportsChunkStreaming } from './chunkRollout';
+import { StreamingSceneControls } from './StreamingSceneControls';
+import { resolveAssetSource } from './runtimeAssetCache';
 import { StreamingLayoutControls } from './StreamingLayoutControls';
 import { useAnimationFrames } from './ViewerRuntime';
 import { useEffect, useMemo, useRef } from 'react';
@@ -9,6 +12,7 @@ import { ModelWalkControls, type WalkProps } from './WalkControls';
 import { buildLayout } from './layoutGeometry';
 import type { LayoutDocument } from './layout';
 export function LayoutControls(props:WalkProps & {document:LayoutDocument;urls:Record<string,string>;textureURLs:Record<string,string>}) {
+ if(props.streaming&&Object.values(props.urls).some(key=>supportsChunkStreaming(resolveAssetSource(key)?.response)))return <StreamingSceneControls {...props}/>;
  if(props.streaming)return <StreamingLayoutControls {...props}/>;
  return <CompleteLayoutControls {...props}/>;
 }

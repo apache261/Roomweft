@@ -1,0 +1,185 @@
+{
+  "schema": "source-inventory-v1",
+  "coordinates": "source-space",
+  "source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "source_bytes": 4000,
+  "bounds": {
+    "min": [
+      -3,
+      -0.2,
+      -9
+    ],
+    "max": [
+      3,
+      3,
+      3
+    ]
+  },
+  "nodes": [
+    {
+      "path": "0",
+      "name": "Source root",
+      "bounds": {
+        "min": [
+          -3,
+          -0.2,
+          -9
+        ],
+        "max": [
+          3,
+          3,
+          3
+        ]
+      },
+      "matrix": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "renderable": false,
+      "triangles": 0,
+      "geometry_bytes": 0,
+      "embedded_image_bytes": 0
+    },
+    {
+      "path": "0/0",
+      "parent": "0",
+      "name": "Floor A",
+      "bounds": {
+        "min": [
+          -3,
+          -0.2,
+          -3
+        ],
+        "max": [
+          3,
+          0,
+          3
+        ]
+      },
+      "matrix": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "renderable": true,
+      "triangles": 12,
+      "geometry_bytes": 1000,
+      "embedded_image_bytes": 100,
+      "source_node": 0,
+      "source_primitive": 0
+    },
+    {
+      "path": "0/1",
+      "parent": "0",
+      "name": "Floor B",
+      "bounds": {
+        "min": [
+          -3,
+          -0.2,
+          -9
+        ],
+        "max": [
+          3,
+          0,
+          -3
+        ]
+      },
+      "matrix": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "renderable": true,
+      "triangles": 12,
+      "geometry_bytes": 1000,
+      "embedded_image_bytes": 100,
+      "source_node": 1,
+      "source_primitive": 0
+    },
+    {
+      "path": "0/2",
+      "parent": "0",
+      "name": "Crossing beam",
+      "bounds": {
+        "min": [
+          -0.2,
+          2.8,
+          -9
+        ],
+        "max": [
+          0.2,
+          3,
+          3
+        ]
+      },
+      "matrix": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "renderable": true,
+      "triangles": 12,
+      "geometry_bytes": 1000,
+      "embedded_image_bytes": 100,
+      "source_node": 2,
+      "source_primitive": 0
+    }
+  ],
+  "dependencies": [],
+  "conservative_reasons": [],
+  "clip_count": 0,
+  "skin_count": 0
+}

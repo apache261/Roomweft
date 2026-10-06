@@ -1,3 +1,4 @@
+import { performanceStage } from './performanceMetrics.ts';
 import { navigationSettings } from './navigationSettings.ts';
 import { tiledMaterial, type Surface } from './materials.ts';
 import { Box3, BoxGeometry, Group, Mesh, MeshStandardMaterial, type AnimationClip, type Texture, type Object3D } from 'three';
@@ -6,6 +7,7 @@ import { defaultSettings, prepareModel } from './sceneSettings.ts';
 
 // Wall intervals are unioned before meshing; shared room edges never produce duplicate walls.
 export function buildLayout(doc:LayoutDocument,sources:Map<string,Object3D>=new Map(),textures:Map<string,Texture>=new Map(),animations:Map<string,AnimationClip[]>=new Map(),blockedRooms:Set<string>=new Set()) {
+ const finishPreparation=performanceStage('layout-preparation');
   const importedRegions:import('./navigationSettings').WalkRegion[]=[];
   const root=new Group(), geometries:BoxGeometry[]=[],materials:MeshStandardMaterial[]=[],instances:ReturnType<typeof prepareModel>[]=[];
   const tiled:ReturnType<typeof tiledMaterial>[]=[],surfaces:Surface[]=[];
@@ -65,5 +67,6 @@ export function buildLayout(doc:LayoutDocument,sources:Map<string,Object3D>=new 
   root.userData.walkStarts=doc.elements.filter(e=>(isRoom(e)||e.kind==='FLOOR')&&!e.exterior).sort((a,b)=>Number(b.kind==='LOBBY')-Number(a.kind==='LOBBY')).map(e=>[e.x,1.65,e.z]);
   root.userData.runtimeGeometryRevision=JSON.stringify(doc);
   root.updateMatrixWorld(true);
+  finishPreparation();
   return {root,surfaces,hasAnimations:instances.some(i=>i.hasAnimations),updateAnimations:(seconds:number)=>instances.forEach(i=>i.updateAnimations(seconds)),dispose:()=>{geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());instances.forEach(i=>i.dispose());tiled.forEach(m=>m.dispose());}};
 }

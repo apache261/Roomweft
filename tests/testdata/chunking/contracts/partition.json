@@ -1,0 +1,80 @@
+{
+  "schema": "partition-v1",
+  "source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "policy": "reviewed-rooms",
+  "visibility": "reviewed-openings",
+  "rooms": [
+    {
+      "id": "room-a",
+      "name": "Room A",
+      "bounds": {
+        "min": [
+          -3,
+          -0.2,
+          -3
+        ],
+        "max": [
+          3,
+          3,
+          3
+        ]
+      },
+      "node_paths": [
+        "0/0"
+      ]
+    },
+    {
+      "id": "room-b",
+      "name": "Room B",
+      "bounds": {
+        "min": [
+          -3,
+          -0.2,
+          -9
+        ],
+        "max": [
+          3,
+          3,
+          -3
+        ]
+      },
+      "node_paths": [
+        "0/1"
+      ]
+    }
+  ],
+  "global_node_paths": [
+    "0/2"
+  ],
+  "openings": [
+    {
+      "id": "door-ab",
+      "from": "room-a",
+      "to": "room-b",
+      "kind": "doorway",
+      "corners": [
+        [
+          -1,
+          0,
+          -3
+        ],
+        [
+          1,
+          0,
+          -3
+        ],
+        [
+          1,
+          2.2,
+          -3
+        ],
+        [
+          -1,
+          2.2,
+          -3
+        ]
+      ],
+      "reviewed": true
+    }
+  ]
+}

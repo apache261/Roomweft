@@ -1,3 +1,6 @@
+import { chunkStreamingEnabled, supportsChunkStreaming } from './chunkRollout';
+import { bakeAssetIdentity } from './bakeAssetIdentity';
+import { PartitionInspector } from './PartitionInspector';
 import { ViewerRuntime } from './ViewerRuntime';
 import { qualityCaps, qualityStorageKey, readQualityPreference, saveQualityPreference, type QualityPreference, type QualityTier } from './viewerQuality';
 import { PerformancePanel, PerformanceSampler } from './PerformanceDiagnostics';
@@ -6,22 +9,23 @@ import {WalkingPanel,sceneRegions} from './WalkingPanel';
 import {NavigationOverlay} from './NavigationOverlay';
 import {navigationSettings,type Arrival,type Portal} from './navigationSettings';
 import { sceneAssetTier } from './assetPolicy';
-import { registerAsset, type AssetResponse } from './runtimeAssetCache';
+import { resolveAssetSource, registerAsset, type AssetResponse } from './runtimeAssetCache';
 import {validatePortalArrival} from './portalValidation';
 import { MaterialEditor, type MaterialTarget } from './MaterialEditor';
 import { textureIds } from './materials';
 import { Component, Suspense, useEffect, startTransition, useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Canvas, type ThreeEvent } from '@react-three/fiber';
 import { useProgress } from '@react-three/drei';
-import { Matrix3 } from 'three';
+import { Matrix3, Matrix4 } from 'three';
 import { request, type Asset, type Scene, type CameraView, type PanoramaView, type Hotspot, type HotspotPosition } from './api';
 import { LayoutEditor } from './LayoutEditor';
 import { LayoutControls } from './LayoutControls';
 import { attachPoint, layoutHotspots, layoutIssues, canonicalLayout, type LayoutDocument } from './layout';
+import { StreamingSceneControls } from './StreamingSceneControls';
 import { WalkControls, type ViewerActions, type ModelInfo } from './WalkControls';
 import { PanoramaControls } from './PanoramaControls';
 import { HotspotLayer } from './HotspotLayer';
-import { defaultSettings, moveHotspots, sameModel, sameSettings, type SceneSettings } from './sceneSettings';
+import { defaultSettings, modelMatrix, moveHotspots, sameModel, sameSettings, type SceneSettings } from './sceneSettings';
 import { bakeContext, bakeRevision } from './hqRendering';
 import { SceneLighting } from './SceneLighting';
 import {EditorGrid} from './EditorGrid';
@@ -54,7 +58,7 @@ export function SceneViewer({ scene, scenes, onSaved, onNavigate, preview = fals
   const diagnostics = import.meta.env.DEV && new URLSearchParams(location.search).get('perf') === '1';
   const performanceRevision = diagnostics ? sceneFingerprint(scene) : '';
   // Start before the Canvas loads/prepares assets so startup stages are included.
-  useMemo(() => diagnostics ? beginPerformanceRun({ sceneId: scene.id, sceneName: scene.name, sceneRevision: performanceRevision, layoutRevision: scene.layout_revision, quality, qualityTier: tier, mode: publicSlug ? (location.pathname.startsWith('/embed/') ? 'embed' : 'public') : preview ? 'preview' : 'builder', browser: navigator.userAgent, viewport: { width: innerWidth, height: innerHeight }, device: new URLSearchParams(location.search).get('device') || 'unspecified', physicalDevice: 'unverified' }) : undefined, [diagnostics, scene.id, performanceRevision, preview, publicSlug]);
+  useMemo(() => diagnostics ? beginPerformanceRun({ sceneId: scene.id, sceneName: scene.name, sceneRevision: performanceRevision, layoutRevision: scene.layout_revision, quality, qualityTier: tier, mode: publicSlug ? (location.pathname.startsWith('/embed/') ? 'embed' : 'public') : preview ? 'preview' : 'builder', browser: navigator.userAgent, viewport: { width: innerWidth, height: innerHeight }, device: new URLSearchParams(location.search).get('device') || 'unspecified', physicalDevice: 'unverified', chunkStreamingGate:chunkStreamingEnabled(import.meta.env.VITE_CHUNK_STREAMING,location.search)?'enabled':'complete', execution: 'browser-unverified' }) : undefined, [diagnostics, scene.id, performanceRevision, preview, publicSlug]);
   const panel=useRef<HTMLElement>(null);
   const {resolved}=useTheme();
   const [showGrid,setShowGrid]=useState(true);
@@ -65,6 +69,7 @@ export function SceneViewer({ scene, scenes, onSaved, onNavigate, preview = fals
   const [directoryOpen,setDirectoryOpen]=useState(false);
   const [tool,setTool]=useState(scene.type==='LAYOUT'?'plan':'hotspots');
   const [selectedElement,setSelectedElement]=useState('');
+  const [partitionAsset,setPartitionAsset]=useState('');
   useEffect(()=>{panel.current?.querySelector('.editor-inspector')?.scrollTo(0,0);},[tool]);
   const quickRoom=useRef<(()=>void)|null>(null);
   const bindQuickRoom=useCallback((add:(()=>void)|null)=>{quickRoom.current=add;},[]);
@@ -99,7 +104,7 @@ export function SceneViewer({ scene, scenes, onSaved, onNavigate, preview = fals
  const [textureLoading,setTextureLoading]=useState(false);
  const [textureError,setTextureError]=useState('');
  const presets=scene.type==='LAYOUT'?layoutDocument.materials||[]:settings.materials||[];
-  const bakeKey=new URLSearchParams(location.search).get('hq')==='0'?'':bakeRevision(bakeContext(scene.type==='LAYOUT'?Object.entries(instanceResponses).map(([id,a])=>[id,a.runtime?.manifest?.source_sha256||id]).sort():runtimeResponse?.runtime?.manifest?.source_sha256||scene.asset_id,scene.type==='LAYOUT'?{...layoutDocument,materials:undefined,navigation:undefined}:settings.model,presets,scene.type==='LAYOUT'?layoutDocument.elements.map(e=>[e.id,e.floor_material,e.wall_material,e.mesh_materials]):settings.surface_materials,settings.appearance));
+  const bakeKey=new URLSearchParams(location.search).get('hq')==='0'?'':bakeRevision(bakeContext(scene.type==='LAYOUT'?Object.entries(instanceResponses).map(([id,a])=>[id,bakeAssetIdentity(id,a)]).sort():bakeAssetIdentity(scene.asset_id,runtimeResponse),scene.type==='LAYOUT'?{...layoutDocument,materials:undefined,navigation:undefined}:settings.model,presets,scene.type==='LAYOUT'?layoutDocument.elements.map(e=>[e.id,e.floor_material,e.wall_material,e.mesh_materials]):settings.surface_materials,settings.appearance));
  const textureKey=textureIds(presets.map(p=>bakeKey&&p.bake_revision===bakeKey?p:{...p,light_map:undefined,ao_map:undefined})).join(',');
  const reportModelInfo=useCallback((info:ModelInfo)=>{setModelInfo(info);if(!info.walkable)setWalking(false);},[]);
   const settingsDirty = !sameSettings(settings, scene.settings || defaultSettings);
@@ -355,11 +360,11 @@ export function SceneViewer({ scene, scenes, onSaved, onNavigate, preview = fals
           <ViewerRuntime preference={quality} onAutoTier={setAutoTier} onAssetTier={setAutoAssetTier}>
           {panorama ? <color attach="background" args={['#edf1e8']} /> : <SceneLighting tier={requestedAssetTier} enabled={new URLSearchParams(location.search).get('hq')!=='0'} appearance={settings.appearance} background={!preview?(resolved==='dark'?'#18232f':'#eaf0f5'):undefined} />}
           {!preview&&!panorama&&showGrid&&<EditorGrid dark={resolved==='dark'} info={modelInfo}/>}
-          {diagnostics && <PerformanceSampler usable={!!actions && hotspotsReady && !layoutLoading && !textureLoading} />}
+          {diagnostics && <PerformanceSampler walkingUsable={!panorama && walking && !!modelInfo?.walkable && !!actions && hotspotsReady && !layoutLoading && !textureLoading} usable={!!actions && hotspotsReady && !layoutLoading && !textureLoading} />}
           <Suspense fallback={null}>
             {panorama ? <PanoramaControls url={url} saved={savedPanorama} ready={setActions} placing={placing && !linkBusy} onPlace={place} onHover={hoverPlace} /> :
-              scene.type==='LAYOUT'?<LayoutControls bakeRevision={bakeKey} streaming={preview && new URLSearchParams(location.search).get('streaming')!=='0'} onStreamingState={roomStatus} optimizeVisuals={preview && new URLSearchParams(location.search).get('spatial') !== '0'} document={lastValidLayout.current} urls={instanceURLs} textureURLs={textureURLs} walking={walking} effects={walkingEffects&&!reducedMotion} smoothMovement={smoothMovement??preview} instant={!preview} onSelectElement={selectElement} arrival={arrival} onNearby={setNearby} saved={savedWalk} movement={movement} ready={setActions} report={setNotice} placing={placing && !linkBusy} onPlace={place} onHover={hoverPlace} paused={paused} onInfo={reportModelInfo} /> :
-              <WalkControls bakeRevision={bakeKey} optimizeVisuals={preview && new URLSearchParams(location.search).get('spatial') !== '0'} url={url} walking={walking} effects={walkingEffects&&!reducedMotion} smoothMovement={smoothMovement??preview} instant={!preview} onSelectElement={selectElement} arrival={arrival} onNearby={setNearby} saved={savedWalk} movement={movement} ready={setActions} report={setNotice} placing={placing && !linkBusy} onPlace={place} onHover={hoverPlace} paused={paused} settings={settings} textureURLs={textureURLs} onInfo={reportModelInfo} />}
+              scene.type==='LAYOUT'?<LayoutControls bakeRevision={bakeKey} streaming={preview && chunkStreamingEnabled(import.meta.env.VITE_CHUNK_STREAMING,location.search)} onStreamingState={roomStatus} optimizeVisuals={preview && new URLSearchParams(location.search).get('spatial') !== '0'} document={lastValidLayout.current} urls={instanceURLs} textureURLs={textureURLs} walking={walking} effects={walkingEffects&&!reducedMotion} smoothMovement={smoothMovement??preview} instant={!preview} onSelectElement={selectElement} arrival={arrival} onNearby={setNearby} saved={savedWalk} movement={movement} ready={setActions} report={setNotice} placing={placing && !linkBusy} onPlace={place} onHover={hoverPlace} paused={paused} onInfo={reportModelInfo} /> :
+              <ImportedControls streaming={preview && chunkStreamingEnabled(import.meta.env.VITE_CHUNK_STREAMING,location.search)} onStreamingState={roomStatus} bakeRevision={bakeKey} optimizeVisuals={preview && new URLSearchParams(location.search).get('spatial') !== '0'} url={url} walking={walking} effects={walkingEffects&&!reducedMotion} smoothMovement={smoothMovement??preview} instant={!preview} onSelectElement={selectElement} arrival={arrival} onNearby={setNearby} saved={savedWalk} movement={movement} ready={setActions} report={setNotice} placing={placing && !linkBusy} onPlace={place} onHover={hoverPlace} paused={paused} settings={settings} textureURLs={textureURLs} onInfo={reportModelInfo} />}
             {!panorama&&<NavigationOverlay regions={sceneRegions(draftScene)} portals={walkingConfig.portals} builder={!preview} nearby={nearby} onActivate={activatePortal} onTarget={setExitTarget}/>}
             <HotspotLayer hotspots={displayHotspots} onActivate={activate} placing={placing} draft={placing ? hover : dirty ? position : null} selected={editing} reveal={!preview && reveal} panorama={panorama} onTarget={setTarget} />
           </Suspense>
@@ -392,7 +397,7 @@ export function SceneViewer({ scene, scenes, onSaved, onNavigate, preview = fals
     <aside id={preview?'visitor-hotspots':undefined} hidden={preview&&!directoryOpen} className={preview?'visitor-directory':'editor-inspector'} aria-label={preview?'Explore scene':'Scene inspector'} onKeyDown={event=>{if(preview&&event.key==='Escape'){setDirectoryOpen(false);panel.current?.querySelector<HTMLButtonElement>('[aria-controls="visitor-hotspots"]')?.focus();}}}>
     {preview&&<div className="visitor-directory-heading"><span>Explore this space</span><button className="secondary" aria-label="Close hotspot list" onClick={()=>{setDirectoryOpen(false);panel.current?.querySelector<HTMLButtonElement>('[aria-controls="visitor-hotspots"]')?.focus();}}>✕</button></div>}
     {!preview && <div className="inspector-heading"><h2>Inspector</h2><span>{scene.type==='LAYOUT'?'Layout':panorama?'Panorama':'Model'}</span></div>}
-    {!preview && <nav className="inspector-sections" role="tablist" aria-label="Inspector sections">{[...(scene.type==='LAYOUT'?[['plan','Plan']]:[]),['hotspots','Hotspots'],...(!panorama?[['walking','Walking'],['materials','Materials'],['appearance','Appearance']]:[])].map(([id,label])=><button key={id} id={`tab-${id}`} role="tab" aria-selected={tool===id} tabIndex={tool===id?0:-1} onKeyDown={e=>{const tabs=Array.from(e.currentTarget.parentElement!.querySelectorAll<HTMLButtonElement>('[role="tab"]'));const index=tabs.indexOf(e.currentTarget);const next=e.key==='ArrowRight'?(index+1)%tabs.length:e.key==='ArrowLeft'?(index+tabs.length-1)%tabs.length:e.key==='Home'?0:e.key==='End'?tabs.length-1:-1;if(next>=0){e.preventDefault();tabs[next].click();tabs[next].focus();}}} aria-controls={`panel-${id}`} className="secondary" onClick={()=>chooseTool(id)}>{label}</button>)}</nav>}
+    {!preview && <nav className="inspector-sections" role="tablist" aria-label="Inspector sections">{[...(scene.type==='LAYOUT'?[['plan','Plan']]:[]),['hotspots','Hotspots'],...(!panorama?[['walking','Walking'],['materials','Materials'],['partition','Partition'],['appearance','Appearance']]:[])].map(([id,label])=><button key={id} id={`tab-${id}`} role="tab" aria-selected={tool===id} tabIndex={tool===id?0:-1} onKeyDown={e=>{const tabs=Array.from(e.currentTarget.parentElement!.querySelectorAll<HTMLButtonElement>('[role="tab"]'));const index=tabs.indexOf(e.currentTarget);const next=e.key==='ArrowRight'?(index+1)%tabs.length:e.key==='ArrowLeft'?(index+tabs.length-1)%tabs.length:e.key==='Home'?0:e.key==='End'?tabs.length-1:-1;if(next>=0){e.preventDefault();tabs[next].click();tabs[next].focus();}}} aria-controls={`panel-${id}`} className="secondary" onClick={()=>chooseTool(id)}>{label}</button>)}</nav>}
     <div id="panel-plan" role="tabpanel" aria-labelledby="tab-plan" hidden={preview||tool!=='plan'}>
 
     {!preview && scene.type==='LAYOUT' && <LayoutEditor key={scene.layout_revision} document={layoutDocument} onChange={setLayoutDocument} onSave={saveLayout} dirty={layoutDirty} busy={saving||linkBusy} assets={assets} attached={attached} surfaces={modelInfo?.surfaces||[]} selection={selectedElement} onSelection={setSelectedElement} onQuickAdd={bindQuickRoom} />}
@@ -435,6 +440,13 @@ export function SceneViewer({ scene, scenes, onSaved, onNavigate, preview = fals
     <div id="panel-materials" role="tabpanel" aria-labelledby="tab-materials" hidden={preview||tool!=='materials'}>
     {!preview && !panorama && <MaterialEditor bakeRevision={bakeKey} presets={presets} assets={assets} busy={saving||linkBusy} targets={materialTargets()} onChange={materials=>scene.type==='LAYOUT'?setLayoutDocument({...layoutDocument,materials}):setSettings({...settings,materials})} onAssign={assignMaterial} />}
     </div>
+    <div id="panel-partition" role="tabpanel" aria-labelledby="tab-partition" hidden={preview||tool!=='partition'}>
+    {!preview&&!panorama&&tool==='partition'&&(scene.type==='3D'&&scene.asset_id?<PartitionInspector key={scene.asset_id} assetId={scene.asset_id} transform={modelMatrix(settings.model)}/>:<>
+     <label>Imported parent asset<select aria-label="Partition parent asset" value={partitionAsset} onChange={e=>setPartitionAsset(e.target.value)}><option value="">Choose an imported asset</option>{[...new Set(layoutDocument.elements.filter(e=>e.kind==='INSTANCE'&&e.asset_id).map(e=>e.asset_id!))].map(id=><option key={id} value={id}>{assets.find(a=>a.id===id)?.name||id}</option>)}</select></label>
+     <p>Generated rooms retain their existing template ownership. A parent partition applies to every placement of that asset; it does not change instance room assignments.</p>
+     {partitionAsset&&(()=>{const e=layoutDocument.elements.find(e=>e.asset_id===partitionAsset);return e?<PartitionInspector key={partitionAsset} assetId={partitionAsset} transform={new Matrix4().makeTranslation(e.x,0,e.z).multiply(modelMatrix({scale:e.scale,rotation:e.rotation,up_axis:'Y'}))}/>:null;})()}
+    </>)}
+    </div>
     <div id="panel-appearance" role="tabpanel" aria-labelledby="tab-appearance" hidden={preview||tool!=='appearance'}>
     {!preview && !panorama && <SceneSettingsPanel layout={scene.type==='LAYOUT'} settings={settings} onChange={setSettings} onSave={saveSettings} busy={saving || linkBusy} dirty={settingsDirty} info={modelInfo} />}
 
@@ -442,4 +454,8 @@ export function SceneViewer({ scene, scenes, onSaved, onNavigate, preview = fals
     </div>
     </aside>
   </section>;
+}
+
+function ImportedControls(props:React.ComponentProps<typeof WalkControls>){
+ return props.streaming&&supportsChunkStreaming(resolveAssetSource(props.url)?.response)?<StreamingSceneControls {...props}/>:<WalkControls {...props}/>;
 }

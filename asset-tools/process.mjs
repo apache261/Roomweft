@@ -67,7 +67,7 @@ async function semanticSnapshot(doc) {
   }
   return stable(json);
 }
-async function runtimeInventory(bytes) {
+export async function runtimeInventory(bytes) {
   const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
   loader.register(parser => ({ name: 'TOUR_geometry_inventory', beforeRoot() {
     const dependency = parser.getDependency.bind(parser), textures = new Map();
@@ -79,7 +79,7 @@ async function runtimeInventory(bytes) {
   } }));
   const gltf = await loader.parseAsync(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength), '');
   gltf.scene.updateMatrixWorld(true);
-  const surfaces = [], geometry = [];
+  const surfaces = [], geometry = [], orderedGeometry = [];
   const visit = (object, path) => {
     if (object instanceof Mesh) {
       surfaces.push({ source: path, runtime: path, name: object.name, uv: !!object.geometry.getAttribute('uv') });
@@ -88,6 +88,7 @@ async function runtimeInventory(bytes) {
         const v = [0, 1, 2].map(j => new Vector3().fromBufferAttribute(p, index ? index.getX(i + j) : i + j).applyMatrix4(object.matrixWorld).toArray().join(','));
         faces.push([v.join('|'), [v[1], v[2], v[0]].join('|'), [v[2], v[0], v[1]].join('|')].sort()[0]);
       }
+      orderedGeometry.push([path, hash(faces.join('\n'))]);
       geometry.push([path, hash(faces.sort().join('\n'))]);
     }
     object.children.forEach((child, i) => visit(child, `${path}/${i}`));
@@ -95,9 +96,9 @@ async function runtimeInventory(bytes) {
   visit(gltf.scene, '0');
   const bounds = new Box3().setFromObject(gltf.scene);
   gltf.scene.traverse(object => { object.geometry?.dispose(); const materials = Array.isArray(object.material) ? object.material : object.material ? [object.material] : []; for (const m of materials) { for (const value of Object.values(m)) if (value?.isTexture) value.dispose(); m.dispose(); } });
-  return { surfaces, geometryHash: hash(stable(geometry)), bounds: { min: bounds.min.toArray(), max: bounds.max.toArray() } };
+  return { surfaces, geometry, orderedGeometry, geometryHash: hash(stable(geometry)), bounds: { min: bounds.min.toArray(), max: bounds.max.toArray() } };
 }
-export async function processAsset(source, output) {
+export async function processAsset(source, output, { preserveTriangles = false } = {}) {
   await Promise.all([MeshoptEncoder.ready, MeshoptDecoder.ready]);
   const bytes = await readFile(source); inspectContainer(bytes); await validate(bytes);
   const sourceDoc = await io.readBinary(bytes), before = await semanticSnapshot(sourceDoc), inventory = await runtimeInventory(bytes);
@@ -106,7 +107,7 @@ export async function processAsset(source, output) {
   const maxBytes = { low: 64 * 1024 ** 2, balanced: 192 * 1024 ** 2, hq: 384 * 1024 ** 2 };
   for (const [tier, cap] of [['low', 1024], ['balanced', 2048], ['hq', 4096]]) {
     const doc = cloneDocument(sourceDoc);
-    await doc.transform(dedup({ propertyTypes: [PropertyType.ACCESSOR] }), prune({ propertyTypes: [PropertyType.ACCESSOR, PropertyType.BUFFER], keepLeaves: true, keepAttributes: true, keepSolidTextures: true, keepExtras: true }), reorder({ encoder: MeshoptEncoder, cleanup: false }));
+    await doc.transform(dedup({ propertyTypes: [PropertyType.ACCESSOR] }), prune({ propertyTypes: [PropertyType.ACCESSOR, PropertyType.BUFFER], keepLeaves: true, keepAttributes: true, keepSolidTextures: true, keepExtras: true }), ...(preserveTriangles ? [] : [reorder({ encoder: MeshoptEncoder, cleanup: false })]));
     let textureBytes = 0, maxTexture = 0;
     for (const texture of doc.getRoot().listTextures()) {
       const image = texture.getImage(); if (!image) throw new Error('Texture has no embedded pixels');
@@ -120,6 +121,7 @@ export async function processAsset(source, output) {
     const decoded = await io.readBinary(encoded);
     if (await semanticSnapshot(decoded) !== before) throw new Error(`${tier}: authored transforms, materials, attributes, skin or animation identity changed`);
     const runtime = await runtimeInventory(encoded);
+    if (preserveTriangles && stable(runtime.orderedGeometry) !== stable(inventory.orderedGeometry)) throw new Error(`${tier}: source triangle ordering changed`);
     if (stable(runtime.surfaces) !== stable(inventory.surfaces) || runtime.geometryHash !== inventory.geometryHash) throw new Error(`${tier}: runtime surface paths or exact collision geometry changed`);
     await writeFile(`${output}/${tier}.glb`, encoded);
     manifest.variants[tier] = { file: `${tier}.glb`, sha256: hash(encoded), bytes: encoded.length, texture_rgba8_bytes: textureBytes, max_texture: maxTexture };
@@ -145,7 +147,7 @@ export async function processAsset(source, output) {
   return manifest;
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  (process.argv[4]?.startsWith('TEXTURE_')?processTexture:processAsset)(process.argv[2], process.argv[3]).catch(error => { console.error(error.message); process.exitCode = 1; });
+  (process.argv[4] === 'CHUNKS' ? async (source, output) => (await import('./chunks.mjs')).processChunks(source, output, JSON.parse(await readFile(process.argv[5], 'utf8'))) : process.argv[4]?.startsWith('TEXTURE_') ? processTexture : processAsset)(process.argv[2], process.argv[3]).catch(error => { console.error(error.message); process.exitCode = 1; });
 }
 
 export async function processTexture(source, output) {

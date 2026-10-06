@@ -615,8 +615,471 @@ paths:
         '409': *id013
         '500': *id014
         '503': *id015
+
+  /api/v1/assets/{id}/partition:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: {type: string, format: uuid}
+    get:
+      summary: Read author-reviewed source ownership or complete-original fallback
+      description: Private parent-asset lookup. No chunk output is advertised. See chunking-contracts.md and chunking.schema.json for the strict contracts.
+      responses:
+        '200':
+          description: Revision, source inventory and partition document; inventory/document are null before inspection
+        '404':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+    put:
+      summary: Save source-bound partition review with revision compare-and-swap
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [revision, source_sha256, document]
+              properties:
+                revision: {type: integer, minimum: 0}
+                source_sha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+                document:
+                  type: object
+                  description: Strict partition-v1 document; validated against authoritative original inventory (see chunking.schema.json)
+      responses:
+        '200':
+          description: Saved partition and incremented revision
+        '400':
+          $ref: '#/components/responses/Error'
+        '409':
+          description: Stale partition/source revision or inventory not prepared
+  /api/v1/assets/{id}/partition/inventory:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: {type: string, format: uuid}
+    post:
+      summary: Inspect immutable original GLB source for author review
+      description: Requires completed GLB, configured processor and storage download support. Bounded to 256 MiB, two minutes and one inspection per API process. Same-source refresh preserves existing author edits.
+      responses:
+        '200':
+          description: Original source inventory and current revisioned partition review
+        '422':
+          description: Unsupported/oversized source, timeout or invalid inventory; complete original remains available
+        '429':
+          description: Another source inspection is running
+        '502':
+          description: Original source could not be read
+        '503':
+          $ref: '#/components/responses/Error'
+
+  /api/v1/assets/{id}/chunks:
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - name: revision
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+    - name: source_sha256
+      in: query
+      schema:
+        type: string
+    get:
+      summary: Read current bounded chunk manifest
+      description: Manifest payload URLs return JSON descriptors. Every refresh resolves only IDs in the current validated parent manifest; storage keys are never accepted.
+      responses:
+        '200':
+          description: Current scoped metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScopedChunkManifest'
+        '400':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '409':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+  /api/v1/assets/{id}/chunks/{chunk}:
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - name: chunk
+      in: path
+      required: true
+      schema:
+        type: string
+    - name: revision
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+    - name: source_sha256
+      in: query
+      schema:
+        type: string
+    - name: tier
+      in: query
+      schema:
+        type: string
+        enum: [low, balanced, hq]
+        default: balanced
+    get:
+      summary: Sign a current chunk payload
+      description: Manifest payload URLs return JSON descriptors. Every refresh resolves only IDs in the current validated parent manifest; storage keys are never accepted.
+      responses:
+        '200':
+          description: Current scoped metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChunkPayloadDescriptor'
+        '400':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '409':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+  /api/v1/assets/{id}/chunk-indexes/{index}:
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - name: index
+      in: path
+      required: true
+      schema:
+        type: string
+    - name: revision
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+    - name: source_sha256
+      in: query
+      schema:
+        type: string
+    get:
+      summary: Sign exact navigation or authored occlusion
+      description: Manifest payload URLs return JSON descriptors. Every refresh resolves only IDs in the current validated parent manifest; storage keys are never accepted.
+      responses:
+        '200':
+          description: Current scoped metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChunkPayloadDescriptor'
+        '400':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '409':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+  /api/v1/assets/{id}/chunk-dependencies/{dependency}:
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - name: dependency
+      in: path
+      required: true
+      schema:
+        type: string
+    - name: revision
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+    - name: source_sha256
+      in: query
+      schema:
+        type: string
+    - name: tier
+      in: query
+      schema:
+        type: string
+        enum: [low, balanced, hq]
+        default: balanced
+    get:
+      summary: Sign a declared shared dependency
+      description: Manifest payload URLs return JSON descriptors. Every refresh resolves only IDs in the current validated parent manifest; storage keys are never accepted.
+      responses:
+        '200':
+          description: Current scoped metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChunkPayloadDescriptor'
+        '400':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '409':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+  /api/v1/public/tours/{slug}/assets/{id}/chunks:
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - name: slug
+      in: path
+      required: true
+      schema:
+        type: string
+    - name: revision
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+    - name: source_sha256
+      in: query
+      schema:
+        type: string
+    get:
+      summary: Read current bounded chunk manifest
+      description: Published tour reference to a ready parent is required. Manifest payload URLs return JSON descriptors. Every refresh resolves only IDs in the current validated parent manifest; storage keys are never accepted.
+      responses:
+        '200':
+          description: Current scoped metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScopedChunkManifest'
+        '400':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '409':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+  /api/v1/public/tours/{slug}/assets/{id}/chunks/{chunk}:
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - name: slug
+      in: path
+      required: true
+      schema:
+        type: string
+    - name: chunk
+      in: path
+      required: true
+      schema:
+        type: string
+    - name: revision
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+    - name: source_sha256
+      in: query
+      schema:
+        type: string
+    - name: tier
+      in: query
+      schema:
+        type: string
+        enum: [low, balanced, hq]
+        default: balanced
+    get:
+      summary: Sign a current chunk payload
+      description: Published tour reference to a ready parent is required. Manifest payload URLs return JSON descriptors. Every refresh resolves only IDs in the current validated parent manifest; storage keys are never accepted.
+      responses:
+        '200':
+          description: Current scoped metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChunkPayloadDescriptor'
+        '400':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '409':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+  /api/v1/public/tours/{slug}/assets/{id}/chunk-indexes/{index}:
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - name: slug
+      in: path
+      required: true
+      schema:
+        type: string
+    - name: index
+      in: path
+      required: true
+      schema:
+        type: string
+    - name: revision
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+    - name: source_sha256
+      in: query
+      schema:
+        type: string
+    get:
+      summary: Sign exact navigation or authored occlusion
+      description: Published tour reference to a ready parent is required. Manifest payload URLs return JSON descriptors. Every refresh resolves only IDs in the current validated parent manifest; storage keys are never accepted.
+      responses:
+        '200':
+          description: Current scoped metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChunkPayloadDescriptor'
+        '400':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '409':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+  /api/v1/public/tours/{slug}/assets/{id}/chunk-dependencies/{dependency}:
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - name: slug
+      in: path
+      required: true
+      schema:
+        type: string
+    - name: dependency
+      in: path
+      required: true
+      schema:
+        type: string
+    - name: revision
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+    - name: source_sha256
+      in: query
+      schema:
+        type: string
+    - name: tier
+      in: query
+      schema:
+        type: string
+        enum: [low, balanced, hq]
+        default: balanced
+    get:
+      summary: Sign a declared shared dependency
+      description: Published tour reference to a ready parent is required. Manifest payload URLs return JSON descriptors. Every refresh resolves only IDs in the current validated parent manifest; storage keys are never accepted.
+      responses:
+        '200':
+          description: Current scoped metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChunkPayloadDescriptor'
+        '400':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '409':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
 components:
   schemas:
+    ChunkAdvertisement:
+      type: object
+      required: [state, processor_version, delivery]
+      properties:
+        state:
+          type: string
+          enum: [queued, processing, ready, failed]
+        processor_version:
+          type: string
+          enum: [chunks-v1]
+        delivery:
+          type: string
+          enum: [scoped-descriptors]
+        manifest_url:
+          type: string
+          description: Current scoped manifest path, present only when ready
+        error:
+          type: string
+          description: Actionable error in private responses only
+    ScopedChunkManifest:
+      type: object
+      required: [delivery, manifest]
+      properties:
+        delivery:
+          type: string
+          enum: [scoped-descriptors]
+        manifest:
+          type: object
+          description: Validated streaming-v1 manifest with URL-only payloads. These URLs return JSON descriptors rather than binaries. See docs/chunking-processing.md and the chunk contracts.
+    ChunkPayloadDescriptor:
+      type: object
+      required: [url, sha256, bytes, texture_rgba8_bytes, max_texture]
+      properties:
+        url:
+          type: string
+          format: uri
+        sha256:
+          type: string
+          pattern: '^[a-f0-9]{64}$'
+        bytes:
+          type: integer
+          minimum: 20
+        texture_rgba8_bytes:
+          type: integer
+          minimum: 0
+        max_texture:
+          type: integer
+          minimum: 0
     ProjectInput:
       type: object
       additionalProperties: false
@@ -678,6 +1141,8 @@ components:
       - size
       - created_at
       properties:
+        streaming:
+          $ref: '#/components/schemas/ChunkAdvertisement'
         id: *id016
         project_id: *id016
         name:

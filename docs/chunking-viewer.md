@@ -1,0 +1,37 @@
+# Chunk viewer bootstrap and preloading (Phases 5–6)
+
+Reviewed static `streaming-v1` / `chunks-v1` assets stream in builder preview, public tours and embeds. Layout placements referencing those parents use internal parent/chunk IDs, sharing decoded products across repeated placements. Builder editing uses the complete hierarchy. Missing, malformed, unsupported or not-ready manifests use the existing complete path. `?streaming=0` disables both imported and layout streaming.
+
+`StreamingSceneControls` and `ChunkStreamSession` read bounded metadata and scoped JSON descriptors, then verify immutable payload hash and byte count before decoding. Descriptor refresh keeps parent authorization scope, source, revision, chunk and tier in the decoded key. Absolute descriptor URLs from an API proxy are resolved through the browser-facing parent origin; unrelated parent paths are rejected. Chunk GLBs cannot enable external buffer/image fetches. Supported manifests are self-contained, static, dependency-free products from Phases 3–4; texture/animation dependency streaming remains future work.
+
+Bootstrap loads complete exact navigation and authored occlusion first. It validates the saved start or requested arrival against authored approved floors and standing clearance, chooses a supported fallback when needed, then loads globals and the starting capsule's reviewed areas. Controls mount only after those visuals are prepared and committed. Geometry, source triangle order, UV1, canonical material/floor paths and placement transforms are retained. Chunk-local mesh paths are mapped before material preparation through runtime-owned WeakMaps, copied explicitly across clones; uploaded extras cannot impersonate an approved source path. Model wrappers apply once; repeated layout placements use their own matrices without introducing derivative asset UUIDs.
+
+Movement admission is separate from floor knowledge. `WalkWorld` checks the committed chunk/dependency set before grounding, sweeps, saved starts and arrivals. The capsule is transformed back into source space and every intersected reviewed region must have its visuals plus exact navigation/occlusion ready. Knowing an unloaded area's floor cannot authorize entry. Full authored occluders stay available to hotspot raycasts even when resident render meshes are hidden, so missing walls cannot expose markers. Floors remain author approved; room bounds and opening metadata grant no floor or exit permission.
+
+The initial exact occlusion product is the original complete GLB. Its download, image decoding and geometry preparation count toward startup. This is a correctness strategy, not a demonstrated download saving: the generated browser fixture's exact indexes total 16,516 bytes against a 10,676-byte original, before adding visual chunks. Regional exact indexes and shared image delivery remain future work.
+
+The scheduler distinguishes resident, visible, movement-required, prefetch and pinned products. Global contributors and exact indexes are pinned. Occupied areas plus a capsule halo and an immediate reviewed doorway ring take priority independently of camera direction. Windows affect visibility/preload but do not become walking edges. Nearby active exit destinations are requested separately. Reset pins and commits its target area before changing the supported pose; failed target loading preserves the current view. New quality sessions load the current supported area while the previous tree and leases remain usable, and reset planning fingerprints on session replacement. Static chunk sources have no clips; mixed legacy layout animations retain the shared animation clock.
+
+Reviewed opening polygons clip visibility in source coordinates, preserving correctness under rotated/scaled placements. Uncertain metadata uses conservative frustum selection; ambiguous positions inside a parent use all regions. Bounding boxes are not used to invent occlusion. Lookahead uses observed transfer/decode latency and movement velocity, capped at four metres. Queued obsolete prefetch is dropped. Downloads use two slots; speculative work occupies at most one, leaving capacity for newly required movement. Decode runs serially per renderer with a yield between products, and React commits are coalesced. These heuristics bound bursts, not the cost of a single large decode or shader upload.
+
+Inspection and HQ shadow passes request all visual contributors. Shadows remain deferred while any contributor is missing, including the first frame after enabling HQ. Render selection does not alter the authored occlusion or collision representation. Neighbor failures keep the current session, block that area's entry and offer targeted retry. Bootstrap failure is the controlled whole-scene fallback boundary.
+
+Room leases own pending and resident decoded models. Prepared visual snapshots retain their own leases through replacement. Late completions after disposal release exactly once. The existing cache remains responsible for unowned decoded geometry/images and its provisional envelope; required resources are protected. This implements the ownership needed by Phase 5, and Phase 8 adds cancellation, timed eviction and durable storage retirement; see [lifetime management](chunking-lifecycle.md).
+
+`?perf=1` records requested/downloaded/hash-verified/decode milestones, dependencies, exact preparation, visual commit and actual region admission. `chunkStreaming` reports resident/visible/movement/prefetch/pinned selections, failures, observed latency, required exact bytes and a conservative texture estimate. The decoded asset cache includes exact products as well as visuals. Resource estimates are proxies; browser traces and physical-device runs are still required.
+
+Checks:
+
+```sh
+npm --prefix asset-tools test
+npm --prefix web test
+npm --prefix web run build
+go test ./...
+# With a current Vite server; generated products and scoped delivery are mocked:
+TOUR_ORIGIN=http://localhost:5183 npm --prefix web run test:chunk-streaming
+TOUR_ORIGIN=http://localhost:5183 ROOM_OUTPUT=/tmp/legacy-room-streaming.json npm --prefix web run test:room-streaming
+```
+
+The chunk browser regression generates real room-group GLBs and checks exact bootstrap, starting-area delivery, failed-neighbor capsule boundaries, targeted retry, quality pose retention, complete HQ contributors, reset readiness, invalid saved-start recovery, inspection, layout placements, public/embed delivery and malformed-manifest fallback. Unit tests cover transformed capsule admission, source identities, hidden authored walls, doorway/window distinctions, stale prefetch priority, reserved movement capacity, descriptor renewal and external-resource rejection. The earlier independent-asset layout browser regression also passes. The recorded [generated-fixture evidence](performance-baselines/chunking-phase56.json) includes 21,712 verified startup payload bytes, of which 16,516 are exact indexes; successful bodies exclude failed transfers and HTTP overhead. These are Chromium SwiftShader and mocked API checks, not live-storage, real-upload visual review or physical-device performance acceptance.
+
+The [final Phase 10 acceptance](chunking-acceptance.md) adds explicit rollback gates, live upload/storage coverage and same-source cold/warm comparisons. These generated-fixture results do not establish startup transfer savings or physical-device budgets.

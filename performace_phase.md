@@ -319,3 +319,7 @@ For every phase:
 - Update phase status with implementation evidence, measured results, and remaining limitations. Distinguish browser emulation from physical-device testing.
 
 Final acceptance requires sustained physical-device walkthroughs, slow-network and failed-loading checks, reviewed HQ appearance, and regression thresholds established from Phase 1. Numerical improvements and production budgets remain unconfirmed until these measurements are complete.
+
+## Current chunking acceptance follow-up
+
+The [final chunking Phase 10 report](docs/chunking-acceptance.md) passes the current full walking browser acceptance, including public courtyard exits/returns and emulated touch. Earlier failure records above remain historical evidence. Chunking now includes reviewed static groups, shared visual images, optional static triangle cells, durable retirement and explicit rollout/rollback gates. Same-source generated-fixture comparisons show higher startup bytes with complete exact indexes, so production defaults off; this does not complete the physical-device budgets or real-upload visual review listed above.

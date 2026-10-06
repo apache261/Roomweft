@@ -6,7 +6,7 @@ import { PNG } from 'pngjs';
 import { processAsset } from '../../asset-tools/process.mjs';
 import { defaultSettings } from '../src/sceneSettings.ts';
 import { reviewedInterior } from '../scripts/reviewed-interior.mjs';
-const origin=process.env.TOUR_ORIGIN||'http://localhost:5174',output='/tmp/phase4-runtime-browser';
+const origin=process.env.TOUR_ORIGIN||'http://localhost:5174',output=process.env.RUNTIME_OUTPUT||'/tmp/phase4-runtime-browser';
 await mkdir(output,{recursive:true});
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
 function rebuild(json,bin){const metadata=Buffer.from(JSON.stringify(json)),padding=(4-metadata.length%4)%4,binaryPadding=(4-bin.length%4)%4;const bytes=Buffer.alloc(28+metadata.length+padding+bin.length+binaryPadding);bytes.write('glTF');bytes.writeUInt32LE(2,4);bytes.writeUInt32LE(bytes.length,8);bytes.writeUInt32LE(metadata.length+padding,12);bytes.writeUInt32LE(0x4e4f534a,16);metadata.copy(bytes,20);bytes.fill(32,20+metadata.length,20+metadata.length+padding);bytes.writeUInt32LE(bin.length+binaryPadding,20+metadata.length+padding);bytes.writeUInt32LE(0x004e4942,24+metadata.length+padding);bin.copy(bytes,28+metadata.length+padding);return bytes;}

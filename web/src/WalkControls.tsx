@@ -40,7 +40,7 @@ export function WalkControls({url,settings,textureURLs,...props}:WalkProps & {ur
  useEffect(()=>{prepared.applyAppearance(settings.appearance);invalidate();},[prepared,settings.appearance.tint,settings.appearance.roughness,invalidate]);
  return <ModelWalkControls {...props} root={prepared.root} surfaces={prepared.surfaces} textures={gltf.parser.json.textures?.length||0} />;
 }
-export function ModelWalkControls({root,textures,surfaces,walking,saved,movement,ready,report,placing,onPlace,onHover,paused,onInfo,arrival,onNearby,instant,onSelectElement,effects=false,smoothMovement,optimizeVisuals=false,roomVisibility=false}:WalkProps & {root:Object3D;textures:number;surfaces:Surface[]}) {
+export function ModelWalkControls({root,textures,surfaces,walking,saved,movement,ready,report,placing,onPlace,onHover,paused,onInfo,arrival,onNearby,instant,onSelectElement,effects=false,smoothMovement,optimizeVisuals=false,roomVisibility=false,navigationRoot}:WalkProps & {root:Object3D;navigationRoot?:Object3D;textures:number;surfaces:Surface[]}) {
   const { camera, gl, invalidate, frameloop } = useThree();
   const [canSimplify,setCanSimplify]=useState(false);
   useEffect(()=>{let active=true;simplifierReady.then(()=>{if(active)setCanSimplify(true);}).catch(()=>{});return()=>{active=false;};},[]);
@@ -53,7 +53,8 @@ export function ModelWalkControls({root,textures,surfaces,walking,saved,movement
   const endOrbit = useCallback(() => setOrbiting(false), [setOrbiting]);
   useEffect(() => {heldKeys.current.clear();endOrbit(); return endOrbit; }, [walking, endOrbit]);
  const renderingRoot=visual?.root||root;renderingRoot.userData.viewerModelRoot=true;
- const world=useMemo(()=>new WalkWorld(root),[root]);
+ const exactRoot=navigationRoot||root;
+ const world=useMemo(()=>new WalkWorld(exactRoot),[exactRoot]);
  useEffect(()=>()=>world.dispose(),[world]);
  useEffect(()=>()=>{heldKeys.current.clear();movement.current.clear();if(document.pointerLockElement===gl.domElement)document.exitPointerLock();},[gl,movement]);
  const previousNavigation=useRef<ReturnType<WalkWorld['snapshotNavigation']>|undefined>(undefined);
@@ -213,7 +214,9 @@ export function ModelWalkControls({root,textures,surfaces,walking,saved,movement
     };
   }, [world,root,walking,camera,gl,saved,movement,ready,report,state,paused,arrival,onNearby,instant,effects,smoothMovement,invalidate,setMoving,setOrbiting,roomVisibility]);
   useViewerFrame((state, delta) => { ticker.current?.(delta); visual?.update(state.camera,state.size.height);
-    const metadata=root.userData.roomMetadata;if(visual&&roomVisibility&&metadata){
+    const metadata=root.userData.roomMetadata;const selection=root.userData.streamingVisibility as Set<string>|undefined;
+    if(visual&&selection){for(const object of visual.root.children){const ids=object.userData.roomIds as string[]|undefined;object.visible=!ids?.length||ids.some(id=>selection.has(id));}}
+    else if(visual&&roomVisibility&&metadata){
       // Off-screen shadow/reflective contributors require a full conservative set.
       const visible=visibleRooms(state.camera,metadata.rooms,metadata.openings,!walking||metadata.conservative||gl.shadowMap.enabled);
       for(const object of visual.root.children){const ids=object.userData.roomIds as string[]|undefined;object.visible=!ids?.length||ids.some(id=>visible.has(id));}

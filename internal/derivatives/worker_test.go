@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 	"virtual-tour/internal/database"
 )
@@ -79,5 +80,19 @@ func TestProcessNeverPublishesPartialOutput(t *testing.T) {
 		if !test.wantError && (!store.published || objects.puts != 4 || objects.deletes != 0) {
 			t.Fatal("complete output was not published")
 		}
+	}
+}
+
+// Admission must leave the immutable source and original delivery path intact.
+func TestOversizedSourceRemainsAvailable(t *testing.T) {
+	store := &fakeStore{accept: true}
+	objects := &fakeObjects{source: "must-not-be-read"}
+	job := database.DerivativeJob{Size: 256*1024*1024 + 4, Key: "private/oversized-original.glb"}
+	err := Process(context.Background(), store, objects, "must-not-run", job)
+	if err == nil || !strings.Contains(err.Error(), "original remains usable") {
+		t.Fatalf("expected explicit original fallback, got %v", err)
+	}
+	if store.published || objects.puts != 0 || objects.deletes != 0 {
+		t.Fatal("oversized admission mutated stored products")
 	}
 }

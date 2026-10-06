@@ -7,7 +7,7 @@ cd -- "$project_dir"
 
 usage() {
   cat <<'EOF'
-Usage: ./deploy.sh COMMAND [OPTIONS] [SERVICES]
+Usage: ./deploy.sh [--production] COMMAND [OPTIONS] [SERVICES]
 
   up                 Build and start the stack in the background
   down               Stop and remove containers; keep data volumes
@@ -23,12 +23,16 @@ Additional options are passed directly to Docker Compose. Examples:
   ./deploy.sh up --no-deps web
   ./deploy.sh logs -f api
   ./deploy.sh down --remove-orphans
+  ./deploy.sh --production up
 
 Customize ports and startup settings in .env. Compose also accepts
 COMPOSE_FILE, COMPOSE_PROJECT_NAME and COMPOSE_PROFILES environment variables.
+With --production, use .env.production and compose.production.yml instead.
 EOF
 }
 
+production=false
+if [[ "${1:-}" == --production ]]; then production=true; shift; fi
 action="${1:-help}"
 if (($#)); then shift; fi
 case "$action" in
@@ -46,7 +50,11 @@ if ! docker compose version >/dev/null 2>&1; then
   exit 1
 fi
 
-if [[ "$action" == up && ! -f .env ]]; then
+if [[ "$production" == true && ! -f .env.production ]]; then
+  echo 'Copy .env.production.example to .env.production and configure it first.' >&2
+  exit 1
+fi
+if [[ "$production" == false && "$action" == up && ! -f .env ]]; then
   cp -- .env.example .env
   printf 'Created .env from .env.example. Edit it to customize the stack.\n'
 fi
@@ -65,7 +73,11 @@ if [[ "$action" != config && -z "${DOCKER_HOST:-}" && -z "${DOCKER_CONTEXT:-}" &
   docker_command=(sudo --preserve-env=COMPOSE_FILE,COMPOSE_PROJECT_NAME,COMPOSE_PROFILES docker)
 fi
 
+compose_options=()
+if [[ "$production" == true ]]; then
+  compose_options=(--env-file .env.production -f compose.production.yml)
+fi
 case "$action" in
-  up) exec "${docker_command[@]}" compose up --build --detach "$@" ;;
-  *) exec "${docker_command[@]}" compose "$action" "$@" ;;
+  up) exec "${docker_command[@]}" compose "${compose_options[@]}" up --build --detach "$@" ;;
+  *) exec "${docker_command[@]}" compose "${compose_options[@]}" "$action" "$@" ;;
 esac

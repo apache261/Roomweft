@@ -36,7 +36,15 @@
     "benchmark:hotspots": "node scripts/benchmark-hotspot-visibility.mjs",
     "test:spatial-rendering": "node tests/spatial-rendering.browser.mjs",
     "test:room-streaming": "node tests/room-streaming.browser.mjs",
-    "test:hq-rendering": "node tests/hq-rendering.browser.mjs"
+    "test:hq-rendering": "node tests/hq-rendering.browser.mjs",
+    "test:chunking-baseline": "node tests/chunking-baseline.browser.mjs",
+    "demo:chunking": "node scripts/create-performance-demo.mjs --chunking",
+    "test:partition": "node tests/partition.browser.mjs",
+    "test:chunk-streaming": "node tests/chunkStreaming.browser.mjs",
+    "test:chunk-spatial": "CHUNK_SPATIAL=1 node tests/chunkStreaming.browser.mjs",
+    "test:chunk-comparison": "node tests/chunking-comparison.browser.mjs",
+    "test:chunk-live": "node tests/chunking-live.browser.mjs",
+    "test:chunk-acceptance": "node ../scripts/validate-chunking.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",

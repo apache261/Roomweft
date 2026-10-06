@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { summarize, textureBytes, PerformanceRun, sceneFingerprint } from '../src/performanceMetrics.ts';
+import { summarize, textureBytes, PerformanceRun, sceneFingerprint, enablePerformanceDiagnostics, beginPerformanceRun, assetLoadMeasurement, performanceStage } from '../src/performanceMetrics.ts';
 import { performanceFixtures } from '../scripts/performance-fixtures.mjs';
 import { buildLayout } from '../src/layoutGeometry.ts';
 import { WalkWorld } from '../src/navigation.ts';
@@ -29,3 +29,28 @@ test('six benchmark scenes include a connected modular world with safe starts', 
 });
 
 test('idle wake renders retain draw counts without contaminating frame intervals', () => { const run = new PerformanceRun({}); run.frame(null, 2, 5, 100); assert.equal(run.snapshot().frameMs.samples, 0); assert.equal(run.snapshot().drawCalls.max, 5); assert.equal(run.snapshot().renderedFrames, 1); assert.equal(run.snapshot().idleWakeFrames, 1); run.frame(1000, 20, 7, 200); assert.equal(run.snapshot().frameMs.max, 1000); });
+
+test('loading milestones remain separate and timed stages retain offsets', () => {
+  const run = new PerformanceRun({});
+  assert.equal(run.snapshot().firstSafelyUsableWalkingViewMs, null);
+  run.firstRenderedMs = 10; run.usableMs = 20; run.walkingUsableMs = 30;
+  run.resetFrames();
+  assert.equal(run.snapshot().firstRenderedViewMs,10);
+  assert.equal(run.snapshot().firstSafelyUsableWalkingViewMs,30);
+  assert.equal(run.snapshot().schema,2);
+});
+
+test('asset attempt events and stage offsets stay with their originating run', () => {
+  enablePerformanceDiagnostics(true);
+  const first=beginPerformanceRun({scene:'first'}), event=assetLoadMeasurement('original');
+  event('requested'); const finish=performanceStage('asset-network');
+  const second=beginPerformanceRun({scene:'second'});
+  event('downloaded',123);finish();finish();
+  assert.deepEqual(first.snapshot().assetLoads[0].events.map(e=>e.stage),['requested','downloaded']);
+  assert.equal(first.snapshot().assetLoads[0].events[1].bytes,123);
+  assert.equal(first.timings.length,1);
+  assert.ok(first.timings[0].endMs>=first.timings[0].startMs);
+  assert.equal(second.snapshot().assetLoads.length,0);
+  assert.equal(second.timings.length,0);
+  enablePerformanceDiagnostics(false);
+});

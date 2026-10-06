@@ -1,6 +1,7 @@
+import { performanceStage } from './performanceMetrics.ts';
 import { applyCollisionGeometry } from './collisionGeometry.ts';
 import { navigationSettings, type NavigationSettings } from './navigationSettings.ts';
-import { applySurfaceMaterials, meshSurfaces, type MaterialPreset } from './materials.ts';
+import { applySurfaceMaterials, meshSurfaces, copySourceSurfacePaths, type MaterialPreset } from './materials.ts';
 import { AnimationMixer, Box3, Group, Matrix4, Mesh, MeshStandardMaterial, PropertyBinding, Vector3, type AnimationClip, type Texture, type Object3D } from 'three';
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 
@@ -20,10 +21,12 @@ export function modelMatrix(model: SceneSettings['model']): Matrix4 {
     .scale(new Vector3(model.scale, model.scale, model.scale));
 }
 export function prepareModel(source: Object3D, settings: SceneSettings, textures:Map<string,Texture>=new Map(), animations:AnimationClip[]=[]) {
+  const finishPreparation = performanceStage('model-preparation');
   const root = new Group();
   root.userData.runtimeGeometryRevision=source.userData.runtimeGeometryRevision?`${source.userData.runtimeGeometryRevision}:${JSON.stringify(settings.model)}`:undefined;
   root.matrixAutoUpdate = false; root.matrix.copy(modelMatrix(settings.model));
   const copy = clone(source);
+  copySourceSurfacePaths(source,copy);
   copy.userData.runtimeAnimated = animations.length > 0;
   const clonedNodes=new WeakMap<Object3D,Object3D>();
   const pair=(a:Object3D,b:Object3D)=>{clonedNodes.set(a,b);a.children.forEach((child,i)=>pair(child,b.children[i]));};pair(source,copy);
@@ -50,6 +53,7 @@ export function prepareModel(source: Object3D, settings: SceneSettings, textures
   const surfaces=meshSurfaces(copy);
   const mixer=animations.length?new AnimationMixer(copy):undefined;
   animations.forEach(clip=>mixer!.clipAction(clip).play());
+  finishPreparation();
   return {
     root, surfaces, hasAnimations: animations.length > 0, dimensions: new Box3().setFromObject(root).getSize(new Vector3()).toArray(),
     updateAnimations: (seconds:number) => mixer?.update(seconds),

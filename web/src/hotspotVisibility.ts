@@ -68,8 +68,9 @@ export class HotspotVisibility {
     this.seen.clear();
     if (!panorama) for (const root of objects) {
       const authored = (root.userData.runtimeAuthoredRoot as Object3D | undefined) || root;
-      authored.updateWorldMatrix(true, true);
-      authored.traverseVisible(this.visit);
+      const occlusion=(authored.userData.runtimeOcclusionRoot as Object3D|undefined)||authored;
+      occlusion.updateWorldMatrix(true, true);
+      occlusion.traverseVisible(this.visit);
     }
     // Visibility, hierarchy, loading and removals invalidate cached answers too.
     if (this.seen.size !== this.occluders.length || this.occluders.some(r => !this.seen.has(r.mesh))) this.revision++;

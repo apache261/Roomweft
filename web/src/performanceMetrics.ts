@@ -15,7 +15,10 @@ export class PerformanceRun {
   sampleStarted = performance.now();
   readonly date = new Date().toISOString();
   frames: { interval: number | null; cpu: number; calls: number; triangles: number }[] = [];
-  timings: { stage: string; ms: number; bytes?: number; status: string }[] = [];
+  timings: { stage: string; startMs: number; endMs: number; ms: number; bytes?: number; status: string }[] = [];
+  assetLoads: { id: number; kind: string; events: { stage: string; atMs: number; bytes?: number }[] }[] = [];
+  firstRenderedMs: number | null = null;
+  walkingUsableMs: number | null = null;
   resources: Record<string, unknown> = {};
   usableMs: number | null = null;
   hiddenFrames = 0;
@@ -35,17 +38,24 @@ export class PerformanceRun {
     this.frames = []; this.frameCursor = 0; this.totalFrames = 0; this.renderedFrames = 0; this.idleWakeFrames = 0; this.hiddenFrames = 0; this.sampleStarted = performance.now();
   }
   snapshot() {
-    return { schema: 1, date: this.date, elapsedMs: performance.now() - this.started, sampleElapsedMs: performance.now() - this.sampleStarted, metadata: this.metadata,
-      totalFrames: this.totalFrames, renderedFrames: this.renderedFrames, idleWakeFrames: this.idleWakeFrames, retainedFrameLimit: 36000, hiddenFrames: this.hiddenFrames, firstUsableViewMs: this.usableMs,
+    const downloads = typeof performance.getEntriesByType === 'function' ? performance.getEntriesByType('resource').filter(e => e.startTime >= this.started).map(entry => {
+      const e = entry as PerformanceResourceTiming;
+      return { startMs: e.startTime - this.started, endMs: e.responseEnd - this.started, durationMs: e.duration, kind: e.initiatorType, transferBytes: e.transferSize, encodedBytes: e.encodedBodySize, decodedBytes: e.decodedBodySize, timingAvailable: e.responseStart > 0 };
+    }) : [];
+    const before = (milestone: number | null) => milestone === null ? null : downloads.filter(e => e.endMs <= milestone).reduce((sum, e) => sum + e.transferBytes, 0);
+    return { schema: 2, date: this.date, elapsedMs: performance.now() - this.started, sampleElapsedMs: performance.now() - this.sampleStarted, metadata: this.metadata,
+      totalFrames: this.totalFrames, renderedFrames: this.renderedFrames, idleWakeFrames: this.idleWakeFrames, retainedFrameLimit: 36000, hiddenFrames: this.hiddenFrames, firstUsableViewMs: this.usableMs, firstRenderedViewMs: this.firstRenderedMs, firstSafelyUsableWalkingViewMs: this.walkingUsableMs,
+      downloads, network: { bytesBeforeUsableView: before(this.usableMs), bytesBeforeWalkingView: before(this.walkingUsableMs), totalTransferBytes: downloads.reduce((sum, e) => sum + e.transferBytes, 0), unknownSizeRequests: downloads.filter(e => !e.timingAvailable || e.encodedBytes === 0).length },
+      assetLoads: this.assetLoads.map(load => ({ ...load, events: [...load.events] })),
       frameMs: summarize(this.frames.flatMap(f => f.interval === null ? [] : [f.interval])), cpuSubmissionMs: summarize(this.frames.map(f => f.cpu)),
       drawCalls: summarize(this.frames.map(f => f.calls)), triangles: summarize(this.frames.map(f => f.triangles)),
       timings: [...this.timings], resources: this.resources,
-      limitations: ['CPU submission time is not GPU time.', 'Texture bytes and resource counts are proxies, not exact VRAM.', 'Frame-time samples exclude demand-rendering idle gaps; renderedFrames includes idle wakes.', 'Frame distributions retain at most the last 36000 visible rendered frames.', 'Decode includes GLTF parsing and embedded image decoding, not network fetch.'] };
+      limitations: ['CPU submission time is not GPU time; shader compilation/upload stalls require a separate browser trace.', 'Network zero sizes may mean cached responses or missing Timing-Allow-Origin; totals are observed lower bounds. In-flight requests are not included in milestone totals.', 'Texture bytes and resource counts are proxies, not exact VRAM.', 'Frame-time samples exclude demand-rendering idle gaps; renderedFrames includes idle wakes.', 'Frame distributions retain at most the last 36000 visible rendered frames.', 'Decode includes GLTF parsing and embedded image decoding, not network fetch.'] };
   }
 }
 let enabled = false;
 export let currentRun: PerformanceRun | undefined;
-export function enablePerformanceDiagnostics(value: boolean) { enabled = value; }
+export function enablePerformanceDiagnostics(value: boolean) { enabled = value; if (value) performance.setResourceTimingBufferSize?.(10000); }
 export function beginPerformanceRun(metadata: Record<string, unknown>) {
   if (!enabled) return undefined;
   currentRun = new PerformanceRun(metadata);
@@ -61,7 +71,8 @@ export function performanceStage(stage: string, bytes?: number) {
   return (status = 'ok') => {
     if (finished) return;
     finished = true;
-    run.timings.push({ stage, ms: performance.now() - started, bytes, status });
+    const ended = performance.now();
+    run.timings.push({ stage, startMs: started - run.started, endMs: ended - run.started, ms: ended - started, bytes, status });
     if (run.timings.length > 500) run.timings.shift();
   };
 }
@@ -69,4 +80,14 @@ export function sceneFingerprint(value: unknown) {
   let hash = 2166136261;
   for (const char of JSON.stringify(value)) hash = Math.imul(hash ^ char.charCodeAt(0), 16777619);
   return (hash >>> 0).toString(16);
+}
+
+// Anonymous per-attempt IDs deliberately omit private endpoints and signed URLs.
+export function assetLoadMeasurement(kind: 'original' | 'variant' | 'collision' | 'room-asset' | 'chunk' | 'navigation-index' | 'occlusion-index') {
+  const run = currentRun;
+  if (!run) return (_stage: string, _bytes?: number) => {};
+  const load = { id: (run.assetLoads.at(-1)?.id ?? 0) + 1, kind, events: [] as { stage: string; atMs: number; bytes?: number }[] };
+  run.assetLoads.push(load);
+  if (run.assetLoads.length > 500) run.assetLoads.shift();
+  return (stage: string, bytes?: number) => { if (load.events.length < 32) load.events.push({ stage, atMs: performance.now() - run.started, bytes }); };
 }

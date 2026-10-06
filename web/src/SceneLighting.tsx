@@ -25,7 +25,7 @@ export function SceneLighting({appearance,background,tier='balanced',enabled=tru
   const meshes:Mesh[]=[],roots:Object3D[]=[];
   scene.traverse(o=>{if(o.userData.viewerModelRoot)roots.push(o);});
   const baked={lightMappedMeshes:0,aoMappedMeshes:0,staleMeshes:0,missingUV:0,dynamicMeshes:0};
-  let pending=false;for(const root of roots){const authored=root.userData.runtimeAuthoredRoot||root;pending||=!!authored.userData.blockedRooms?.length;for(const name of Object.keys(baked) as (keyof typeof baked)[])baked[name]+=authored.userData.bakedLighting?.[name]||0;root.traverse(o=>{if(o instanceof Mesh)meshes.push(o);});}
+  let pending=false;for(const root of roots){const authored=root.userData.runtimeAuthoredRoot||root;pending||=!!authored.userData.blockedRooms?.length||!!authored.userData.streamingContributorsPending;for(const name of Object.keys(baked) as (keyof typeof baked)[])baked[name]+=authored.userData.bakedLighting?.[name]||0;root.traverse(o=>{if(o instanceof Mesh)meshes.push(o);});}
   const resident=new Set(meshes);for(const [mesh,flags]of originals.current)if(!resident.has(mesh)){mesh.castShadow=flags.cast;mesh.receiveShadow=flags.receive;originals.current.delete(mesh);}
   eye.setFromMatrixPosition(camera.matrixWorld);const selected=policy.shadows&&!pending?selectShadowCasters(meshes,eye):{selected:[],triangles:0},casters=new Set(selected.selected);
   light.castShadow=policy.shadows&&!pending&&casters.size>0;

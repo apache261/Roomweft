@@ -1,0 +1,53 @@
+{
+  "spatialCells": true,
+  "generatedChunks": 27,
+  "sharedImageMetrics": {
+    "embedded_image_bytes": 8505,
+    "unique_image_bytes": 105,
+    "saved_image_bytes": 8400
+  },
+  "execution": "Chromium SwiftShader with actual generated GLBs and mocked scoped API; not physical-device evidence",
+  "checks": [
+    "shared-image single transfer",
+    "compatible GPU sampler ownership",
+    "exact bootstrap",
+    "starting visuals only",
+    "parent-scoped payloads",
+    "failed-neighbor capsule boundary",
+    "targeted retry",
+    "quality pose retention",
+    "HQ full contributors",
+    "reset target readiness",
+    "invalid saved start recovery",
+    "inspection full contributors",
+    "layout parent chunks",
+    "embed",
+    "malformed-manifest fallback"
+  ],
+  "blocked": [
+    3.6193415609800705e-16,
+    1.650000001490116,
+    -1.6759722222222213
+  ],
+  "entered": [
+    7.292261419422878e-16,
+    1.650000001490116,
+    -4.675138888888881
+  ],
+  "beforeQuality": [
+    7.292261419422878e-16,
+    1.650000001490116,
+    -4.675138888888881
+  ],
+  "afterQuality": [
+    7.292261419422878e-16,
+    1.650000001490116,
+    -4.675138888888881
+  ],
+  "originalBytes": 11028,
+  "firstSafelyUsableWalkingViewMs": 2480,
+  "startupVerifiedPayloadBytes": 22349,
+  "startupBytesDefinition": "Successful verified payload bodies completed before walking readiness, including exact indexes; excludes failed bodies/HTTP overhead",
+  "exactStartupBytes": 16868,
+  "sourceFallbackReason": "malformed manifest"
+}

@@ -85,9 +85,38 @@ Database queries live in `db/queries`; regenerate with `sqlc generate`. The API 
 
 ## Storage: MinIO locally, S3 in production
 
-Local Compose uses MinIO. Production will use an existing AWS S3 bucket configured by developers through endpoint, bucket, region, and deployment credentials or an IAM role. The same storage client signs browser uploads and reads for both environments.
+Local Compose uses MinIO. Production uses an existing AWS S3 bucket configured by developers through endpoint, bucket, region, and deployment credentials or an IAM role. The same storage client signs browser uploads and reads for both environments.
 
-Copy `.env.production.example` to `.env.production`, replace the database and bucket values, and load it into the production API environment (for example, Docker's `docker run --env-file .env.production`). The template binds the API to `0.0.0.0:8080`, uses a TLS PostgreSQL connection, and supports AWS credentials or an IAM role. The local `compose.yml` overrides the database and storage endpoints, so this template is intended for a separate production deployment. `.env.production` is ignored by Git.
+Production uses bundled PostgreSQL, the API, a built static frontend, an Nginx HTTPS proxy, and Certbot containers. It uses your existing private AWS S3 bucket instead of MinIO. You do not need to create a separate PostgreSQL server. `compose.production.yml` keeps the same PostgreSQL service and `postgres_data` volume names as development; the Compose project name controls whether an existing volume is reused.
+
+```sh
+cp .env.production.example .env.production
+# Set POSTGRES_PASSWORD, S3 settings, WEB_ORIGIN, CERTBOT_DOMAIN and CERTBOT_EMAIL.
+./deploy.sh --production up
+./certbot.sh --production issue
+./certbot.sh --production test
+./certbot.sh --production certificates
+./deploy.sh --production logs -f renew challenge
+```
+
+Production reads `.env.production`; development continues to read `.env`. Configure a strong URL-safe PostgreSQL password. If switching an existing deployment to production, keep its database/user/password and Compose project name unchanged to reuse its database. PostgreSQL's initialization variables do not change credentials in an existing volume. `DATABASE_URL` is generated for `postgres:5432` on the internal Docker network. Production publishes only the proxy's HTTP/HTTPS ports; PostgreSQL, the API and frontend stay inside Docker. `HTTP_ADDR=0.0.0.0:8080` is the API's internal container listener.
+
+Set `WEB_ORIGIN=https://YOUR_DOMAIN`, `CERTBOT_DOMAIN=YOUR_DOMAIN` (without `https://`), and `CERTBOT_EMAIL` to your certificate contact email. Update `TLS_CERT_FILE` and `TLS_KEY_FILE` to match that hostname. Point the domain's DNS records to the production host and make public ports 80 and 443 reachable. The proxy initially serves HTTP certificate challenges; it enables HTTPS automatically after certificate issuance, forwards `/api/` and `/health` to the API, and serves the frontend through its static web container. Other HTTP requests redirect to HTTPS. Asset uploads and reads go directly to S3 using signed URLs; apply the bucket CORS policy for your HTTPS origin.
+
+The [Certbot Docker image](https://eff-certbot.readthedocs.io/en/stable/install.html#running-with-docker) uses [webroot validation](https://eff-certbot.readthedocs.io/en/stable/using.html#webroot), so renewal does not interrupt the HTTPS proxy. The renewal service starts with the production stack and checks every 12 hours. Nginx watches the certificate files and reloads within approximately ten seconds after issuance or renewal, without mounting the Docker socket. Certificates, ACME accounts, renewal settings and logs persist under `CERTBOT_DATA_DIR` (default `./data/certbot`). Back up that whole directory; `live/` contains links into `archive/`. Renewal failures remain in Docker logs and retry at the next interval.
+
+```sh
+./certbot.sh --production renew        # Immediate renewal check; only renews when due
+./certbot.sh --production logs         # Follow renewal logs
+./certbot.sh --production status       # Container status
+./certbot.sh --production stop         # Pause renewal; keep the app/proxy/database running
+./certbot.sh --production start        # Resume renewal
+./deploy.sh --production down          # Stop the stack; preserve database/certificates
+```
+
+Manual issuance/renewal/test commands pause an active scheduler and restore it afterward to avoid competing Certbot locks. Prefix `certbot.sh` with `sudo` if your Docker socket requires it; `deploy.sh` handles the default local socket automatically. The standalone `./certbot.sh issue/test/start` commands remain available for certificate management alongside an external application proxy. If switching from that standalone certificate stack, run `./certbot.sh stop` before starting the bundled production proxy to free port 80. The standalone stack requires its external HTTPS proxy to reload certificate changes.
+
+On the same host/project, switching from development replaces the `api`/`web` services while retaining PostgreSQL data. Old MinIO services may remain until stopped; their objects are not migrated to S3 by this change. Use the same project name only when intentionally switching that deployment; use a different `COMPOSE_PROJECT_NAME` for simultaneous independent development and production stacks.
 
 - `S3_ENDPOINT`: server-side storage endpoint (`http://minio:9000` in Compose).
 - `S3_PUBLIC_ENDPOINT`: browser-reachable endpoint (`http://localhost:9000` locally).
@@ -345,3 +374,9 @@ The demo combines tiled connected rooms, two table instances, an exterior courty
 Completed GLB and material-texture uploads queue validated runtime derivatives when the background worker is enabled. The asset library shows processing status and supports retries. Existing assets can be queued there. Original files remain available while processing or after failures. Docker includes the Node processor; native development enables it with `ASSET_PROCESSOR_SCRIPT` as shown above.
 
 Low, Balanced and HQ select embedded and external texture variants with maximum dimensions of 1024, 2048 and 4096. Exact collision proxies preserve reviewed floors and authored surface paths. Auto commits texture changes only after accepting its quality trial. Shared model, texture and navigation caches preserve ownership across scene changes. See [runtime asset processing](docs/runtime-assets.md) for validation, private delivery, provisional budgets, checks and current limitations.
+
+## Reviewed GLB chunking
+
+Large static GLBs can be partitioned into author-reviewed room groups with independently delivered quality variants and shared images. Preview/public/embed viewers prepare exact navigation and occlusion before admitting movement; unsupported sources retain complete loading. Builder editing uses the complete source. Experimental intact-triangle cells are explicitly opt-in.
+
+API rollout defaults to `ASSET_CHUNK_STREAMING=off`. Use `reviewed` for verified room groups or `spatial` to also permit reviewed experimental cells. `VITE_CHUNK_STREAMING=0` and `?streaming=0` provide viewer rollback. All processor modules are included in the Docker image; migrations 014–016 establish partition, job and storage retirement records. See [final validation, measurements and rollout](docs/chunking-acceptance.md) and [the implementation plan](rendering_pland_phase.md). Automated generated-fixture/live-stack checks do not replace real-building or physical-device acceptance.

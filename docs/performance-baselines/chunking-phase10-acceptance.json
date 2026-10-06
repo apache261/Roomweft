@@ -1,0 +1,133 @@
+{
+  "schema": 1,
+  "recordedDate": "2026-10-06",
+  "timeZone": "Asia/Manila",
+  "execution": "Chromium SwiftShader, generated fixtures, live local PostgreSQL/worker/S3-compatible storage; physical devices not tested",
+  "liveDatabase": true,
+  "checks": [
+    {
+      "name": "chunk-streaming",
+      "status": "passed",
+      "elapsedMs": 31496,
+      "log": "chunking-phase10-checks/chunk-streaming.log"
+    },
+    {
+      "name": "chunk-spatial",
+      "status": "passed",
+      "elapsedMs": 37239,
+      "log": "chunking-phase10-checks/chunk-spatial.log"
+    },
+    {
+      "name": "partition",
+      "status": "passed",
+      "elapsedMs": 15481,
+      "log": "chunking-phase10-checks/partition.log"
+    },
+    {
+      "name": "room-streaming",
+      "status": "passed",
+      "elapsedMs": 39147,
+      "log": "chunking-phase10-checks/room-streaming.log"
+    },
+    {
+      "name": "runtime-assets",
+      "status": "passed",
+      "elapsedMs": 68558,
+      "log": "chunking-phase10-checks/runtime-assets.log"
+    },
+    {
+      "name": "hq-rendering",
+      "status": "passed",
+      "elapsedMs": 31866,
+      "log": "chunking-phase10-checks/hq-rendering.log"
+    },
+    {
+      "name": "fan",
+      "status": "passed",
+      "elapsedMs": 83957,
+      "log": "chunking-phase10-checks/fan.log"
+    },
+    {
+      "name": "quality",
+      "status": "passed",
+      "elapsedMs": 53524,
+      "log": "chunking-phase10-checks/quality.log"
+    },
+    {
+      "name": "performance",
+      "status": "passed",
+      "elapsedMs": 55207,
+      "log": "chunking-phase10-checks/performance.log"
+    },
+    {
+      "name": "hotspots",
+      "status": "passed",
+      "elapsedMs": 46777,
+      "log": "chunking-phase10-checks/hotspots.log"
+    },
+    {
+      "name": "go-tests-live",
+      "status": "passed",
+      "log": "chunking-phase10-checks/go-tests-live.log"
+    },
+    {
+      "name": "processor-tests",
+      "status": "passed",
+      "log": "chunking-phase10-checks/processor-tests.log"
+    },
+    {
+      "name": "web-tests",
+      "status": "passed",
+      "log": "chunking-phase10-checks/web-tests.log"
+    },
+    {
+      "name": "web-build",
+      "status": "passed",
+      "log": "chunking-phase10-checks/web-build.log"
+    },
+    {
+      "name": "disabled-viewer-build",
+      "status": "passed",
+      "log": "chunking-phase10-checks/disabled-viewer-build.log"
+    },
+    {
+      "name": "walking",
+      "status": "passed",
+      "log": "chunking-phase10-checks/walking.log"
+    },
+    {
+      "name": "go-vet",
+      "status": "passed"
+    },
+    {
+      "name": "same-source-comparison",
+      "status": "passed",
+      "report": "chunking-phase10-comparison.json"
+    },
+    {
+      "name": "live-upload-worker-storage",
+      "status": "passed",
+      "report": "chunking-phase10-live.json"
+    }
+  ],
+  "productionAcceptance": false,
+  "defaultRollout": "off",
+  "comparison": {
+    "sourceBytes": 12960,
+    "completeColdStartupPayloadBytes": 12960,
+    "chunkedColdStartupPayloadBytes": 24509,
+    "completeVisitedPayloadBytes": 12960,
+    "chunkedVisitedPayloadBytes": 35773,
+    "warmPayloadBytes": 0,
+    "startupSavingsObserved": false
+  },
+  "knownRegression": {
+    "publicCourtyardExit": "passes current full walking browser acceptance; earlier recorded failure does not reproduce"
+  },
+  "remaining": [
+    "Representative real-upload geometry, silhouette, lighting and atlas review",
+    "Sustained physical-device walkthroughs and measured per-device budgets",
+    "GPU and shader/upload trace review",
+    "Docker image build verification; source COPY modules corrected and native processor integration passes"
+  ]
+}

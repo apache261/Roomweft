@@ -1,17 +1,18 @@
 // Independently delivered GLBs are chunks. Shared asset IDs load once, even when
 // multiple rooms reference them. Lease release is delegated to the asset cache.
-export type ChunkState<T>={status:'loading'|'ready'|'failed';value?:T;error?:string;release:()=>void};
+export type ChunkState<T>={status:'loading'|'ready'|'failed';value?:T;error?:string;release:()=>void;touched?:number};
 export class RoomChunkCache<T> {
  readonly entries=new Map<string,ChunkState<T>>();
- private wanted=new Set<string>();private queue:string[]=[];private running=0;private disposed=false;
- private load:(id:string)=>{promise:Promise<T>;release:()=>void};private changed:()=>void;private limit:number;private concurrency:number;
- constructor(load:(id:string)=>{promise:Promise<T>;release:()=>void},changed:()=>void,limit=12,concurrency=2){this.load=load;this.changed=changed;this.limit=limit;this.concurrency=concurrency;}
- request(ids:Iterable<string>){this.wanted=new Set(ids);for(const id of this.wanted){const entry=this.entries.get(id);if(entry){this.entries.delete(id);this.entries.set(id,entry);}}this.queue=this.queue.filter(id=>this.wanted.has(id));for(const id of this.wanted)if(!this.entries.has(id)&&!this.queue.includes(id))this.queue.push(id);this.prune();this.pump();}
- retry(){for(const [id,e]of this.entries)if(e.status==='failed'){e.release();this.entries.delete(id);}this.request(this.wanted);this.changed();}
- private prune(){for(const [id,e]of this.entries){if(this.entries.size<=Math.max(this.limit,this.wanted.size))break;if(this.wanted.has(id)||e.status==='loading')continue;e.release();this.entries.delete(id);}}
- private pump(){while(!this.disposed&&this.running<this.concurrency&&this.queue.length){const id=this.queue.shift()!;if(!this.wanted.has(id)||this.entries.has(id))continue;
-  const lease=this.load(id),entry:ChunkState<T>={status:'loading',release:lease.release};this.entries.set(id,entry);this.running++;
-  lease.promise.then(value=>{entry.status='ready';entry.value=value;},error=>{entry.status='failed';entry.error=error instanceof Error?error.message:String(error);}).finally(()=>{this.running--;if(this.disposed){entry.release();this.entries.delete(id);}else{this.prune();this.changed();this.pump();}});
+ private wanted=new Set<string>();private priority=new Set<string>();private speculative=0;private queue:string[]=[];private running=0;private disposed=false;
+ private load:(id:string)=>{promise:Promise<T>;release:()=>void};private changed:()=>void;private limit:number;private concurrency:number;private grace:number;private pruneTimer:ReturnType<typeof setTimeout>|undefined;
+ constructor(load:(id:string)=>{promise:Promise<T>;release:()=>void},changed:()=>void,limit=12,concurrency=2,grace=0){this.load=load;this.changed=changed;this.limit=limit;this.concurrency=concurrency;this.grace=grace;}
+ request(ids:Iterable<string>,priority:Iterable<string>=ids){this.wanted=new Set(ids);for(const [id,e]of this.entries)if(e.status==='loading'&&!this.wanted.has(id)){e.release();this.entries.delete(id);}this.priority=new Set(priority);for(const id of this.wanted){const entry=this.entries.get(id);if(entry){this.entries.delete(id);entry.touched=Date.now();this.entries.set(id,entry);}}this.queue=this.queue.filter(id=>this.wanted.has(id));for(const id of this.wanted)if(!this.entries.has(id)&&!this.queue.includes(id))this.queue.push(id);const order=new Map([...this.priority].map((id,i)=>[id,i]));this.queue.sort((a,b)=>(order.get(a)??Infinity)-(order.get(b)??Infinity));this.prune();this.pump();if(this.grace&&!this.disposed){if(this.pruneTimer)clearTimeout(this.pruneTimer);this.pruneTimer=setTimeout(()=>{this.pruneTimer=undefined;this.prune();this.changed();},this.grace+10);}}
+ retry(ids:Iterable<string>=this.wanted){const targets=new Set(ids);for(const [id,e]of this.entries)if(e.status==='failed'&&targets.has(id)){e.release();this.entries.delete(id);}this.request(this.wanted,this.priority);this.changed();}
+ private prune(){for(const [id,e]of this.entries){if(this.entries.size<=Math.max(this.limit,this.wanted.size))break;if(this.wanted.has(id)||e.status==='loading'||Date.now()-(e.touched||0)<this.grace)continue;e.release();this.entries.delete(id);}}
+ private pump(){while(!this.disposed&&this.running<this.concurrency&&this.queue.length){const next=this.queue[0],speculative=!this.priority.has(next);if(speculative&&this.speculative>=Math.max(1,this.concurrency-1))break;
+  const id=this.queue.shift()!;if(!this.wanted.has(id)||this.entries.has(id))continue;
+  let lease:ReturnType<typeof this.load>;try{lease=this.load(id);}catch(error){this.entries.set(id,{status:'failed',error:String(error),release:()=>{}});this.changed();continue;}const entry:ChunkState<T>={status:'loading',touched:Date.now(),release:(()=>{let released=false;return()=>{if(!released){released=true;lease.release();}};})()};this.entries.set(id,entry);this.running++;if(speculative)this.speculative++;
+  lease.promise.then(value=>{entry.status='ready';entry.value=value;},error=>{entry.status='failed';entry.error=error instanceof Error?error.message:String(error);}).finally(()=>{this.running--;if(speculative)this.speculative--;if(this.disposed){entry.release();if(this.entries.get(id)===entry)this.entries.delete(id);}else{this.prune();this.changed();this.pump();}});
  }}
- dispose(){this.disposed=true;this.queue=[];for(const [id,e]of this.entries)if(e.status!=='loading'){e.release();this.entries.delete(id);}}
+ dispose(){if(this.disposed)return;this.disposed=true;if(this.pruneTimer)clearTimeout(this.pruneTimer);this.queue=[];for(const e of this.entries.values())e.release();this.entries.clear();}
 }

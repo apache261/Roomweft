@@ -1,5 +1,10 @@
 import { hasBakeUV,isMovingMesh } from './hqRendering.ts';
 import { Box3, Mesh, MeshStandardMaterial, NoColorSpace, RepeatWrapping, SRGBColorSpace, Vector3, type Object3D, type Texture, type Material } from 'three';
+// Canonical remapping is runtime-owned. Uploaded GLB extras cannot approve
+// another mesh's floor or impersonate its material/source path.
+const sourceSurfacePaths=new WeakMap<Object3D,string>();
+export function registerSourceSurfacePath(object:Object3D,path:string){sourceSurfacePaths.set(object,path);}
+export function copySourceSurfacePaths(source:Object3D,copy:Object3D){const path=sourceSurfacePaths.get(source);if(path)sourceSurfacePaths.set(copy,path);source.children.forEach((child,i)=>{if(copy.children[i])copySourceSurfacePaths(child,copy.children[i]);});}
 export type MaterialPreset = { id:string;name:string;light_map?:string;ao_map?:string;bake_revision?:string;base_color?:string;normal?:string;roughness_map?:string;tile_size:number;repeat:[number,number];offset:[number,number];rotation:number;tint:string;roughness:number };
 export type Surface = {path:string;label:string;uv:boolean;bakeUV?:boolean;elementId?:string;bounds?:{min:number[];max:number[]}};
 export function newMaterial(name='Stone tiles'):MaterialPreset {return {id:crypto.randomUUID(),name,tile_size:0.5,repeat:[1,1],offset:[0,0],rotation:0,tint:'#ffffff',roughness:0.85};}
@@ -14,7 +19,7 @@ export function hasUVs(mesh:Mesh) {
 export function meshSurfaces(root:Object3D,elementId?:string):Surface[] {
  const surfaces:Surface[]=[];
  root.updateWorldMatrix(true,true);
- const visit=(o:Object3D,path:string)=>{if(o instanceof Mesh){o.userData.materialPath=path;const box=new Box3().setFromObject(o);surfaces.push({path,label:o.name||`Mesh ${path}`,uv:hasUVs(o),bakeUV:hasBakeUV(o)&&!isMovingMesh(o),elementId,bounds:box.isEmpty()?undefined:{min:box.min.toArray(),max:box.max.toArray()}});}o.children.forEach((c,i)=>visit(c,`${path}/${i}`));};visit(root,'0');return surfaces;
+ const visit=(o:Object3D,path:string)=>{if(o instanceof Mesh){const sourcePath=sourceSurfacePaths.get(o)||path;o.userData.materialPath=sourcePath;const box=new Box3().setFromObject(o);surfaces.push({path:sourcePath,label:o.name||`Mesh ${path}`,uv:hasUVs(o),bakeUV:hasBakeUV(o)&&!isMovingMesh(o),elementId,bounds:box.isEmpty()?undefined:{min:box.min.toArray(),max:box.max.toArray()}});}o.children.forEach((c,i)=>visit(c,`${path}/${i}`));};visit(root,'0');return surfaces;
 }
 export function tiledMaterial(p:MaterialPreset,textures:Map<string,Texture>,metres:[number,number]=[1,1],original?:Material) {
  const material=original?.clone() as MeshStandardMaterial || new MeshStandardMaterial();
