@@ -90,7 +90,7 @@ Local Compose uses MinIO. Production uses an existing AWS S3 bucket configured b
 Production uses bundled PostgreSQL, the API, a built static frontend, an Nginx HTTPS proxy, and Certbot containers. It uses your existing private AWS S3 bucket instead of MinIO. You do not need to create a separate PostgreSQL server. `compose.production.yml` keeps the same PostgreSQL service and `postgres_data` volume names as development; the Compose project name controls whether an existing volume is reused.
 
 ```sh
-cp .env.production.example .env.production
+cp .env.production.example .env
 # Set POSTGRES_PASSWORD, S3 settings, WEB_ORIGIN, CERTBOT_DOMAIN and CERTBOT_EMAIL.
 ./deploy.sh --production up
 ./certbot.sh --production issue
@@ -99,7 +99,7 @@ cp .env.production.example .env.production
 ./deploy.sh --production logs -f renew challenge
 ```
 
-Production reads `.env.production`; development continues to read `.env`. Configure a strong URL-safe PostgreSQL password. If switching an existing deployment to production, keep its database/user/password and Compose project name unchanged to reuse its database. PostgreSQL's initialization variables do not change credentials in an existing volume. `DATABASE_URL` is generated for `postgres:5432` on the internal Docker network. Production publishes only the proxy's HTTP/HTTPS ports; PostgreSQL, the API and frontend stay inside Docker. `HTTP_ADDR=0.0.0.0:8080` is the API's internal container listener.
+Both production and development read `.env`; `--production` selects the production Compose stack. Configure a strong URL-safe PostgreSQL password. If switching an existing deployment to production, keep its database/user/password and Compose project name unchanged to reuse its database. PostgreSQL's initialization variables do not change credentials in an existing volume. `DATABASE_URL` is generated for `postgres:5432` on the internal Docker network. Production publishes only the proxy's HTTP/HTTPS ports; PostgreSQL, the API and frontend stay inside Docker. `HTTP_ADDR=0.0.0.0:8080` is the API's internal container listener.
 
 Set `WEB_ORIGIN=https://YOUR_DOMAIN`, `CERTBOT_DOMAIN=YOUR_DOMAIN` (without `https://`), and `CERTBOT_EMAIL` to your certificate contact email. Update `TLS_CERT_FILE` and `TLS_KEY_FILE` to match that hostname. Point the domain's DNS records to the production host and make public ports 80 and 443 reachable. The proxy initially serves HTTP certificate challenges; it enables HTTPS automatically after certificate issuance, forwards `/api/` and `/health` to the API, and serves the frontend through its static web container. Other HTTP requests redirect to HTTPS. Asset uploads and reads go directly to S3 using signed URLs; apply the bucket CORS policy for your HTTPS origin.
 

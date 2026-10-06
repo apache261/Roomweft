@@ -27,7 +27,7 @@ Additional options are passed directly to Docker Compose. Examples:
 
 Customize ports and startup settings in .env. Compose also accepts
 COMPOSE_FILE, COMPOSE_PROJECT_NAME and COMPOSE_PROFILES environment variables.
-With --production, use .env.production and compose.production.yml instead.
+With --production, use .env and compose.production.yml instead.
 EOF
 }
 
@@ -50,8 +50,8 @@ if ! docker compose version >/dev/null 2>&1; then
   exit 1
 fi
 
-if [[ "$production" == true && ! -f .env.production ]]; then
-  echo 'Copy .env.production.example to .env.production and configure it first.' >&2
+if [[ "$production" == true && ! -f .env ]]; then
+  echo 'Copy .env.production.example to .env and configure it first.' >&2
   exit 1
 fi
 if [[ "$production" == false && "$action" == up && ! -f .env ]]; then
@@ -75,7 +75,7 @@ fi
 
 compose_options=()
 if [[ "$production" == true ]]; then
-  compose_options=(--env-file .env.production -f compose.production.yml)
+  compose_options=(--env-file .env -f compose.production.yml)
 fi
 case "$action" in
   up) exec "${docker_command[@]}" compose "${compose_options[@]}" up --build --detach "$@" ;;

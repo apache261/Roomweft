@@ -32,9 +32,9 @@ services:
       - --webroot-path=/var/www/certbot
       - --non-interactive
       - --agree-tos
-      - --email=${CERTBOT_EMAIL:?Set CERTBOT_EMAIL in .env.production}
-      - --domain=${CERTBOT_DOMAIN:?Set CERTBOT_DOMAIN in .env.production}
-      - --cert-name=${CERTBOT_DOMAIN:?Set CERTBOT_DOMAIN in .env.production}
+      - --email=${CERTBOT_EMAIL:?Set CERTBOT_EMAIL in .env}
+      - --domain=${CERTBOT_DOMAIN:?Set CERTBOT_DOMAIN in .env}
+      - --cert-name=${CERTBOT_DOMAIN:?Set CERTBOT_DOMAIN in .env}
     depends_on:
       challenge:
         condition: service_healthy

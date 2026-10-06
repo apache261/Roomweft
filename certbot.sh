@@ -17,7 +17,7 @@ Usage: ./certbot.sh [--production] COMMAND
   status      Show certificate container status
   stop        Pause production renewal; standalone mode stops its certificate stack
 
-Configuration: .env.production (copy .env.production.example first).
+Configuration: .env (copy .env.production.example first).
 Use --production for the bundled PostgreSQL/S3/HTTPS application stack.
 Requires Docker Compose access. Prefix with sudo if your Docker socket requires it.
 EOF
@@ -35,14 +35,14 @@ case "$action" in
   issue|start|renew|test|certificates|logs|status|stop) ;;
   *) usage >&2; exit 2 ;;
 esac
-if [[ ! -f .env.production ]]; then
-  echo 'Missing .env.production; copy .env.production.example and set your production values.' >&2
+if [[ ! -f .env ]]; then
+  echo 'Missing .env; copy .env.production.example and set your production values.' >&2
   exit 1
 fi
 
-compose=(docker compose --env-file .env.production -f compose.certbot.yml)
+compose=(docker compose --env-file .env -f compose.certbot.yml)
 if [[ "$production" == true ]]; then
-  compose=(docker compose --env-file .env.production -f compose.production.yml)
+  compose=(docker compose --env-file .env -f compose.production.yml)
 fi
 pause_scheduler() {
   # Avoid concurrent Certbot locks, and resume even if the manual command fails.
