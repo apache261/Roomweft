@@ -391,3 +391,13 @@ Run `npm --prefix web run dev` and open `/dev/splat` for the local renderer proo
 Choose **New scene → Gaussian splat**, upload/select a capture, and use **Capture** to prepare scale, axis, yaw, position, exposure and orbit bounds. Save an inspection start view. Add information/navigation hotspots with explicit world coordinates or **Place 2 m in front of camera**. Transform saves move hotspots and clear the old start view. Markers use screen visibility; capture walls do not occlude them. Walking and mesh-only controls are unavailable until a reviewed proxy is supported.
 
 Builder, preview, public and embed share the lazy splat renderer with progress, signed-URL renewal, Retry scene and owned worker/GPU cleanup. Run `npm --prefix web run test:splat-viewer` and `npm --prefix web run test:splat-authoring` for the local viewing/authoring checks. Phase 5 release acceptance, real reconstructed indoor captures and physical-device measurements remain pending.
+
+## Gaussian capture viewing
+
+Enable `ASSET_SPLAT_SUPPORT=on` and `VITE_SPLAT_SUPPORT=on` in `.env`, then rebuild the API/web images. Both default to `off` in Compose/production. Native Vite development defaults its build gate to `on`; the API still requires an explicit runtime setting. Startup applies migrations before serving uploads.
+
+Choose **New scene → Gaussian splat**, upload an externally reconstructed raw `.splat`, prepare coordinates in **Capture**, and **Save start view**. Add information/navigation hotspots using world X/Y/Z or **Place 2 m in front of camera**. Preview, publish and share the normal `/t/:slug` or `/embed/:slug` link. Source limits are 2,000,000 records / 64,000,000 bytes. PLY, compressed captures and photo reconstruction are unsupported. Capture walls do not occlude hotspot markers; walking requires future reviewed proxy support.
+
+Quality Low/Balanced/HQ caps DPR at 1/1.5/2 while keeping the full capture. Auto uses the shared sustained-frame controller. Unpublishing blocks new public signing; previously signed reads keep their normal 15-minute expiry. Referenced sources cannot be deleted.
+
+Use `viewer` for existing captures without new uploads/scenes, or `off` for rollback. Apply the runtime flag with an API restart; rebuild the frontend to change its build flag. Disabled scenes keep metadata, show an unavailable message with retry, and retain the mixed tour's scene selector/hotspot navigation. No down migration or document relabeling is needed. See [splat acceptance and rollout](docs/splat-rollout.md) for verification and outstanding physical-device/production acceptance.

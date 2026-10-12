@@ -1,6 +1,6 @@
 # 3D Gaussian Splatting — phased implementation plan
 
-Status: Phases 0–4 implemented locally: renderer proof, SPLAT contracts, bounded private admission, shared inspection viewing and capture/camera/hotspot authoring. Phase 0 representative reconstructed-capture and physical-device acceptance remains pending. Phases 5–9 remain pending. See [implementation evidence and supported profile](docs/splat-feasibility.md).
+Status: Phases 0–7 implemented locally: renderer proof, SPLAT contracts, bounded private admission, shared inspection viewing and capture/camera/hotspot authoring. Phase 0 representative reconstructed-capture and physical-device acceptance remains pending. Phase 5 viewing MVP acceptance passes locally; Phase 6 physical-device/performance and Phase 7 production HTTPS/S3 acceptance remain pending. Phases 8–9 remain pending. See [rollout evidence and open acceptance](docs/splat-rollout.md). See [implementation evidence and supported profile](docs/splat-feasibility.md).
 
 Goal: Extend Virtual Tour Studio so authors can upload an externally reconstructed Gaussian-splat capture, prepare its coordinates, save views, place hotspots and publish it through the existing private-storage delivery flow. Add reviewed walking with a separate aligned collision model after the viewing release is accepted.
 
@@ -30,7 +30,7 @@ The MVP uses already generated captures. Training from photos/video requires a s
 | Navigation | Triangle indexes, reviewed floors and clearance | Separate authored GLB proxy; visual splats grant no standing permission |
 | Cleanup | Owned browser caches and durable storage retirements | Splat decoder/worker/GPU ownership and registered derivative keys |
 
-`SPLAT` and the raw `splat-v1` admission profile are implemented. Later derivative products and rollout flags remain design names, not existing APIs or environment variables.
+`SPLAT` and the raw `splat-v1` admission profile are implemented. `ASSET_SPLAT_SUPPORT` and `VITE_SPLAT_SUPPORT` now gate admission/viewing. Later derivative products remain design names.
 
 ## Architecture and data flow
 
@@ -155,7 +155,7 @@ Acceptance:
 
 ## Phase 5 — Publication and viewing MVP acceptance
 
-Status: Pending. Depends on Phase 4.
+Status: Implemented and accepted locally with deterministic fixtures. Public/embed upload-to-viewing, image, fullscreen, emulated touch, unpublish/republish and reference-protection coverage passes. [Evidence](docs/splat-rollout.md).
 
 Extend publish checks and public delivery to splat scenes while retaining stable slugs and existing project behavior. Exercise mixed projects in public and embed routes, information images, fullscreen, touch inspection, unpublishing and signed URL renewal.
 
@@ -163,15 +163,15 @@ Use generated/small deterministic fixtures for automated correctness checks and 
 
 Acceptance:
 
-- [ ] Complete upload → author → publish → public/embed viewing path passes.
-- [ ] Unpublishing prevents new public signing; previously signed URLs retain normal expiry.
-- [ ] Asset deletion remains protected while scenes reference the source.
-- [ ] Existing GLB/panorama/layout regression checks pass.
-- [ ] MVP limitations and authoring instructions are documented in README and technical.md.
+- [x] Complete upload → author → publish → public/embed viewing path passes.
+- [x] Unpublishing prevents new public signing; previously signed URLs retain normal expiry.
+- [x] Asset deletion remains protected while scenes reference the source.
+- [x] Existing GLB/panorama/layout regression checks pass.
+- [x] MVP limitations and authoring instructions are documented in README and technical.md.
 
 ## Phase 6 — Quality, performance and diagnostics
 
-Status: Pending. Depends on Phase 5.
+Status: Quality, bounded ownership and diagnostics implemented and verified locally. Physical-device matrix, representative reconstructed capture and measured release thresholds remain pending; provisional review targets are recorded in [rollout evidence](docs/splat-rollout.md).
 
 Extend diagnostics with fetched bytes, decoded splat count, decode/sort duration, first usable view, sort backlog, resident buffers and measured frame-time distributions. Keep CPU/GPU estimates labeled as estimates.
 
@@ -181,14 +181,14 @@ Profile representative captures on desktop integrated graphics and physical mobi
 
 Acceptance:
 
-- [ ] Quality settings have recorded visual/performance tradeoffs.
+- [x] Quality settings have recorded visual/performance tradeoffs.
 - [ ] Required device matrix meets documented frame-time/loading/memory thresholds.
 - [ ] Disposal and idle behavior pass sustained repeated-scene tests.
-- [ ] Oversized or unsupported scenes produce an actionable error instead of freezing the tab.
+- [x] Oversized or unsupported scenes produce an actionable error instead of freezing the tab.
 
 ## Phase 7 — Deployment, rollout and rollback
 
-Status: Pending. Depends on Phase 6.
+Status: Rollout/rollback controls, Compose/Docker wiring and persisted-scene acceptance implemented locally. Production HTTPS/S3 and physical-device release acceptance remain pending. [Deployment procedure](docs/splat-rollout.md).
 
 Introduce explicitly documented rollout controls for new authoring and viewer support. Define disabled behavior for existing splat scenes: metadata remains intact, the viewer shows a clear unavailable state, and mixed tours can still navigate to supported scenes. Rollback must not relabel a splat as a GLB or erase documents.
 
@@ -196,10 +196,10 @@ Verify development Compose and the production static frontend/HTTPS/S3 path. Bro
 
 Acceptance:
 
-- [ ] Production image builds include decoder assets and licenses.
+- [x] Production image builds include decoder assets and licenses. Clean locked install verified from cached tarballs after registry timeouts; see rollout evidence.
 - [ ] Private S3 delivery works through the actual browser origin/CORS policy.
-- [ ] Disabled mode, retry and rollback are tested with persisted splat scenes.
-- [ ] Deployment instructions, measured acceptance evidence and open limits are recorded.
+- [x] Disabled mode, retry and rollback are tested with persisted splat scenes.
+- [x] Deployment instructions, measured acceptance evidence and open limits are recorded.
 
 ## Phase 8 — Aligned proxy, reviewed walking and exits
 
