@@ -380,3 +380,12 @@ Low, Balanced and HQ select embedded and external texture variants with maximum 
 Large static GLBs can be partitioned into author-reviewed room groups with independently delivered quality variants and shared images. Preview/public/embed viewers prepare exact navigation and occlusion before admitting movement; unsupported sources retain complete loading. Builder editing uses the complete source. Experimental intact-triangle cells are explicitly opt-in.
 
 API rollout defaults to `ASSET_CHUNK_STREAMING=off`. Use `reviewed` for verified room groups or `spatial` to also permit reviewed experimental cells. `VITE_CHUNK_STREAMING=0` and `?streaming=0` provide viewer rollback. All processor modules are included in the Docker image; migrations 014–016 establish partition, job and storage retirement records. See [final validation, measurements and rollout](docs/chunking-acceptance.md) and [the implementation plan](rendering_pland_phase.md). Automated generated-fixture/live-stack checks do not replace real-building or physical-device acceptance.
+
+
+## Gaussian splat sources (phases 0–2)
+
+The asset library accepts self-contained raw `.splat` captures with at most 2,000,000 fixed 32-byte records (64,000,000 bytes). The API creates `SPLAT` scenes from ready same-project sources and stores versioned inspection settings and world cameras. Completion validates every record and promotes immutable private originals; signed reads use the existing project/publication scope. PLY and compressed formats are not supported.
+
+Run `npm --prefix web run dev` and open `/dev/splat` for the local renderer proof. `npm --prefix web run test:splat-proof` verifies generated captures, teardown and context restoration; `npm --prefix web run test:splat-upload` verifies browser admission and private delivery against the running local API/MinIO. See [the exact profile, evidence and limits](docs/splat-feasibility.md).
+
+Shared tour rendering and authoring are phases 3–5. Saved splat scenes currently display a clear phase-3 viewing message. Real reconstructed indoor capture and physical-device acceptance remain pending.

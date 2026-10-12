@@ -27,6 +27,9 @@ const MaxImageSize int64 = 100 * 1024 * 1024
 
 // UploadSizeLimit keeps GLB and image limits consistent across admission and completion.
 func UploadSizeLimit(kind string) int64 {
+	if kind == "SPLAT" {
+		return MaxSplatSize
+	}
 	if kind == "GLB" {
 		return MaxSize
 	}
@@ -43,6 +46,7 @@ type Upload struct {
 type Client struct {
 	internal, public *minio.Client
 	bucket           string
+	splatInspections chan struct{}
 }
 
 func FromEnv() (*Client, error) {
@@ -81,11 +85,11 @@ func FromEnv() (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Client{internal, browser, bucket}, nil
+	return &Client{internal: internal, public: browser, bucket: bucket, splatInspections: make(chan struct{}, 2)}, nil
 }
 func (c *Client) PresignUpload(ctx context.Context, key string, size int64) (Upload, error) {
 	kind, _, _ := Format(key)
-	if size < 20 || size > UploadSizeLimit(kind) {
+	if size < 20 || size > UploadSizeLimit(kind) || (kind == "SPLAT" && (size < 32 || size%32 != 0)) {
 		return Upload{}, fmt.Errorf("file size must be between 20 bytes and %d MiB", UploadSizeLimit(kind)/(1024*1024))
 	}
 	policy := minio.NewPostPolicy()
@@ -109,6 +113,9 @@ func (c *Client) ReadURL(ctx context.Context, key string) (string, error) {
 	return u.String(), nil
 }
 func (c *Client) Confirm(ctx context.Context, key string, size int64) error {
+	if kind, _, _ := Format(key); kind == "SPLAT" {
+		return c.confirmSplat(ctx, key, size)
+	}
 	object, err := c.internal.GetObject(ctx, c.bucket, "pending/"+key, minio.GetObjectOptions{})
 	if err != nil {
 		return err
@@ -122,6 +129,17 @@ func (c *Client) Confirm(ctx context.Context, key string, size int64) error {
 	if info.Size != size || size < 20 || size > UploadSizeLimit(kind) {
 		return errors.New("uploaded size does not match the declared size")
 	}
+	// Bind the GET to the exact identity inspected below as well as the copy.
+	object.Close()
+	options := minio.GetObjectOptions{}
+	if err := options.SetMatchETag(info.ETag); err != nil {
+		return errors.New("could not bind upload identity")
+	}
+	object, err = c.internal.GetObject(ctx, c.bucket, "pending/"+key, options)
+	if err != nil {
+		return errors.New("could not inspect pending upload")
+	}
+	defer object.Close()
 	if strings.EqualFold(filepath.Ext(key), ".glb") {
 		if err := ValidateGLB(object, size); err != nil {
 			return err
@@ -222,6 +240,8 @@ func ValidateGLB(r io.Reader, size int64) error {
 // Format infers the supported upload category and canonical storage extension.
 func Format(name string) (kind, mime, extension string) {
 	switch strings.ToLower(filepath.Ext(name)) {
+	case ".splat":
+		return "SPLAT", "application/octet-stream", ".splat"
 	case ".glb":
 		return "GLB", ContentType, ".glb"
 	case ".jpg", ".jpeg":

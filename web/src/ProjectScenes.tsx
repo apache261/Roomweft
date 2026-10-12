@@ -1,3 +1,4 @@
+import {maxSplatBytes,validateSplatBytes} from './splat/profile';
 import { AssetProcessing } from './AssetProcessing';
 import type {Arrival} from './navigationSettings';
 import { lazy, Suspense, useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
@@ -16,7 +17,7 @@ function SceneRow({ scene, selected, start, first, last, busy, select, change, s
   useEffect(()=>setName(scene.name),[scene.name]);
   function rename(e:FormEvent) { e.preventDefault(); void change(scene.id,{name}); }
   return <li className={selected ? 'selected' : ''}>
-    <div className="scene-row-heading"><button className="secondary" disabled={busy} onClick={()=>select(scene.id)}>{scene.name}</button><small>{scene.type==='PANORAMA' ? '360°' : scene.type==='LAYOUT' ? 'Layout' : '3D'}{start ? ' · Start scene' : ''}</small></div>
+    <div className="scene-row-heading"><button className="secondary" disabled={busy} onClick={()=>select(scene.id)}>{scene.name}</button><small>{scene.type==='PANORAMA' ? '360°' : scene.type==='LAYOUT' ? 'Layout' : scene.type==='SPLAT' ? 'Gaussian splat' : '3D'}{start ? ' · Start scene' : ''}</small></div>
     <details className="scene-options"><summary>Scene options</summary><form className="scene-rename" onSubmit={rename}><label htmlFor={`scene-name-${scene.id}`}>Scene name</label><div className="form-row"><input id={`scene-name-${scene.id}`} value={name} maxLength={120} required disabled={busy} onChange={e=>setName(e.target.value)} /><button disabled={busy || !name.trim() || name.trim()===scene.name}>Rename</button></div></form>
     <div className="scene-row-actions"><button disabled={busy || first} onClick={()=>change(scene.id,{move:'up'})}>Move up</button><button disabled={busy || last} onClick={()=>change(scene.id,{move:'down'})}>Move down</button><button disabled={busy || start} onClick={()=>setStart(scene.id)}>Set as start</button><button className="secondary" disabled={busy} onClick={()=>remove(scene)}>Delete scene</button></div></details>
   </li>;
@@ -57,13 +58,18 @@ export function ProjectScenes({ projectID }: { projectID: string }) {
   async function uploadAsset(file:File,imageUpload=false,textureUpload=false,createAfter=false,sceneName?:string) {
     setError(''); setStatus('');
     const glb = /\.glb$/i.test(file.name);
-    const limitMiB = glb ? 1000 : 100;
-    if ((!glb && !/\.(jpe?g|png|webp)$/i.test(file.name)) || file.size < 20 || file.size > limitMiB * 1024 * 1024) { setError(`Choose a ${glb ? 'GLB' : imageUpload ? 'JPG, PNG or WebP image' : '2:1 JPG, PNG or WebP panorama'} between 20 bytes and ${limitMiB} MiB.`); return; }
+    const splat = /\.splat$/i.test(file.name);
+    const limitMiB = glb ? 1000 : splat ? maxSplatBytes/1024**2 : 100;
+    if ((!glb && !splat && !/\.(jpe?g|png|webp)$/i.test(file.name)) || file.size < 20 || file.size > limitMiB * 1024 * 1024) { setError(`Choose a ${glb ? 'GLB' : splat ? 'raw SPLAT capture' : imageUpload ? 'JPG, PNG or WebP image' : '2:1 JPG, PNG or WebP panorama'} between 20 bytes and ${limitMiB} MiB.`); return; }
     setBusy(true); setProgress(0);
     try {
       if (glb) {
         const magic = new DataView(await file.slice(0, 12).arrayBuffer());
         if (magic.getUint32(0, true) !== 0x46546c67 || magic.getUint32(4, true) !== 2 || magic.getUint32(8, true) !== file.size) throw new Error('Invalid GLB header. Choose a glTF 2.0 binary model.');
+      } else if (splat) {
+        if(imageUpload||textureUpload) throw new Error("Choose an image for this upload role.");
+        if(file.size%32) throw new Error("Raw SPLAT files require complete 32-byte records.");
+        validateSplatBytes(await file.slice(0,Math.min(file.size,32*1024)).arrayBuffer());
       } else {
         const image = await createImageBitmap(file).catch(()=>{throw new Error('This image could not be decoded. Choose a valid JPG, PNG or WebP.');});
         const valid = (imageUpload || textureUpload || image.width===2*image.height) && image.width<=8192 && image.height<=4096; image.close();
@@ -73,7 +79,7 @@ export function ProjectScenes({ projectID }: { projectID: string }) {
       setAssets(a => [ticket.asset, ...a]); setStatus('Uploading…');
       await uploadFile(ticket, file, setProgress); setStatus('Validating upload…');
       const asset = await request<Asset>(`/assets/${ticket.asset.id}/complete`, { method: 'POST' });
-      setAssets(a => a.map(item => item.id === asset.id ? asset : item)); if(createAfter){await createScene(asset,sceneName);return;}setStatus(textureUpload?'Texture uploaded. Select it in a material preset.':imageUpload?'Image uploaded. Select it in hotspot properties.':'Upload complete. Create a scene below.');
+      setAssets(a => a.map(item => item.id === asset.id ? asset : item)); if(createAfter){await createScene(asset,sceneName);return;}setStatus(splat?'Splat source uploaded. Tour viewing is pending phase 3.':textureUpload?'Texture uploaded. Select it in a material preset.':imageUpload?'Image uploaded. Select it in hotspot properties.':'Upload complete. Create a scene below.');
     } catch (err) { setError(message(err)); setStatus(''); } finally { setBusy(false); }
   }
   async function confirm(asset: Asset) {
@@ -129,12 +135,13 @@ export function ProjectScenes({ projectID }: { projectID: string }) {
       {!preview && <details className="library-sharing"><summary>Publish & share</summary><PublishControls projectID={projectID} /></details>}
       {!preview && <details className="library-assets" onToggle={event=>setProcessingOpen(event.currentTarget.open)}><summary>Asset library <span>{assets.length}</span></summary><section className="assets-panel"><p>GLB models, 2:1 panoramas, or JPG, PNG and WebP hotspot images · GLB up to 1000 MiB; images up to 100 MiB · Originals are preserved</p>
         <label htmlFor="glb-upload">Upload GLB</label><input id="glb-upload" type="file" accept=".glb" disabled={busy} onChange={upload} />
+        <label htmlFor="splat-upload">Upload Gaussian splat source</label><input id="splat-upload" type="file" accept=".splat" disabled={busy} onChange={upload} /><p>Raw .splat only · up to 2,000,000 splats / 64,000,000 bytes · Tour viewing is pending phase 3.</p>
         <label htmlFor="panorama-upload">Upload panorama</label><input id="panorama-upload" type="file" accept=".jpg,.jpeg,.png,.webp" disabled={busy} onChange={upload} />
         <label htmlFor="info-image-upload">Upload hotspot image</label><input id="info-image-upload" type="file" accept=".jpg,.jpeg,.png,.webp" disabled={busy} onChange={e=>upload(e,true)} />
         <label>Texture map role<select aria-label="Texture map role" value={textureRole} onChange={e=>setTextureRole(e.target.value as Asset['file_type'])}><option value="TEXTURE_BASE_COLOR">Base color (sRGB)</option><option value="TEXTURE_NORMAL">Normal (linear data)</option><option value="TEXTURE_ROUGHNESS">Roughness (linear data)</option><option value="TEXTURE_AO">Baked AO (linear red channel)</option><option value="TEXTURE_LIGHTMAP">Baked indirect light (sRGB)</option></select></label>
         <label htmlFor="texture-upload">Upload texture map</label><input id="texture-upload" type="file" accept=".jpg,.jpeg,.png,.webp" disabled={busy} onChange={e=>upload(e,false,true)} />
         {busy && status === 'Uploading…' && <progress value={progress} max={100} aria-label="Upload progress" />}
-        <ul className="asset-list">{assets.map(asset => <li key={asset.id}><span><strong>{asset.name}</strong><small>{asset.file_type.startsWith('TEXTURE_')?asset.file_type.replace('TEXTURE_','Texture: ').toLowerCase():asset.file_type==='IMAGE'?'Image':asset.file_type==='PANORAMA' ? '360°' : 'GLB'} · {(asset.size / 1024 / 1024).toFixed(2)} MiB · {asset.upload_status === 'ready' ? 'Ready' : 'Awaiting completion'}</small></span>
+        <ul className="asset-list">{assets.map(asset => <li key={asset.id}><span><strong>{asset.name}</strong><small>{asset.file_type.startsWith('TEXTURE_')?asset.file_type.replace('TEXTURE_','Texture: ').toLowerCase():asset.file_type==='IMAGE'?'Image':asset.file_type==='PANORAMA' ? '360°' : asset.file_type==='SPLAT' ? 'Gaussian splat' : 'GLB'} · {(asset.size / 1024 / 1024).toFixed(2)} MiB · {asset.upload_status === 'ready' ? 'Ready' : 'Awaiting completion'}</small></span>
           <div className="asset-actions">{processingOpen&&(asset.file_type==='GLB'||asset.file_type.startsWith('TEXTURE_'))&&asset.upload_status==='ready'&&<AssetProcessing id={asset.id}/>}{(['GLB','PANORAMA'].includes(asset.file_type) || asset.upload_status!=='ready') && <button disabled={busy} onClick={() => asset.upload_status === 'ready' ? createScene(asset) : confirm(asset)}>{asset.upload_status === 'ready' ? 'Create scene' : 'Confirm upload'}</button>}<button className="secondary" disabled={busy || scenes.some(s=>s.asset_id===asset.id || s.type==='LAYOUT' && s.layout.elements.some(e=>e.asset_id===asset.id))} aria-label={`Delete asset ${asset.name}`} onClick={()=>removeAsset(asset)}>Delete asset</button></div></li>)}</ul>
         {!assets.length && <p>No assets yet.</p>}
       </section></details>}</aside>}

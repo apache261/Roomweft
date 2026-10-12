@@ -10,3 +10,7 @@ web/public/decoders/
 asset-tools/node_modules/
 /tests/testdata/chunking/over-admission.glb
 *.pem
+
+# Local browser acceptance measurements.
+/test-results/
+/web/test-results/

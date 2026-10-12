@@ -27,19 +27,29 @@ Run `npm --prefix web run dev` and open `/dev/splat`. This route is development-
 
 Headless Chromium with ANGLE SwiftShader on the implementation host rendered both captures and passed five mount/unmount cycles, resize, camera motion and explicit `WEBGL_lose_context` loss/restoration. Worker instrumentation returned to zero after unmount and one after remount/restoration. Screenshots were reviewed locally: the generated room walls/floor and opaque cube render together. This is a synthetic scene, not a reconstructed real interior.
 
-| Fixture | Source bytes | Splats | First sort (decode + worker startup) | Estimated resident CPU | Estimated GPU |
-| --- | --- | --- | --- | --- | --- |
-| Small colored plane | 14,112 | 441 | 64 ms | 61,740 bytes | 15,876 bytes |
-| Generated indoor room | 1,254,528 | 39,204 | 85 ms | 5,544,752 bytes | 1,467,536 bytes |
+| Fixture | Source bytes | Splats | First sort (decode + worker startup) | First usable frame | Estimated resident CPU | Estimated GPU |
+| --- | --- | --- | --- | --- | --- | --- |
+| Small colored plane | 14,112 | 441 | 327 ms | 332 ms | 61,740 bytes | 15,876 bytes |
+| Generated indoor room | 1,254,528 | 39,204 | 96 ms | 104 ms | 5,544,752 bytes | 1,467,536 bytes |
 
-These are provisional allocations estimated from source, packed textures, worker matrices, sort buffers and instance indices, not measured VRAM. First sort precedes the first usable frame; the acceptance script waits for subsequent animation frames and writes fresh timings to `test-results/splat-baseline.json`. Motion samples include host/browser round-trip time: early samples were 30–50 ms, with late SwiftShader samples reaching 1.3–1.7 seconds. No mobile or performance budget is accepted from these results. A representative reconstructed indoor export, physical GPU/device baselines, background-tab restoration and visual transparency/exposure review remain external acceptance work.
+These are provisional allocations estimated from source, packed textures, worker matrices, sort buffers and instance indices, not measured VRAM. First usable frame is the first Fiber frame after sorted indices are installed; the acceptance script waits for this frame and writes fresh timings to `test-results/splat-baseline.json`. Motion samples include host/browser round-trip time: early samples were 30–50 ms, with late SwiftShader samples reaching 1.3–1.7 seconds. No mobile or performance budget is accepted from these results. A representative reconstructed indoor export, physical GPU/device baselines, background-tab restoration and visual transparency/exposure review remain external acceptance work.
 
 ## Persistence, admission and delivery
 
 Migration 017 extends kinds and size constraints without changing applied migrations or existing scene documents. New/imported scenes require a ready same-project source with matching kind; a database trigger independently enforces this. Scene creation infers `SPLAT` from a ready splat source and initializes the versioned settings. Existing 3D, panorama and layout paths remain supported. API cameras use the existing position/yaw/pitch schema. Normal scene deletion/reference protection and public asset scoping include the source automatically.
 
-The asset library accepts `.splat` sources, checks size/record alignment and a bounded prefix of attributes before requesting a ticket. Completion authoritatively scans every record with a fixed 64 KiB buffer. Each storage client allows two concurrent splat inspections and a 30-second context deadline. Admission, DB size checks and completion use the same decoded count/byte ceiling. The inspected GET and pending-to-final copy are bound to the pending ETag. Originals are delivered unchanged through private signed reads; optional mesh processing is never queued for splats.
+The asset library accepts `.splat` sources, checks size/record alignment and a bounded prefix of attributes before requesting a ticket. Completion authoritatively scans every record with a fixed 64 KiB buffer. Each storage client allows two concurrent splat inspections and a 30-second context deadline. Admission, DB size checks and completion use the same decoded count/byte ceiling. The inspected GET is bound to the pending ETag, which is rechecked before promotion. Validated bytes are staged on bounded local disk (at most 64,000,001 bytes per slot, including the trailing-byte rejection probe), hashed with SHA-256, and promoted with `If-None-Match: *`. The final object records the profile and source hash in private metadata. A retry after database failure recognizes the promoted identity and cannot replace it, even if the signed pending POST was reused. Originals are delivered unchanged through private signed reads; optional mesh processing is never queued for splats.
 
 Splat public reads require a published project and an actual referenced ready source. The existing 15-minute signed URL expiry, project cleanup, source reference restrictions and CORS configuration apply. No secure-context-only decoder is introduced: local HTTP MinIO works and production must continue using the configured HTTPS browser origin/S3 CORS. Upload URLs and credentials must not be logged.
 
 Shared tour rendering, authoring controls and splat hotspots are phases 3–5. Until those are implemented, persisted SPLAT scenes show an explicit phase-3 viewing message instead of entering the GLB loader. Uploading a source and creating a scene through the API is supported; the new-scene authoring dialog remains deferred to phase 4.
+
+## Validation commands
+
+- `go test ./...` with `TEST_DATABASE_URL`, `TEST_S3=1` and local S3 settings exercises existing regressions and the new splat contract/private-delivery tests. The splat integration check simulates a database failure after promotion, replaces pending bytes, retries and verifies that the final source is unchanged.
+- `npm --prefix web test` covers the browser profile and existing model/navigation/material/runtime contracts.
+- `npm --prefix web run build` checks TypeScript and production bundling.
+- `npm --prefix web run test:splat-proof` checks the renderer, motion, resize, repeated teardown and context recovery against Vite.
+- `npm --prefix web run test:splat-upload` exercises local API/MinIO from a real browser, including early malformed-data feedback, signed POST CORS, completion, byte-identical signed download and the saved scene's explicit viewing status. It creates and deletes its own project.
+
+Production S3 CORS and physical devices require separate deployment/device acceptance; local MinIO/browser success does not establish those measurements.

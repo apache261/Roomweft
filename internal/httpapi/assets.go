@@ -235,7 +235,7 @@ func (a *API) upload(w http.ResponseWriter, r *http.Request) {
 	body.Name = strings.TrimSpace(body.Name)
 	kind, _, extension := storage.Format(body.Name)
 	if kind == "" || utf8.RuneCountInString(body.Name) > 120 || strings.ContainsAny(body.Name, "/\\") {
-		fail(w, 400, "choose a GLB, JPG, PNG or WebP file with a filename of at most 120 characters")
+		fail(w, 400, "choose a GLB, raw SPLAT, JPG, PNG or WebP file with a filename of at most 120 characters")
 		return
 	}
 	if body.Kind != "" && body.Kind != "IMAGE" && body.Kind != "TEXTURE_BASE_COLOR" && body.Kind != "TEXTURE_NORMAL" && body.Kind != "TEXTURE_ROUGHNESS" && body.Kind != "TEXTURE_AO" && body.Kind != "TEXTURE_LIGHTMAP" && body.Kind != kind {
@@ -255,7 +255,7 @@ func (a *API) upload(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	limit := storage.UploadSizeLimit(kind)
-	if body.Size < 20 || body.Size > limit {
+	if body.Size < 20 || body.Size > limit || (kind == "SPLAT" && (body.Size < 32 || body.Size%32 != 0)) {
 		fail(w, 400, fmt.Sprintf("file size must be between 20 bytes and %d MiB", limit/(1024*1024)))
 		return
 	}
@@ -269,7 +269,7 @@ func (a *API) upload(w http.ResponseWriter, r *http.Request) {
 	key := prefix + "projects/" + id.String() + "/" + uuid.NewString() + extension
 	upload, err := a.storage.PresignUpload(r.Context(), key, body.Size)
 	if err != nil {
-		slog.Error("presign failed", "error", err)
+		slog.Error("presign failed")
 		fail(w, 503, "could not start upload; check storage configuration")
 		return
 	}

@@ -6,13 +6,14 @@ import {validateSplatBytes} from './profile';
 function Capture({bytes,report}:{bytes:ArrayBuffer;report:(value:Record<string,number>)=>void}) {
   const {gl,scene,camera,invalidate}=useThree();
   const driver=useRef<ReturnType<typeof createSplat>>(undefined);
+  const firstFrame=useRef<{start:number;baseline:Record<string,number>}>(undefined);
   useEffect(()=>{
     const start=performance.now();let first=true;
-    const resource=createSplat(bytes,gl,invalidate,()=>{if(first){first=false;report({count:resource.count,sourceBytes:bytes.byteLength,firstSortMs:performance.now()-start,cpuEstimate:resource.cpuBytes,gpuEstimate:resource.gpuBytes});}});
+    const resource=createSplat(bytes,gl,invalidate,()=>{if(first){first=false;firstFrame.current={start,baseline:{count:resource.count,sourceBytes:bytes.byteLength,firstSortMs:performance.now()-start,cpuEstimate:resource.cpuBytes,gpuEstimate:resource.gpuBytes}};}});
     scene.add(resource.mesh);driver.current=resource;invalidate();
-    return ()=>{scene.remove(resource.mesh);resource.dispose();driver.current=undefined;};
+    return ()=>{scene.remove(resource.mesh);resource.dispose();driver.current=undefined;firstFrame.current=undefined;};
   },[bytes,gl,scene,invalidate,report]);
-  useFrame(()=>driver.current?.update(camera));
+  useFrame(()=>{driver.current?.update(camera);if(firstFrame.current){const {start,baseline}=firstFrame.current;report({...baseline,firstUsableFrameMs:performance.now()-start});firstFrame.current=undefined;}});
   return null;
 }
 const report=(value:Record<string,number>)=>{(window as unknown as {splatBaseline:unknown}).splatBaseline=value;};
