@@ -1,6 +1,6 @@
 import { enablePerformanceDiagnostics } from './performanceMetrics';
 import {ThemeProvider,ThemeSwitch} from './Theme';
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, lazy, Suspense, type FormEvent } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Link, Route, Routes, useNavigate, useParams } from 'react-router';
 import { request, type Project } from './api';
@@ -105,9 +105,10 @@ function Builder() {
   </main>;
 }
 
+const SplatProof = lazy(() => import('./splat/SplatProof'));
 function App() {
   return <BrowserRouter><header><Link to="/" className="brand"><span aria-hidden="true">◇</span> Virtual Tour Studio</Link><div className="header-actions"><span className="badge">Proof of concept</span><ThemeSwitch /></div></header>
-    <Routes><Route path="/" element={<Dashboard />} /><Route path="/projects/:id" element={<Builder />} /><Route path="/t/:slug" element={<PublicViewer />} /><Route path="/embed/:slug" element={<PublicViewer embed />} /><Route path="*" element={<main><h1>Page not found</h1><Link to="/">Back to projects</Link></main>} /></Routes>
+    <Routes>{import.meta.env.DEV && <Route path="/dev/splat" element={<Suspense fallback={<p>Loading proof…</p>}><SplatProof/></Suspense>}/>}<Route path="/" element={<Dashboard />} /><Route path="/projects/:id" element={<Builder />} /><Route path="/t/:slug" element={<PublicViewer />} /><Route path="/embed/:slug" element={<PublicViewer embed />} /><Route path="*" element={<main><h1>Page not found</h1><Link to="/">Back to projects</Link></main>} /></Routes>
   </BrowserRouter>;
 }
 
