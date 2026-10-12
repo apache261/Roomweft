@@ -1,6 +1,6 @@
 # Virtual Tour Studio: technical architecture and complete data flow
 
-This document describes the implementation in this repository, from selecting an upload to rendering and navigating a published tour. It covers the Go API, PostgreSQL records, private object storage, background asset processing, React authoring interface and Three.js runtime, including the performance work through Phase 7.
+This document describes the implementation in this repository, from selecting an upload to rendering and navigating a published tour. It covers the Go API, PostgreSQL records, private object storage, background asset processing, React authoring interface and Three.js runtime, including the performance work through Phase 7, reviewed GLB chunking and the bundled production HTTPS deployment.
 
 The application is a proof of concept with a directly accessible builder. It currently has no authentication or per-user authorization layer. A project's UUID identifies its data; it is not an access-control credential. Public tour endpoints add publication and reference checks, but the ordinary builder endpoints remain accessible wherever the API is exposed.
 
@@ -30,6 +30,7 @@ The descriptions below distinguish implemented behavior from provisional limits 
 20. [Diagnostics, testing and acceptance](#20-diagnostics-testing-and-acceptance)
 21. [Deployment configuration and troubleshooting](#21-deployment-configuration-and-troubleshooting)
 22. [Source map and end-to-end examples](#22-source-map-and-end-to-end-examples)
+23. [Reviewed monolithic chunking and rollout](#23-reviewed-monolithic-chunking-and-rollout)
 
 ## 1. System architecture
 
@@ -42,7 +43,7 @@ The background worker is a goroutine in the API process. It claims durable datab
 
 ```mermaid
 flowchart LR
-    B[Browser: React builder and viewer] -->|JSON through Vite proxy| A[Go HTTP API]
+    B[Browser: React builder and viewer] -->|JSON through Vite or HTTPS proxy| A[Go HTTP API]
     A -->|pgx queries and transactions| D[(PostgreSQL)]
     A -->|signed POST and GET policies| B
     B -->|multipart upload to pending key| S[(Private MinIO or S3 bucket)]
@@ -98,13 +99,14 @@ Default host ports are web 5173, API 8080, PostgreSQL 5432, MinIO 9000 and MinIO
 
 [cmd/api/main.go](cmd/api/main.go) performs these operations:
 
-1. Create a signal-aware context for interrupt and SIGTERM.
-2. Create the pgx connection pool from `DATABASE_URL`.
-3. Ping PostgreSQL and apply migrations within a 30-second startup context.
-4. Create the S3-compatible storage clients from environment configuration.
-5. Start the derivative worker if `ASSET_PROCESSOR_SCRIPT` is nonempty.
-6. Start the HTTP server, with a five-second read-header timeout.
-7. On shutdown, stop serving with a ten-second shutdown context and cancel/wait for the worker.
+1. Parse `ASSET_CHUNK_STREAMING`: empty defaults to `off`; invalid values abort startup.
+2. Create a signal-aware context for interrupt and SIGTERM.
+3. Create the pgx connection pool from `DATABASE_URL`.
+4. Ping PostgreSQL and apply migrations within a 30-second startup context.
+5. Create the S3-compatible storage clients from environment configuration.
+6. Start the derivative worker if `ASSET_PROCESSOR_SCRIPT` is nonempty.
+7. Start the HTTP server, with a five-second read-header timeout.
+8. On shutdown, stop serving with a ten-second shutdown context and cancel/wait for the worker.
 
 `GET /health` checks PostgreSQL with a two-second timeout. It does not prove that object storage, processing or every browser feature is healthy.
 
@@ -118,7 +120,7 @@ A filename is the migration identity. Editing an already applied migration does 
 
 The root Dockerfile builds the Go executable, installs the Node asset processor and copies both into a Node runtime image. The API runs as the `node` user. Node is required in the API image because the Go worker invokes the processor.
 
-The frontend Dockerfile installs dependencies, copies application files and runs the TypeScript/Vite production build. Its runtime command currently starts the Vite development server; generating `dist` during the build does not turn this container into a production static-file server.
+The [frontend Dockerfile](web/Dockerfile) installs dependencies and runs the TypeScript/Vite build in its `build` stage. Its default final target, `development`, runs Vite on port 5173 for local Compose. Production Compose explicitly selects the `production` target, which copies `dist` into Nginx and serves static files on port 80. [web/nginx.conf](web/nginx.conf) falls back to `index.html` for browser routes such as `/projects/:id`, `/t/:slug` and `/embed/:slug`.
 
 Frontend `npm ci` runs two `postinstall` operations:
 
@@ -126,6 +128,26 @@ Frontend `npm ci` runs two `postinstall` operations:
 - `copy-asset-decoders.mjs` copies Three.js Basis JavaScript/WASM transcoder assets to `public/decoders/basis/`.
 
 The Docker dependency layer must copy those scripts and `fiber-timer-clock.mjs` **before** `npm ci`, because lifecycle scripts run before the later `COPY . .`. Runtime KTX2 decoding uses the locally served transcoder files; it does not depend on a third-party decoder CDN.
+
+### 2.5 Production services and request routing
+
+[compose.production.yml](compose.production.yml) runs PostgreSQL, the API/worker, the static web container, an Nginx proxy named `challenge`, and a Certbot renewal service. The one-shot `certbot` service is in the `tools` profile. Production uses an existing private S3 bucket; it does not start MinIO or create/configure the bucket. Only the proxy's HTTP/HTTPS ports are published. PostgreSQL, API and static web traffic stays on the Compose network.
+
+```mermaid
+flowchart LR
+    B[Browser] -->|HTTPS| N[Nginx proxy: challenge]
+    N -->|/api/ and /health| A[Go API and worker]
+    N -->|browser routes and static files| W[Nginx static web]
+    A --> D[(PostgreSQL)]
+    A -->|validate uploads and process outputs| S[(Private S3 bucket)]
+    B -->|signed uploads and downloads| S
+    C[Certbot issuance and renewal] --> F[Persistent certificates and ACME webroot]
+    N -->|serve HTTP challenges and watch certificates| F
+```
+
+The proxy initially serves HTTP ACME challenges and redirects other application requests to HTTPS. It enables its TLS listener when the configured certificate and key exist. HTTP `/health` is a proxy-local `200 ok`; HTTPS `/health` forwards to the API's PostgreSQL check. The proxy container health check therefore does not certify API or database readiness.
+
+[docker/proxy/start.sh](docker/proxy/start.sh) checks certificate/key fingerprints every ten seconds, renders the configuration and tests it before reloading Nginx. Existing workers keep serving if a reload fails. Certificate mounts are read-only for the proxy; no Docker socket is mounted. API inspection requests have a 120-second proxy read timeout. Large asset bytes travel directly to S3, so the proxy's 20 MiB body limit is not the GLB upload limit.
 
 ## 3. Persistent data model
 
@@ -141,6 +163,8 @@ PostgreSQL stores configuration and references. Object storage stores the file p
 | `scene_texture_refs` | Durable links from scenes to material maps, including the expected map role |
 | `scene_portal_refs` | Durable cross-scene exit destination links |
 | `asset_derivatives` | Asset/version identity, processing state, manifest, error, attempt UUID, lease expiration and timestamp |
+| `asset_partitions` | Ready GLB source hash, inspected inventory, reviewed document and optimistic revision |
+| `storage_retirements` | Object keys awaiting delayed deletion, retry errors, attempts and cleanup leases; independent of parent rows |
 | `schema_migrations` | Applied migration filenames |
 
 ### 3.1 Project and scene relationships
@@ -165,7 +189,9 @@ The database validates ready status, asset role and project membership when crea
 
 Individual referenced assets cannot simply be deleted. Scene asset references, hotspot images, layout imports and material maps protect the corresponding rows. Cross-scene portal references must be resolved before deleting their destination. Navigation hotspot destination foreign keys cascade when a scene is deleted.
 
-Project deletion cascades its metadata and reference rows. The ordinary asset/project delete paths currently operate on database records; they do **not** implement comprehensive object-storage garbage collection. Removing a database row is not evidence that all original, pending or derivative objects were physically removed. The derivative worker has separate cleanup for outputs from unpublished/failed processing attempts.
+Project deletion cascades its metadata and reference rows. Migration 016 adds durable storage retirement: triggers record deleted originals and replaced/deleted derivative manifest keys, including project cascades. Retirement records survive parent deletion and normally wait one day before cleanup, exceeding the 15-minute signed-read lifetime.
+
+The enabled worker claims due, unreferenced keys with a five-minute lease, checks current asset and derivative references, and deletes both the named object and its `pending/` counterpart. It handles at most 16 retirements per iteration; failed deletes retain an error and retry with bounded hourly backoff. Failed processing attempts try immediate cleanup and queue durable retries when needed. Deleting metadata therefore schedules cleanup rather than proving immediate physical deletion. Cleanup needs the worker and usable storage credentials; it is not a bucket-wide sweep for arbitrary unrecorded objects.
 
 ## 4. Coordinates, identity and revisions
 
@@ -325,7 +351,7 @@ Processing:   unavailable → queued → processing → ready
 
 `unavailable` is an API representation for a missing/currently unusable derivative record, not a database worker state. A ready upload with failed processing remains a valid source asset.
 
-The queue key is `(asset_id, version)`, currently `runtime-v1`. A repeat queue request preserves an existing successful/in-progress job; explicit retry resets a failed record to queued.
+The queue key is `(asset_id, version)`. Whole-file processing uses `runtime-v1`; reviewed partitions queue independent `chunks-v1` jobs tied to the source hash and partition revision. A repeat queue request preserves an existing successful/in-progress job; explicit retry resets a failed record to queued.
 
 ### 6.2 Claiming, leases and subprocess limits
 
@@ -793,7 +819,14 @@ All listed resource paths are relative to `/api/v1`, except `/health`. Browser `
 | GET | `/assets/{id}` | Asset metadata, original signed URL if ready, derivative status/manifest |
 | POST | `/assets/{id}/complete` | Validate/promote pending upload |
 | POST | `/assets/{id}/process` | Queue eligible processing or retry a failed job; returns 202 |
-| DELETE | `/assets/{id}` | Delete unreferenced asset metadata |
+| DELETE | `/assets/{id}` | Delete unreferenced asset metadata and schedule object retirement |
+| GET | `/assets/{id}/partition` | Read source inventory, reviewed partition and revision; report complete-source fallback if absent |
+| POST | `/assets/{id}/partition/inventory` | Explicit bounded GLB inspection using the Node processor |
+| PUT | `/assets/{id}/partition` | Save reviewed ownership with optimistic revision checking; queue/invalidate chunk products |
+| GET | `/assets/{id}/chunks` | Current validated manifest with scoped descriptor endpoints |
+| GET | `/assets/{id}/chunks/{chunk}` | Renewable payload descriptor; optional `tier=low`, `balanced` or `hq` |
+| GET | `/assets/{id}/chunk-indexes/{index}` | Exact `navigation` or authored `occlusion` descriptor |
+| GET | `/assets/{id}/chunk-dependencies/{dependency}` | Declared shared-image descriptor |
 | GET / POST | `/projects/{id}/scenes` | List/create imported or layout scenes |
 | GET / PATCH / DELETE | `/scenes/{id}` | Read/edit/remove scene; PATCH name/order/camera/settings |
 | GET / PUT | `/scenes/{id}/layout` | Read document/revision; atomic revision save |
@@ -812,6 +845,12 @@ The health row is included for operational context; the actual URL is `/health`,
 | GET | `/public/tours/{slug}/assets/{id}` | Sign referenced ready asset and available variants |
 | GET | `/public/tours/{slug}/scenes/{id}/hotspots` | Hotspots in a published tour's scene |
 | GET | `/public/tours/{slug}/scenes/{id}/layout` | Published layout document/revision |
+| GET | `/public/tours/{slug}/assets/{id}/chunks` | Current chunk manifest for a referenced ready parent |
+| GET | `/public/tours/{slug}/assets/{id}/chunks/{chunk}` | Scoped chunk payload descriptor |
+| GET | `/public/tours/{slug}/assets/{id}/chunk-indexes/{index}` | Scoped exact-index descriptor |
+| GET | `/public/tours/{slug}/assets/{id}/chunk-dependencies/{dependency}` | Scoped declared-image descriptor |
+
+Chunk routes return `404` when rollout is off. Each descriptor refresh rechecks the ready parent and, for public reads, publication and references. Optional `revision` and `source_sha256` query identities return `409` when stale. Missing tiers default to Balanced.
 
 There is no separate public write endpoint or public process retry. The shared viewer changes its read prefix when `publicSlug` is present.
 
@@ -959,7 +998,15 @@ The application reads configuration from environment variables. Compose loads `.
 | `S3_PUBLIC_ENDPOINT` | Browser-reachable host used for signed URLs |
 | `S3_BUCKET`, `S3_REGION` | Storage target/signing configuration |
 | `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_SESSION_TOKEN` | Optional explicit storage credentials |
-| `WEB_ORIGIN` | Local MinIO allowed browser origin |
+| `WEB_ORIGIN` | Local MinIO allowed browser origin; production S3 CORS origin to configure separately |
+| `ASSET_CHUNK_STREAMING` | API rollout: `off` (default), `reviewed` or experimental `spatial` |
+| `VITE_CHUNK_STREAMING` | Frontend build-time rollback; `0` disables chunk streaming |
+| `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` | Compose database initialization and generated API connection URL |
+| `CERTBOT_DOMAIN`, `CERTBOT_EMAIL` | Certificate hostname and ACME contact |
+| `CERTBOT_DATA_DIR`, `CERTBOT_IMAGE` | Persistent certificate/account storage and Certbot image |
+| `CERTBOT_BIND_ADDRESS`, `CERTBOT_HTTP_PORT`, `HTTPS_PORT` | Production proxy host bindings |
+| `TLS_CERT_FILE`, `TLS_KEY_FILE` | Certificate/key paths inside the proxy container |
+| `CERTBOT_RENEW_INTERVAL_SECONDS` | Renewal-check interval, default 43200 seconds |
 | `API_PROXY_TARGET` | Vite `/api` and `/health` proxy target |
 | `BIND_ADDRESS` and service port variables | Compose host bindings |
 | `TEST_DATABASE_URL`, `TEST_S3` | Integration test configuration |
@@ -968,11 +1015,36 @@ If explicit S3 credentials are absent, the client uses an AWS environment/IAM cr
 
 For another physical device, `localhost` in a signed URL refers to that device, not the Docker host. Set a reachable `S3_PUBLIC_ENDPOINT` and matching browser origin. Secure HTTPS also matters for derivative integrity checks on non-local origins.
 
-### 21.2 Operational diagnosis
+### 21.2 Production deployment and certificate lifecycle
+
+Copy [.env.production.example](.env.production.example) to `.env`, then configure the database password, existing S3 bucket/region/endpoints, credentials or IAM role, frontend origin, domain, certificate contact and matching certificate/key paths. Compose generates `DATABASE_URL` for `postgres:5432`. Keep the existing database credentials and Compose project name when intentionally reusing a volume: initialization variables do not reset credentials in an existing database.
+
+Point the configured hostname to the deployment host and make public ports 80/443 reachable. Apply [docs/s3-cors.json](docs/s3-cors.json) with the actual HTTPS browser origin; the API does not apply bucket CORS automatically. Both API/worker and browsers must reach their configured S3 endpoints.
+
+```sh
+cp .env.production.example .env
+# Edit .env before starting services.
+./deploy.sh --production up
+./certbot.sh --production issue
+./certbot.sh --production test
+./certbot.sh --production certificates
+./deploy.sh --production logs -f renew challenge
+```
+
+`deploy.sh --production` selects `.env` and production Compose. `up` builds and starts the stack, including renewal. `certbot.sh --production issue` uses HTTP webroot validation; `test` runs a renewal dry run. Manual issue/renew/test operations pause an active renewal scheduler and restore it afterward to avoid concurrent Certbot locks. Use Docker permissions or `sudo` for `certbot.sh`; `deploy.sh` handles the default local Docker socket's elevated access when necessary.
+
+Renewal checks run every 12 hours by default and renew only certificates that are due. Failures remain in logs and retry at the next interval. The proxy detects issued/renewed certificate files automatically. `./certbot.sh --production stop` pauses renewal while keeping the application running; `start` resumes it. `./deploy.sh --production down` stops the stack while retaining database volumes and certificate files. Back up the entire `CERTBOT_DATA_DIR`, including account data and `archive/`, because `live/` uses symlinks.
+
+Standalone [compose.certbot.yml](compose.certbot.yml) remains available through `./certbot.sh` without `--production`; an external HTTPS proxy must reload its own certificates. Stop that standalone stack before starting the bundled proxy on the same port. Switching an existing development project replaces API/web services but does not migrate MinIO objects to S3. Use separate Compose project names for independent simultaneous deployments.
+
+### 21.3 Operational diagnosis
 
 | Symptom | First checks |
 | --- | --- |
-| Frontend JSON request fails | Vite proxy target, API listener, network and `/health` |
+| Frontend JSON request fails | Development Vite target or production proxy upstream, API listener and API-backed `/health` |
+| HTTPS unavailable after startup | Domain/DNS, reachable port 80, issuance logs and matching `TLS_CERT_FILE`/`TLS_KEY_FILE` |
+| Proxy healthy but API unavailable | HTTP health is proxy-local; check HTTPS `/health`, API logs and PostgreSQL |
+| Certificate not renewed/reloaded | `renew`/`challenge` logs, scheduler state, persistent mounts and Nginx configuration checks |
 | API startup fails | PostgreSQL connectivity/migration logs and endpoint parsing |
 | Signed upload fails | Browser Network entry, ticket expiry, storage host/CORS and exact policy fields |
 | Completion returns 422 | Missing pending object, declared size, format, image dimensions or embedded GLB resources |
@@ -995,6 +1067,9 @@ The deploy script wraps Compose and supports service-specific rebuilds. Configur
 
 | Concern | Primary sources |
 | --- | --- |
+| Deployment/HTTPS | [compose.production.yml](compose.production.yml), [deploy.sh](deploy.sh), [certbot.sh](certbot.sh), [proxy startup](docker/proxy/start.sh), [web Dockerfile](web/Dockerfile) |
+| Reviewed partitions/chunk delivery | [partitions.go](internal/httpapi/partitions.go), [chunks.go](internal/httpapi/chunks.go), [chunking lifecycle](docs/chunking-lifecycle.md) |
+| Storage retirement | [retirement.go](internal/database/retirement.go), [worker cleanup](internal/derivatives/retirement.go), [migration 016](db/migrations/016_storage_retirement.sql) |
 | Startup/migration | [main.go](cmd/api/main.go), [migrate.go](db/migrate.go) |
 | API routes/errors | [api.go](internal/httpapi/api.go), [assets.go](internal/httpapi/assets.go), [navigation.go](internal/httpapi/navigation.go) |
 | Upload/signing/validation | [s3.go](internal/storage/s3.go), [api.ts](web/src/api.ts), [ProjectScenes.tsx](web/src/ProjectScenes.tsx) |
@@ -1051,8 +1126,21 @@ The deploy script wraps Compose and supports service-specific rebuilds. Configur
 
 For deeper procedures and recorded limitations, see [runtime assets](docs/runtime-assets.md), [quality](docs/viewer-quality.md), [hotspot performance](docs/hotspot-performance.md), [spatial rendering](docs/spatial-rendering.md), [room streaming](docs/room-streaming.md), [HQ rendering](docs/hq-rendering.md) and [benchmark methodology](docs/performance-benchmarks.md).
 
-## Reviewed monolithic chunking and rollout
+## 23. Reviewed monolithic chunking and rollout
 
 The [GLB chunking plan](rendering_pland_phase.md) is implemented through its automated Phase 10 handoff. `chunks-v1` is independent of `runtime-v1`: author-reviewed partitions queue revision/attempt-owned products with stable source mappings, scoped on-demand descriptors, exact-index readiness and declared content-addressed image dependencies. The viewer retains supported pose/resource ownership through quality changes, prevents entry into incomplete areas and releases obsolete requests through shared leases. Migration 016 records retryable storage retirement independently of deleted parents. Experimental `spatial_cell_size` splits only intact static triangles and preserves source-derived exact navigation/occlusion.
 
 The API defaults to `ASSET_CHUNK_STREAMING=off`; `reviewed` admits intact static products and `spatial` additionally admits explicit experimental cells. Viewer build and query rollback are `VITE_CHUNK_STREAMING=0` and `?streaming=0`. Unknown schema/processor advertisements retain complete loading. [Final acceptance](docs/chunking-acceptance.md) records local PostgreSQL/worker/storage/browser checks and complete/chunked cold/warm comparisons. Full authored occlusion remains startup-global, so these small generated fixtures do not show startup-byte savings; production and physical-device acceptance remain held.
+
+
+### 23.1 Review, processing and delivery flow
+
+1. Complete a GLB upload and explicitly inspect its inventory. Inspection requires the processor, permits one concurrent inspection per API process, and limits the source to 256 MiB, execution to two minutes and inventory JSON to 4 MiB.
+2. Review static source ownership in room groups, including global contributions. Save against the current partition revision and source hash. A valid reviewed save atomically queues `chunks-v1`; later edits invalidate obsolete products. Animation, skins, morphs and unsupported source features retain complete loading.
+3. The worker snapshots the review, builds Low/Balanced/HQ products, exact navigation and authored occlusion, and validates source mappings, hashes and byte counts. All required outputs upload before attempt/revision-matching publication. Shared repeated images can become declared content-addressed dependencies; this does not permit arbitrary external resources in uploaded GLBs.
+4. With rollout enabled, the ready parent advertises a scoped manifest endpoint. Manifest URLs point to JSON descriptor endpoints; each requested descriptor supplies a temporary signed binary URL. Readers identify products by parent, source, revision, tier and hash rather than by the expiring URL.
+5. Preview/public/embed bootstrap verifies complete exact navigation and authored occlusion, validates the standing pose, then commits the required starting visuals. Builder editing retains the complete source hierarchy. Layout placements preserve their own authored transforms and surface identities.
+6. Movement requires resident visual contributors as well as approved exact standing geometry. A missing neighboring product blocks entry and offers retry. Full authored occlusion still hides hotspots behind unloaded walls. Inspection and HQ shadows require all visual contributors.
+7. Quality changes retain the current supported pose and resources until replacements commit. Obsolete owners release transfers and caches; replaced manifests and deleted originals enter durable retirement.
+
+The full authored occlusion product remains a copy of the complete source, including its image bytes and preparation cost. Shared-image output savings therefore do not establish startup transfer savings. See [processing and scoped delivery](docs/chunking-processing.md), [viewer bootstrap](docs/chunking-viewer.md), [shared images and lifetime management](docs/chunking-lifecycle.md) and [final acceptance](docs/chunking-acceptance.md) for phase-specific evidence and remaining acceptance work.
