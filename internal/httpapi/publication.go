@@ -103,6 +103,9 @@ func (a *API) publicAsset(w http.ResponseWriter, r *http.Request) {
 		a.publicError(w, err)
 		return
 	}
+	if !a.allowSplat(w, asset.FileType, false) {
+		return
+	}
 	if !a.storageReady(w) {
 		return
 	}

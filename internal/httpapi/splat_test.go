@@ -252,6 +252,36 @@ func TestSplatContractsAndPrivateDelivery(t *testing.T) {
 	if result = call(handler, "GET", publicPath, ""); result.Code != 200 {
 		t.Fatal("published source unavailable")
 	}
+	// Runtime rollback must preserve published metadata and persisted scene identity.
+	for _, mode := range []SplatRollout{SplatOff, SplatViewer} {
+		rolled := NewWithOptions(q, pool.Ping, Options{SplatSupport: mode}, objects)
+		if result = call(rolled, "GET", "/api/v1/public/tours/"+p.Slug, ""); result.Code != 200 {
+			t.Fatal("rollback hid tour metadata", result.Body.String())
+		}
+		want := 200
+		if mode == SplatOff {
+			want = 503
+		}
+		for _, read := range []string{sourcePath, publicPath} {
+			if result = call(rolled, "GET", read, ""); result.Code != want {
+				t.Fatal("rollback signing", result.Code, result.Body.String())
+			}
+		}
+		if result = call(rolled, "POST", "/api/v1/projects/"+p.ID.String()+"/scenes", `{"name":"Blocked capture","asset_id":"`+ticket.Asset.ID.String()+`"}`); result.Code != 503 {
+			t.Fatal("rollback allowed new scene", result.Body.String())
+		}
+		if result = call(rolled, "GET", path, ""); result.Code != 200 {
+			t.Fatal("rollback hid persisted scene")
+		}
+		var intact database.Scene
+		json.Unmarshal(result.Body.Bytes(), &intact)
+		if intact.Type != "SPLAT" || intact.AssetID != ticket.Asset.ID {
+			t.Fatal("rollback changed scene identity")
+		}
+	}
+	if result = call(handler, "GET", publicPath, ""); result.Code != 200 {
+		t.Fatal("re-enable failed")
+	}
 	unused, err := q.CreateAsset(ctx, database.CreateAssetParams{ProjectID: p.ID, Name: "unused.splat", FileType: pgtype.Text{String: "SPLAT", Valid: true}, Size: 32, StorageKey: "unused/" + p.ID.String() + ".splat"})
 	if err != nil {
 		t.Fatal(err)

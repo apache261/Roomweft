@@ -254,6 +254,9 @@ func (a *API) upload(w http.ResponseWriter, r *http.Request) {
 			prefix = "textures/"
 		}
 	}
+	if !a.allowSplat(w, kind, true) {
+		return
+	}
 	limit := storage.UploadSizeLimit(kind)
 	if body.Size < 20 || body.Size > limit || (kind == "SPLAT" && (body.Size < 32 || body.Size%32 != 0)) {
 		fail(w, 400, fmt.Sprintf("file size must be between 20 bytes and %d MiB", limit/(1024*1024)))
@@ -313,6 +316,9 @@ func (a *API) getAsset(w http.ResponseWriter, r *http.Request) {
 		a.resourceError(w, err)
 		return
 	}
+	if !a.allowSplat(w, asset.FileType, false) {
+		return
+	}
 	url := ""
 	if asset.UploadStatus == "ready" {
 		if !a.storageReady(w) {
@@ -339,6 +345,9 @@ func (a *API) complete(w http.ResponseWriter, r *http.Request) {
 	asset, err := a.assets.GetAsset(r.Context(), id)
 	if err != nil {
 		a.resourceError(w, err)
+		return
+	}
+	if !a.allowSplat(w, asset.FileType, asset.UploadStatus != "ready") {
 		return
 	}
 	if asset.UploadStatus == "ready" {
@@ -435,6 +444,18 @@ func (a *API) createScene(w http.ResponseWriter, r *http.Request) {
 	}
 	if _, err := a.store.GetProject(r.Context(), id); err != nil {
 		a.storeError(w, err)
+		return
+	}
+	asset, err := a.assets.GetAsset(r.Context(), body.AssetID)
+	if errors.Is(err, pgx.ErrNoRows) {
+		fail(w, 400, "scene requires a completed asset from this project")
+		return
+	}
+	if err != nil {
+		a.resourceError(w, err)
+		return
+	}
+	if !a.allowSplat(w, asset.FileType, true) {
 		return
 	}
 	scene, err := a.assets.CreateScene(r.Context(), database.CreateSceneParams{ProjectID: id, ID: body.AssetID, Name: body.Name})

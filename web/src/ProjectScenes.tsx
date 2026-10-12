@@ -1,3 +1,4 @@
+import {useSplatSupport} from './splat/rollout';
 import {maxSplatBytes,validateSplatBytes} from './splat/profile';
 import { AssetProcessing } from './AssetProcessing';
 import type {Arrival} from './navigationSettings';
@@ -23,6 +24,7 @@ function SceneRow({ scene, selected, start, first, last, busy, select, change, s
   </li>;
 }
 export function ProjectScenes({ projectID }: { projectID: string }) {
+  const splatSupport=useSplatSupport();
   const [textureRole,setTextureRole]=useState<Asset['file_type']>('TEXTURE_BASE_COLOR');
   const [preview,setPreview]=useState(false);
   const [processingOpen,setProcessingOpen]=useState(false);
@@ -135,14 +137,14 @@ export function ProjectScenes({ projectID }: { projectID: string }) {
       {!preview && <details className="library-sharing"><summary>Publish & share</summary><PublishControls projectID={projectID} /></details>}
       {!preview && <details className="library-assets" onToggle={event=>setProcessingOpen(event.currentTarget.open)}><summary>Asset library <span>{assets.length}</span></summary><section className="assets-panel"><p>GLB models, 2:1 panoramas, or JPG, PNG and WebP hotspot images · GLB up to 1000 MiB; images up to 100 MiB · Originals are preserved</p>
         <label htmlFor="glb-upload">Upload GLB</label><input id="glb-upload" type="file" accept=".glb" disabled={busy} onChange={upload} />
-        <label htmlFor="splat-upload">Upload Gaussian splat source</label><input id="splat-upload" type="file" accept=".splat" disabled={busy} onChange={upload} /><p>Raw .splat only · up to 2,000,000 splats / 64,000,000 bytes · Inspection viewing and world-space hotspots.</p>
+        {splatSupport.authoring&&<><label htmlFor="splat-upload">Upload Gaussian splat source</label><input id="splat-upload" type="file" accept=".splat" disabled={busy} onChange={upload} /><p>Raw .splat only · up to 2,000,000 splats / 64,000,000 bytes · Inspection viewing and world-space hotspots.</p></>}
         <label htmlFor="panorama-upload">Upload panorama</label><input id="panorama-upload" type="file" accept=".jpg,.jpeg,.png,.webp" disabled={busy} onChange={upload} />
         <label htmlFor="info-image-upload">Upload hotspot image</label><input id="info-image-upload" type="file" accept=".jpg,.jpeg,.png,.webp" disabled={busy} onChange={e=>upload(e,true)} />
         <label>Texture map role<select aria-label="Texture map role" value={textureRole} onChange={e=>setTextureRole(e.target.value as Asset['file_type'])}><option value="TEXTURE_BASE_COLOR">Base color (sRGB)</option><option value="TEXTURE_NORMAL">Normal (linear data)</option><option value="TEXTURE_ROUGHNESS">Roughness (linear data)</option><option value="TEXTURE_AO">Baked AO (linear red channel)</option><option value="TEXTURE_LIGHTMAP">Baked indirect light (sRGB)</option></select></label>
         <label htmlFor="texture-upload">Upload texture map</label><input id="texture-upload" type="file" accept=".jpg,.jpeg,.png,.webp" disabled={busy} onChange={e=>upload(e,false,true)} />
         {busy && status === 'Uploading…' && <progress value={progress} max={100} aria-label="Upload progress" />}
         <ul className="asset-list">{assets.map(asset => <li key={asset.id}><span><strong>{asset.name}</strong><small>{asset.file_type.startsWith('TEXTURE_')?asset.file_type.replace('TEXTURE_','Texture: ').toLowerCase():asset.file_type==='IMAGE'?'Image':asset.file_type==='PANORAMA' ? '360°' : asset.file_type==='SPLAT' ? 'Gaussian splat' : 'GLB'} · {(asset.size / 1024 / 1024).toFixed(2)} MiB · {asset.upload_status === 'ready' ? 'Ready' : 'Awaiting completion'}</small></span>
-          <div className="asset-actions">{processingOpen&&(asset.file_type==='GLB'||asset.file_type.startsWith('TEXTURE_'))&&asset.upload_status==='ready'&&<AssetProcessing id={asset.id}/>}{(['GLB','PANORAMA','SPLAT'].includes(asset.file_type) || asset.upload_status!=='ready') && <button disabled={busy} onClick={() => asset.upload_status === 'ready' ? createScene(asset) : confirm(asset)}>{asset.upload_status === 'ready' ? 'Create scene' : 'Confirm upload'}</button>}<button className="secondary" disabled={busy || scenes.some(s=>s.asset_id===asset.id || s.type==='LAYOUT' && s.layout.elements.some(e=>e.asset_id===asset.id))} aria-label={`Delete asset ${asset.name}`} onClick={()=>removeAsset(asset)}>Delete asset</button></div></li>)}</ul>
+          <div className="asset-actions">{processingOpen&&(asset.file_type==='GLB'||asset.file_type.startsWith('TEXTURE_'))&&asset.upload_status==='ready'&&<AssetProcessing id={asset.id}/>}{(['GLB','PANORAMA','SPLAT'].includes(asset.file_type) || asset.upload_status!=='ready') && <button disabled={busy || asset.file_type==='SPLAT'&&!splatSupport.authoring} onClick={() => asset.upload_status === 'ready' ? createScene(asset) : confirm(asset)}>{asset.upload_status === 'ready' ? 'Create scene' : 'Confirm upload'}</button>}<button className="secondary" disabled={busy || scenes.some(s=>s.asset_id===asset.id || s.type==='LAYOUT' && s.layout.elements.some(e=>e.asset_id===asset.id))} aria-label={`Delete asset ${asset.name}`} onClick={()=>removeAsset(asset)}>Delete asset</button></div></li>)}</ul>
         {!assets.length && <p>No assets yet.</p>}
       </section></details>}</aside>}
         <div className="editor-stage">      {scene ? <Suspense fallback={<p role="status">Loading viewer…</p>}><SceneViewer key={`${scene.id}:${viewerRevision}:${preview}`} preview={preview} arrival={arrival} assets={assets} scene={scene} scenes={scenes} onNavigate={select} onSaved={updated => setScenes(items => items.map(item => item.id === updated.id ? updated : item))} /></Suspense> : <section className="scene-placeholder"><div aria-hidden="true">◇</div><h2>Start your first scene</h2><p>A scene is one place in your tour. Build connected rooms or upload a building or 360° photo.</p><button disabled={busy} onClick={()=>{setError('');setNewSceneOpen(true);}}>+ New scene</button></section>}

@@ -1,3 +1,4 @@
+import {useSplatSupport} from './splat/rollout';
 import { chunkStreamingEnabled, supportsChunkStreaming } from './chunkRollout';
 import { bakeAssetIdentity } from './bakeAssetIdentity';
 import { PartitionInspector } from './PartitionInspector';
@@ -91,6 +92,7 @@ export function SceneViewer({ scene, scenes, onSaved, onNavigate, preview = fals
   const [error, setError] = useState('');
   const [attempt, setAttempt] = useState(0);
   const splat=scene.type==='SPLAT';
+  const splatSupport=useSplatSupport(attempt);
   const [contextEpoch,setContextEpoch]=useState(0);
   const [walking, setWalking] = useState((preview||!!arrival) && (scene.type==='3D'||scene.type==='LAYOUT'));
   const [actions, setActions] = useState<ViewerActions | null>(null);
@@ -361,7 +363,7 @@ export function SceneViewer({ scene, scenes, onSaved, onNavigate, preview = fals
       {preview&&<button onClick={reloadScene} disabled={saving||linkBusy}>Reload scene</button>}
     </div>
     <div className={`viewer ${walking ? 'walking' : ''} ${panorama ? 'panorama' : ''} ${placing ? 'placing' : ''}`} key={`${scene.id}-${attempt}`}>
-      {error || textureError ? <p className="error" role="alert">{error || textureError} <button onClick={reloadScene}>Retry scene</button></p> : !url || layoutLoading || textureLoading ? <p role="status">Loading scene…</p> :
+      {splat && !splatSupport.viewer ? <p role={splatSupport.loading?"status":"alert"}>{splatSupport.loading?"Checking Gaussian splat availability…":"Gaussian splat support is unavailable. Choose another scene or retry later."} {!splatSupport.loading&&<button onClick={reloadScene}>Retry scene</button>}</p> : error || textureError ? <p className="error" role="alert">{error || textureError} <button onClick={reloadScene}>Retry scene</button></p> : !url || layoutLoading || textureLoading ? <p role="status">Loading scene…</p> :
         <ViewerError panorama={panorama}><ModelProgress /><Canvas key={contextEpoch} frameloop={pageVisible ? 'demand' : 'never'} dpr={[.5, qualityCaps[tier]]} onCreated={state => { invalidateViewer.current = state.invalidate;
             if(splat){state.gl.domElement.addEventListener('webglcontextlost',()=>{setActions(null);setNotice('Graphics context lost. Waiting for restoration…');},{once:true});state.gl.domElement.addEventListener('webglcontextrestored',()=>setContextEpoch(n=>n+1),{once:true});}
           }} camera={{ position: panorama ? [0,0,0] : [4,3,6], fov: panorama ? 75 : 60 }} gl={{ antialias: !splat }} fallback={<p role="alert">WebGL is unavailable in this browser.</p>}>

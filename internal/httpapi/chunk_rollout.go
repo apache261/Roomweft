@@ -26,7 +26,10 @@ func ParseChunkRollout(value string) (ChunkRollout, error) {
 	return mode, nil
 }
 
-type Options struct{ ChunkStreaming ChunkRollout }
+type Options struct {
+	ChunkStreaming ChunkRollout
+	SplatSupport   SplatRollout
+}
 
 func (a *API) allowsChunks(m chunking.Manifest) bool {
 	return (a.chunkStreaming == ChunkReviewed || a.chunkStreaming == ChunkSpatial) && m.Processor == chunking.ProcessorVersion && m.Schema == chunking.ManifestSchema && m.Partition.Policy == "reviewed-rooms" && (m.Partition.SpatialCellSize == 0 || a.chunkStreaming == ChunkSpatial)

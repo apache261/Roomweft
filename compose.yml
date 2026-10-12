@@ -56,6 +56,7 @@ services:
       - .env
     environment:
       ASSET_PROCESSOR_SCRIPT: /app/asset-tools/process.mjs
+      ASSET_SPLAT_SUPPORT: ${ASSET_SPLAT_SUPPORT:-off}
       ASSET_CHUNK_STREAMING: ${ASSET_CHUNK_STREAMING:-off}
       HTTP_ADDR: 0.0.0.0:8080
       DATABASE_URL: postgres://${POSTGRES_USER:-tour}:${POSTGRES_PASSWORD:-tour-local-only}@postgres:5432/${POSTGRES_DB:-virtual_tours}?sslmode=disable
@@ -73,8 +74,12 @@ services:
       minio-init:
         condition: service_completed_successfully
   web:
-    build: ./web
+    build:
+      context: ./web
+      args:
+        VITE_SPLAT_SUPPORT: ${VITE_SPLAT_SUPPORT:-off}
     environment:
+      VITE_SPLAT_SUPPORT: ${VITE_SPLAT_SUPPORT:-off}
       API_PROXY_TARGET: http://api:8080
     ports:
       - "${BIND_ADDRESS:-0.0.0.0}:${WEB_PORT:-5173}:5173"

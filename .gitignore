@@ -14,3 +14,6 @@ asset-tools/node_modules/
 # Local browser acceptance measurements.
 /test-results/
 /web/test-results/
+
+# Generated license copy bundled by the web prebuild.
+web/public/licenses/

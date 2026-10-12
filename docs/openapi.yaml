@@ -5,6 +5,23 @@ info:
 servers:
 - url: http://localhost:8080
 paths:
+  /api/v1/capabilities:
+    get:
+      summary: Read runtime Gaussian splat rollout capabilities
+      description: No-store response. Browser build and runtime capabilities must both permit support. Disabled support preserves scene metadata and returns 503 for splat signing or new admission.
+      responses:
+        '200':
+          description: Runtime capabilities
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [splat_viewer, splat_authoring]
+                properties:
+                  splat_viewer:
+                    type: boolean
+                  splat_authoring:
+                    type: boolean
   /health:
     get:
       summary: Check database health

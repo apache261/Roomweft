@@ -5,6 +5,8 @@ COPY scripts/fiber-timer-clock.mjs scripts/patch-fiber-timer.mjs scripts/copy-as
 RUN --mount=type=cache,target=/root/.npm \
     npm ci --prefer-offline --no-audit --no-fund
 COPY . .
+ARG VITE_SPLAT_SUPPORT=off
+ENV VITE_SPLAT_SUPPORT=$VITE_SPLAT_SUPPORT
 RUN npm run build
 
 FROM nginx:1.28-alpine AS production

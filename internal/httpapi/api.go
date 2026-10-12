@@ -27,6 +27,7 @@ type Store interface {
 
 type API struct {
 	chunkStreaming ChunkRollout
+	splatSupport   SplatRollout
 	layouts        LayoutStore
 	publication    PublicationStore
 	store          Store
@@ -36,13 +37,13 @@ type API struct {
 }
 
 func New(store Store, ping func(context.Context) error, storage ...ObjectStorage) http.Handler {
-	return NewWithOptions(store, ping, Options{ChunkStreaming: ChunkReviewed}, storage...)
+	return NewWithOptions(store, ping, Options{ChunkStreaming: ChunkReviewed, SplatSupport: SplatOn}, storage...)
 }
 func NewWithOptions(store Store, ping func(context.Context) error, options Options, storage ...ObjectStorage) http.Handler {
 	if options.ChunkStreaming == "" {
 		options.ChunkStreaming = ChunkOff
 	}
-	a := &API{store: store, ping: ping, chunkStreaming: options.ChunkStreaming}
+	a := &API{store: store, ping: ping, chunkStreaming: options.ChunkStreaming, splatSupport: options.SplatSupport}
 	a.assets, _ = store.(AssetStore)
 	a.layouts, _ = store.(LayoutStore)
 	a.publication, _ = store.(PublicationStore)
@@ -50,6 +51,7 @@ func NewWithOptions(store Store, ping func(context.Context) error, options Optio
 		a.storage = storage[0]
 	}
 	mux := http.NewServeMux()
+	mux.HandleFunc("GET /api/v1/capabilities", a.splatCapabilities)
 	mux.HandleFunc("GET /health", a.health)
 	mux.HandleFunc("GET /api/v1/projects", a.list)
 	mux.HandleFunc("POST /api/v1/projects", a.create)
