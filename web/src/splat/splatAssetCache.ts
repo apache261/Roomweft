@@ -1,3 +1,5 @@
+import {sourceResidentLimit} from './budget.js';
+import {assetLoadMeasurement,performanceStage} from '../performanceMetrics.ts';
 import {maxSplatBytes, validateSplatBytes} from './profile.ts';
 
 export type SplatProgress = {stage:'download'|'validate';bytes:number;total:number};
@@ -7,6 +9,9 @@ export const splatCacheStats = () => ({sources:entries.size,owners:[...entries.v
 
 async function load(endpoint:string,entry:Entry) {
   const signal=entry.abort.signal;
+  const measure=assetLoadMeasurement('splat'),finishDownload=performanceStage('splat-download');
+  let finishValidation:ReturnType<typeof performanceStage>|undefined;
+  measure('request');
   const progress=(p:SplatProgress)=>{entry.progress=p;entry.listeners.forEach(listener=>listener(p));};
   const timeout=setTimeout(()=>entry.abort.abort(),60_000);
   try {
@@ -24,20 +29,22 @@ async function load(endpoint:string,entry:Entry) {
     }
     if(!response?.ok||!response.body)throw new Error('Could not download splat source.');
     const length=Number(response.headers.get('Content-Length'));
-    if(length>maxSplatBytes)throw new Error('Splat source exceeds the supported byte limit.');
+    if(length>maxSplatBytes)throw new Error('Splat source exceeds the supported byte limit. Export a smaller raw .splat capture.');
     const reader=response.body.getReader(),chunks:Uint8Array[]=[];
     let bytes=0;
     try {
-      for(;;){const {value,done}=await reader.read();if(done)break;bytes+=value.byteLength;if(bytes>maxSplatBytes)throw new Error('Splat source exceeds the supported byte limit.');chunks.push(value);progress({stage:'download',bytes,total:length||0});}
+      for(;;){const {value,done}=await reader.read();if(done)break;bytes+=value.byteLength;if(bytes>maxSplatBytes)throw new Error('Splat source exceeds the supported byte limit. Export a smaller raw .splat capture.');chunks.push(value);progress({stage:'download',bytes,total:length||0});}
     } finally {await reader.cancel().catch(()=>{});reader.releaseLock();}
     if(!bytes||bytes%32||(length>0&&length!==bytes))throw new Error('Splat source is truncated or has invalid records.');
+    measure('downloaded',bytes);finishDownload();finishValidation=performanceStage('splat-validate',bytes);
     const result=new Uint8Array(bytes);let offset=0;for(const chunk of chunks){result.set(chunk,offset);offset+=chunk.byteLength;}chunks.length=0;
     // Yield between bounded batches so rapid scene changes and retry remain responsive.
     for(let start=0;start<bytes;start+=262144){signal.throwIfAborted();validateSplatBytes(result.buffer.slice(start,Math.min(bytes,start+262144)));progress({stage:'validate',bytes:Math.min(bytes,start+262144),total:bytes});await new Promise(resolve=>setTimeout(resolve,0));}
-    signal.throwIfAborted();return result.buffer;
+    signal.throwIfAborted();finishValidation();measure('validated',bytes);return result.buffer;
   } catch(error) {
+    finishDownload('failed');finishValidation?.('failed');
     if(signal.aborted)throw new Error('Splat loading was cancelled or timed out.');
-    if(error instanceof Error && !error.message.includes('http'))throw error;
+    if(error instanceof Error && !(error instanceof TypeError) && !error.message.includes('http'))throw error;
     throw new Error('Could not load splat source. Check your connection and retry.');
   } finally {clearTimeout(timeout);}
 }
@@ -45,7 +52,7 @@ async function load(endpoint:string,entry:Entry) {
 // Source bytes can be shared; workers, sorting and GPU allocations belong to each Canvas.
 export function acquireSplat(endpoint:string,onProgress:(p:SplatProgress)=>void=()=>{}) {
   let entry=entries.get(endpoint);
-  if(!entry){entry={owners:0,abort:new AbortController(),listeners:new Set(),promise:undefined as unknown as Promise<ArrayBuffer>};entries.set(endpoint,entry);entry.promise=load(endpoint,entry);}
+  if(!entry){if((entries.size+1)*maxSplatBytes>sourceResidentLimit)return {promise:Promise.reject<ArrayBuffer>(new Error('Too many capture sources are open. Close another viewer and retry.')),release(){}};entry={owners:0,abort:new AbortController(),listeners:new Set(),promise:undefined as unknown as Promise<ArrayBuffer>};entries.set(endpoint,entry);entry.promise=load(endpoint,entry);}
   const owned=entry;owned.owners++;owned.listeners.add(onProgress);if(owned.progress)onProgress(owned.progress);
   let released=false;
   return {promise:owned.promise,release(){if(released)return;released=true;owned.listeners.delete(onProgress);if(--owned.owners===0){owned.abort.abort();if(entries.get(endpoint)===owned)entries.delete(endpoint);}}};

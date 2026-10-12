@@ -49,7 +49,7 @@ export function PerformanceSampler({ usable, walkingUsable }: { usable: boolean;
               return { name: texture.name, width, height, faces: images.length, rgba8EquivalentBytes: width && height ? textureBytes(width, height, texture.generateMipmaps || texture.mipmaps.length > 1, images.length) : null };
             });
             const memory = (performance as Performance & { memory?: { usedJSHeapSize: number } }).memory;
-            run.resources = { decodedAssetCache: assetCacheStats(gl), navigationCache: navigationCacheStats(), geometries: gl.info.memory.geometries, textures: gl.info.memory.textures, programs: gl.info.programs?.length ?? 0,
+            run.resources = { ...run.resources, decodedAssetCache: assetCacheStats(gl), navigationCache: navigationCacheStats(), geometries: gl.info.memory.geometries, textures: gl.info.memory.textures, programs: gl.info.programs?.length ?? 0,
               residentGeometryBytes: [...geometries].reduce((sum, geometry) => sum + (geometry.index?.array.byteLength || 0) + Object.values(geometry.attributes).reduce((n, attribute) => n + attribute.array.byteLength, 0), 0),
               textureInventory: inventory, textureRgba8EquivalentBytes: inventory.reduce((sum, t) => sum + (t.rgba8EquivalentBytes || 0), 0),
               inventoryScope: 'Textures referenced by scene materials/background/environment; renderer-internal targets and cached loader assets excluded.',

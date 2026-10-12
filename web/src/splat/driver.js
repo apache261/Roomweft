@@ -1,5 +1,6 @@
 /* Adapted from @react-three/drei 10.7.9 core/Splat.js. MIT; see LICENSE.drei.
  * Local changes: bounded whole-source decode, owned worker/textures, demand-frame invalidation. */
+import {reserveSplatRenderer} from "./budget.js";
 import * as THREE from "three";
 import { shaderMaterial } from "@react-three/drei/core/shaderMaterial.js";
 const SplatMaterial = /* @__PURE__ */shaderMaterial({
@@ -244,44 +245,54 @@ export function createSplat(bytes, gl, invalidate, onSorted, onError, deferred =
   const context = gl.getContext();
   const width = Math.min(context.getParameter(context.MAX_TEXTURE_SIZE), Math.max(1, count));
   const height = Math.ceil(count / width);
-  if (height > context.getParameter(context.MAX_TEXTURE_SIZE)) throw new Error('Capture exceeds GPU texture capacity');
+  if (height > context.getParameter(context.MAX_TEXTURE_SIZE)) throw new Error('Capture exceeds this device’s GPU texture capacity. Export a smaller .splat and retry.');
+  // Include worker matrices, instance/sort buffers, 16-bit counting tables and one decode batch.
+  const cpuBytes=bytes.byteLength+width*height*32+count*80+524288+Math.min(8192,count)*96,gpuBytes=width*height*32+count*4;
+  const releaseBudget=reserveSplatRenderer(cpuBytes+gpuBytes);
+  const allocations=[];let startupWorker,startupCleanup;
+  try {
   const shared = {gl, worker:null, bounds:new THREE.Box3(), rowLength:32, numVertices:count, maxVertexes:count,
     loadedVertexCount:0, bufferTextureWidth:width, bufferTextureHeight:height,
     centerAndScaleData:new Float32Array(width*height*4), covAndColorData:new Uint32Array(width*height*4)};
   shared.centerAndScaleTexture = new THREE.DataTexture(shared.centerAndScaleData,width,height,THREE.RGBAFormat,THREE.FloatType);
   shared.covAndColorTexture = new THREE.DataTexture(shared.covAndColorData,width,height,THREE.RGBAIntegerFormat,THREE.UnsignedIntType);
+  allocations.push(shared.centerAndScaleTexture,shared.covAndColorTexture);
   shared.covAndColorTexture.internalFormat='RGBA32UI';
   shared.centerAndScaleTexture.needsUpdate=shared.covAndColorTexture.needsUpdate=true;
-  const geometry=new THREE.InstancedBufferGeometry();
+  const geometry=new THREE.InstancedBufferGeometry();allocations.push(geometry);
   geometry.setAttribute('position',new THREE.BufferAttribute(new Float32Array([-2,-2,0,2,2,0,-2,2,0,2,-2,0,2,2,0,-2,-2,0]),3));
   const indices=new THREE.InstancedBufferAttribute(new Uint32Array(count),1);
   indices.setUsage(THREE.DynamicDrawUsage); geometry.setAttribute('splatIndex',indices);geometry.instanceCount=0;
-  const material=new SplatMaterial();
+  const material=new SplatMaterial();allocations.push(material);
   Object.assign(material,{transparent:true,depthTest:true,depthWrite:false,blending:THREE.CustomBlending,blendSrcAlpha:THREE.OneFactor,toneMapped:true,
     centerAndScaleTexture:shared.centerAndScaleTexture,covAndColorTexture:shared.covAndColorTexture});
   const mesh=new THREE.Mesh(geometry,material);mesh.frustumCulled=false;mesh.raycast=()=>{};
   const workerURL = URL.createObjectURL(new Blob(['(', createWorker.toString(), ')(self)'], {type:'application/javascript'}));
-  const worker = new Worker(workerURL);
-  URL.revokeObjectURL(workerURL);
+  let worker;try{worker = new Worker(workerURL);startupWorker=worker;}finally{URL.revokeObjectURL(workerURL);}
   shared.worker=worker;
-  let disposed=false,pending=false,lastView='',sortTimeout;
-  const dispose=()=>{if(disposed)return;disposed=true;clearTimeout(sortTimeout);worker.terminate();geometry.dispose();material.dispose();shared.centerAndScaleTexture.dispose();shared.covAndColorTexture.dispose();};
+  let disposed=false,pending=false,lastView='',sortTimeout,sortStarted=0,decodeMs=0,sortCount=0;
+  const sortMs=[];
+  const allocatedAt=performance.now();
+  const dispose=()=>{if(disposed)return;disposed=true;pending=false;clearTimeout(sortTimeout);worker.terminate();releaseBudget();geometry.dispose();material.dispose();shared.centerAndScaleTexture.dispose();shared.covAndColorTexture.dispose();};
+  startupCleanup=dispose;
   try {
     gl.initTexture(shared.centerAndScaleTexture);gl.initTexture(shared.covAndColorTexture);
     if(!deferred){const matrices=pushDataBuffer(shared,bytes,count);
     worker.postMessage({method:'push',length:count*16,matrices:matrices.buffer},[matrices.buffer]);}
   } catch(error) {dispose();throw error;}
   worker.onerror=()=>{if(!disposed){dispose();onError?.(new Error("Splat sorting failed. Retry the scene."));}};
-  worker.onmessage=e=>{if(disposed)return;clearTimeout(sortTimeout);indices.set(e.data.indices);indices.needsUpdate=true;geometry.instanceCount=e.data.indices.length;pending=false;onSorted?.();invalidate();};
+  worker.onmessage=e=>{if(disposed)return;sortCount++;sortMs.push(performance.now()-sortStarted);if(sortMs.length>120)sortMs.shift();clearTimeout(sortTimeout);indices.set(e.data.indices);indices.needsUpdate=true;geometry.instanceCount=e.data.indices.length;pending=false;onSorted?.();invalidate();};
   const viewport=new THREE.Vector4(),viewMatrix=new THREE.Matrix4();
   return {mesh,dispose,count,bounds:shared.bounds,
     async decode(signal,onProgress){
+      const started=performance.now();
       try {for(let start=0;start<count;start+=8192){signal.throwIfAborted();if(disposed)throw new Error('Splat decoding cancelled');
         const n=Math.min(8192,count-start),matrices=pushDataBuffer(shared,bytes.slice(start*32,(start+n)*32),n);
         worker.postMessage({method:'push',length:count*16,matrices:matrices.buffer},[matrices.buffer]);onProgress?.((start+n)/count);
         await new Promise(resolve=>setTimeout(resolve,0));}signal.throwIfAborted();
-      }catch(error){dispose();throw error;}
-    },cpuBytes:bytes.byteLength+width*height*32+count*76,gpuBytes:width*height*32+count*4,
+      }catch(error){dispose();throw error;}finally{decodeMs=performance.now()-started;}
+    },cpuBytes,gpuBytes,
+    diagnostics:()=>({count,sourceBytes:bytes.byteLength,estimatedCPUBytes:cpuBytes,estimatedGPUBytes:gpuBytes,decodeMs,sortCount,sortMs:[...sortMs],sortBacklog:pending?1:0,elapsedMs:performance.now()-allocatedAt}),
     update(camera){
       if(disposed)return;
       gl.getCurrentViewport(viewport); material.viewport.set(viewport.z,viewport.w);
@@ -289,10 +300,11 @@ export function createSplat(bytes, gl, invalidate, onSorted, onError, deferred =
       camera.updateMatrixWorld();mesh.updateWorldMatrix(true,false);
       viewMatrix.multiplyMatrices(camera.matrixWorldInverse,mesh.matrixWorld);
       const m=viewMatrix.elements,view=new Float32Array([m[2],-m[6],m[10],m[14]]),key=Array.from(view).join(',');
-      if(pending||key===lastView)return;pending=true;lastView=key;
+      if(pending||key===lastView)return;pending=true;lastView=key;sortStarted=performance.now();
       sortTimeout=setTimeout(()=>{if(!disposed){dispose();onError?.(new Error('Splat sorting timed out. Retry the scene.'));}},15000);
       worker.postMessage({method:'sort',key:mesh.uuid,view:view.buffer,hashed:false},[view.buffer]);
     }};
+  } catch(error) {if(startupCleanup)startupCleanup();else{startupWorker?.terminate();allocations.forEach(resource=>resource.dispose());releaseBudget();}throw error;}
 }
 
 export async function createSplatAsync(bytes,gl,invalidate,onSorted,signal,onProgress,onError){

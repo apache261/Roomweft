@@ -1,3 +1,6 @@
+import {currentRun,summarize,performanceStage} from '../performanceMetrics';
+import {splatRendererStats} from './budget.js';
+import {splatCacheStats} from './splatAssetCache';
 import {useEffect,useRef,useState, type MutableRefObject} from 'react';
 import {useFrame,useThree} from '@react-three/fiber';
 import {OrbitControls} from '@react-three/drei';
@@ -23,10 +26,10 @@ export function SplatSceneControls({endpoint,settings,saved,ready,onError,onProg
   const abort=new AbortController(),timeout=setTimeout(()=>abort.abort(),60_000);
   const lease=acquireSplat(endpoint,p=>{if(active)latest.current.onProgress(`${p.stage==='download'?'Downloading':'Validating'} splat… ${p.total?Math.round(p.bytes/p.total*100)+'%':p.bytes+' bytes'}`);});
   const fail=(error:unknown)=>{if(active){latest.current.ready(null);latest.current.onError(error instanceof Error?error.message:'Could not prepare splat.');}};
-  lease.promise.then(bytes=>createSplatAsync(bytes,gl,invalidate,()=>{
+  lease.promise.then(bytes=>{const finish=performanceStage('splat-decode',bytes.byteLength);return createSplatAsync(bytes,gl,invalidate,()=>{
    if(!active||announced||!driver)return;announced=true;setLoaded(true);
    latest.current.onProgress(`Gaussian splat ready: ${driver.count.toLocaleString()} splats. Inspection only.`);latest.current.ready(actions);
-  },abort.signal,f=>{if(active)latest.current.onProgress(`Preparing splat… ${Math.round(f*100)}%`);},fail)).then(result=>{
+  },abort.signal,f=>{if(active)latest.current.onProgress(`Preparing splat… ${Math.round(f*100)}%`);},fail).then(result=>{finish();return result;},error=>{finish('failed');throw error;});}).then(result=>{
    clearTimeout(timeout);if(!active){result.dispose();return;}
    driver=result;resource.current=result;scene.add(result.mesh);applyTransform();reset();invalidate();
   }).catch(fail);
@@ -45,6 +48,6 @@ export function SplatSceneControls({endpoint,settings,saved,ready,onError,onProg
   return()=>{active=false;clearTimeout(timeout);abort.abort();lease.release();latest.current.ready(null);if(driver){scene.remove(driver.mesh);driver.dispose();}resource.current=undefined;};
  },[endpoint,gl,scene,camera,invalidate]);
  useEffect(()=>{const driver=resource.current;if(!driver)return;driver.mesh.matrix.copy(modelMatrix(settings.model));driver.mesh.matrix.setPosition(...settings.splat!.position);driver.mesh.updateMatrixWorld(true);camera.far=Math.max(1000,driver.bounds.clone().applyMatrix4(driver.mesh.matrixWorld).getSize(new Vector3()).length()*10,settings.splat!.max_distance*2);camera.updateProjectionMatrix();invalidate();},[settings.model.scale,settings.model.rotation,settings.model.up_axis,settings.splat?.position.join(','),settings.splat?.max_distance,loaded,camera,invalidate]);
- useFrame(()=>{resource.current?.update(camera);if(controls.current)controls.current.enabled=!paused.current;});
+ useFrame(()=>{resource.current?.update(camera);if(currentRun&&resource.current){const {sortMs,...metrics}=resource.current.diagnostics();currentRun.resources.splat={...metrics,sortMs:summarize(sortMs),cache:splatCacheStats(),resident:splatRendererStats(),qualityPolicy:'DPR only; full capture retained'};}if(controls.current)controls.current.enabled=!paused.current;});
  return <OrbitControls ref={controls} makeDefault enableDamping={false} minDistance={settings.splat!.min_distance} maxDistance={settings.splat!.max_distance} minPolarAngle={.011} maxPolarAngle={Math.PI-.011}/>;
 }

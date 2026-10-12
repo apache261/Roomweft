@@ -23,3 +23,9 @@ test('missing Content-Length cannot admit excessive or malformed splat bytes',as
  }
  globalThis.fetch=original;
 });
+test('aggregate source reservations reject additional captures and recover after release',async()=>{
+ const original=globalThis.fetch;
+ globalThis.fetch=async path=>String(path).startsWith('/api/v1')?Response.json({url:'https://storage.invalid/raw'}):new Response(fixture);
+ const first=acquireSplat('/assets/first'),second=acquireSplat('/assets/second');
+ try {await Promise.all([first.promise,second.promise]);const denied=acquireSplat('/assets/third');await assert.rejects(denied.promise,/Close another viewer/);denied.release();first.release();const next=acquireSplat('/assets/third');try{await next.promise;}finally{next.release();}}finally{first.release();second.release();globalThis.fetch=original;}
+});

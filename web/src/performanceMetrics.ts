@@ -50,7 +50,7 @@ export class PerformanceRun {
       frameMs: summarize(this.frames.flatMap(f => f.interval === null ? [] : [f.interval])), cpuSubmissionMs: summarize(this.frames.map(f => f.cpu)),
       drawCalls: summarize(this.frames.map(f => f.calls)), triangles: summarize(this.frames.map(f => f.triangles)),
       timings: [...this.timings], resources: this.resources,
-      limitations: ['CPU submission time is not GPU time; shader compilation/upload stalls require a separate browser trace.', 'Network zero sizes may mean cached responses or missing Timing-Allow-Origin; totals are observed lower bounds. In-flight requests are not included in milestone totals.', 'Texture bytes and resource counts are proxies, not exact VRAM.', 'Frame-time samples exclude demand-rendering idle gaps; renderedFrames includes idle wakes.', 'Frame distributions retain at most the last 36000 visible rendered frames.', 'Decode includes GLTF parsing and embedded image decoding, not network fetch.'] };
+      limitations: ['CPU submission time is not GPU time; shader compilation/upload stalls require a separate browser trace.', 'Network zero sizes may mean cached responses or missing Timing-Allow-Origin; totals are observed lower bounds. In-flight requests are not included in milestone totals.', 'Texture and splat allocation bytes are estimates, not exact process memory or VRAM.', 'Frame-time samples exclude demand-rendering idle gaps; renderedFrames includes idle wakes.', 'Frame distributions retain at most the last 36000 visible rendered frames.', 'Decode includes GLTF parsing and embedded image decoding, not network fetch.'] };
   }
 }
 let enabled = false;
@@ -83,7 +83,7 @@ export function sceneFingerprint(value: unknown) {
 }
 
 // Anonymous per-attempt IDs deliberately omit private endpoints and signed URLs.
-export function assetLoadMeasurement(kind: 'original' | 'variant' | 'collision' | 'room-asset' | 'chunk' | 'navigation-index' | 'occlusion-index') {
+export function assetLoadMeasurement(kind: 'splat' | 'original' | 'variant' | 'collision' | 'room-asset' | 'chunk' | 'navigation-index' | 'occlusion-index') {
   const run = currentRun;
   if (!run) return (_stage: string, _bytes?: number) => {};
   const load = { id: (run.assetLoads.at(-1)?.id ?? 0) + 1, kind, events: [] as { stage: string; atMs: number; bytes?: number }[] };
