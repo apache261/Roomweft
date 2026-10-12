@@ -113,10 +113,10 @@ paths:
         type: string
         format: uuid
     post:
-      summary: Start a GLB, panorama or information image upload
+      summary: Start a GLB, raw SPLAT, panorama or information image upload
       responses:
         '201':
-          description: Start a size-limited GLB or panorama upload
+          description: Start a size-limited model, splat or image upload
           content:
             application/json:
               schema:
@@ -143,24 +143,25 @@ paths:
                 name:
                   type: string
                   maxLength: 120
-                  description: Filename ending in .glb, .jpg, .jpeg, .png or .webp,
+                  description: Filename ending in .glb, .splat, .jpg, .jpeg, .png or .webp,
                     without path separators
                 size:
                   type: integer
                   minimum: 20
                   maximum: 1048576000
                   description: GLB limit is 1000 MiB; PANORAMA and IMAGE limit is
-                    100 MiB.
+                    100 MiB. SPLAT uses raw 32-byte records, at most 2,000,000 records / 64,000,000 bytes.
                 file_type:
                   type: string
                   enum:
                   - GLB
+                  - SPLAT
                   - PANORAMA
                   - IMAGE
                   - TEXTURE_BASE_COLOR
                   - TEXTURE_NORMAL
                   - TEXTURE_ROUGHNESS
-                  description: Defaults to GLB for .glb, PANORAMA for images. Choose
+                  description: Defaults to GLB for .glb, SPLAT for .splat, PANORAMA for images. Choose
                     IMAGE for hotspot images without a 2:1 requirement. Choose a TEXTURE_*
                     role for a material map without a 2:1 requirement. Base color
                     is sRGB; normal/roughness are linear data. Images are limited
@@ -246,7 +247,10 @@ paths:
           $ref: '#/components/responses/Error'
       description: Checks size and validates GLB v2 framing/embedded resources or
         panorama format, 2:1 dimensions (up to 8192 × 4096) and fully decoded pixels.
-        Copies validated bytes to the original key. Idempotent once ready. Body is
+        SPLAT validates the exact splat-v1 profile with finite positions, positive linear scales,
+        RGBA bytes and quantized unit rotations (maximum 2,000,000 records). Splat inspection
+        has a 30-second timeout and two concurrent slots; immutable conditional promotion
+        preserves the inspected bytes across retries. Idempotent once ready. Body is
         not required.
   /api/v1/projects/{id}/scenes:
     parameters: *id001
@@ -315,7 +319,7 @@ paths:
                     $ref: '#/components/schemas/LayoutDocument'
       description: Maximum JSON body 256 KiB. LAYOUT scenes omit asset_id; an omitted
         layout starts with empty elements/doors. The scene and instance references
-        are created atomically.
+        are created atomically. Imported scenes infer 3D from ready GLB, SPLAT from ready raw splat-v1 or PANORAMA from ready panorama assets; other asset roles and cross-project or pending sources are rejected.
   /api/v1/scenes/{id}:
     parameters: *id001
     get:
@@ -1151,6 +1155,7 @@ components:
           type: string
           enum:
           - GLB
+          - SPLAT
           - PANORAMA
           - IMAGE
           - TEXTURE_BASE_COLOR
@@ -1190,13 +1195,14 @@ components:
           type: string
           format: uuid
           nullable: true
-          description: Null for LAYOUT; required for imported 3D and PANORAMA scenes.
+          description: Null for LAYOUT; required for imported 3D, SPLAT and PANORAMA scenes.
         name:
           type: string
         type:
           type: string
           enum:
           - 3D
+          - SPLAT
           - PANORAMA
           - LAYOUT
         sort_order:
@@ -1326,13 +1332,44 @@ components:
           oneOf:
           - $ref: '#/components/schemas/CameraView'
           - $ref: '#/components/schemas/PanoramaView'
+    SplatSettings:
+      type: object
+      additionalProperties: false
+      required: [version, position, controls, min_distance, max_distance]
+      properties:
+        version:
+          type: integer
+          enum: [1]
+        position:
+          type: array
+          minItems: 3
+          maxItems: 3
+          items:
+            type: number
+            minimum: -1000000
+            maximum: 1000000
+        controls:
+          type: string
+          enum: [orbit]
+        min_distance:
+          type: number
+          minimum: 0.01
+          maximum: 1000000
+        max_distance:
+          type: number
+          minimum: 0.01
+          maximum: 1000000
+          description: Must be at least min_distance.
     SceneSettings:
+      description: SPLAT requires splat version 1; model scale/up-axis/yaw prepare the source before splat.position translation. Only exposure and background appearance controls apply; lighting intensities must be zero, tint empty, roughness null and shadows disabled. Materials and navigation are unavailable. Transform edits move hotspots atomically and clear saved cameras. Existing scene types cannot include splat settings.
       type: object
       additionalProperties: false
       required:
       - appearance
       - model
       properties:
+        splat:
+          $ref: '#/components/schemas/SplatSettings'
         appearance:
           type: object
           additionalProperties: false

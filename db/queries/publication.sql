@@ -4,7 +4,7 @@ AND EXISTS (SELECT 1 FROM scenes s WHERE s.id=p.start_scene_id AND s.project_id=
 AND NOT EXISTS (SELECT 1 FROM scenes s LEFT JOIN assets a ON a.id=s.asset_id WHERE s.project_id=p.id AND
  NOT ((s.type='LAYOUT' AND s.layout_revision>0 AND s.layout->>'version'='1' AND EXISTS (SELECT 1 FROM jsonb_array_elements(s.layout->'elements') e WHERE e->>'kind' IN ('ROOM','LOBBY','CORRIDOR','FLOOR')
  OR (e->>'kind'='INSTANCE' AND e->>'collidable'='true' AND CASE WHEN jsonb_typeof(e->'floor_meshes')='array' THEN jsonb_array_length(e->'floor_meshes') ELSE 0 END>0)))
- OR (a.upload_status='ready' AND ((s.type='3D' AND a.file_type='GLB') OR (s.type='PANORAMA' AND a.file_type='PANORAMA')))) IS TRUE)
+ OR (a.upload_status='ready' AND ((s.type='3D' AND a.file_type='GLB') OR (s.type='PANORAMA' AND a.file_type='PANORAMA') OR (s.type='SPLAT' AND a.file_type='SPLAT')))) IS TRUE)
 AND NOT EXISTS (SELECT 1 FROM layout_asset_refs r JOIN assets a ON a.id=r.asset_id WHERE r.project_id=p.id AND (a.upload_status<>'ready' OR a.file_type<>'GLB'))
 AND NOT EXISTS (SELECT 1 FROM scene_texture_refs r JOIN assets a ON a.id=r.asset_id WHERE r.project_id=p.id AND (a.upload_status<>'ready' OR a.file_type<>r.role))
 AND NOT EXISTS (SELECT 1 FROM hotspots h WHERE h.project_id=p.id AND h.type='NAVIGATION' AND NOT EXISTS (SELECT 1 FROM scenes d WHERE d.id=h.destination_scene_id AND d.project_id=p.id AND d.id<>h.scene_id))

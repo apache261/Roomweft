@@ -62,7 +62,7 @@ func (q *Queries) checkPortals(ctx context.Context, scene Scene) error {
 			_ = id.Scan(p.DestinationSceneID)
 			var err error
 			destination, err = q.GetScene(ctx, id)
-			if err != nil || destination.ProjectID != scene.ProjectID || destination.Type == "PANORAMA" {
+			if err != nil || destination.ProjectID != scene.ProjectID || (destination.Type != "3D" && destination.Type != "LAYOUT") {
 				return ErrPortalReference
 			}
 		}
@@ -149,7 +149,7 @@ func navigationChanged(old, next json.RawMessage) bool {
 var ErrWalkingStart = errors.New("saved start must be inside an approved interior floor region at the configured eye height")
 
 func validateWalkingStart(scene Scene, raw json.RawMessage) error {
-	if scene.Type == "PANORAMA" || len(raw) == 0 || string(raw) == "{}" {
+	if (scene.Type == "PANORAMA" || scene.Type == "SPLAT") || len(raw) == 0 || string(raw) == "{}" {
 		return nil
 	}
 	config, regions := sceneWalking(scene)

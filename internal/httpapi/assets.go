@@ -144,6 +144,12 @@ func (a *API) updateScene(w http.ResponseWriter, r *http.Request) {
 		a.resourceError(w, err)
 		return
 	}
+	if body.Settings != nil {
+		if err := body.Settings.ValidateForScene(scene.Type); err != nil {
+			fail(w, 400, err.Error())
+			return
+		}
+	}
 	if body.Settings != nil && scene.Type == "PANORAMA" {
 		fail(w, 400, "appearance and model preparation are only supported for 3D scenes")
 		return

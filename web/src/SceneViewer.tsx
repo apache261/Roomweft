@@ -44,7 +44,7 @@ function ModelProgress() {
   const { active, progress } = useProgress();
   return active ? <div className="model-progress" role="status">Loading scene… {Math.round(progress)}%</div> : null;
 }
-export function SceneViewer({ scene, scenes, onSaved, onNavigate, preview = false, assets = [], publicSlug,arrival }: {arrival?:{pose:Arrival;regionId:string}; publicSlug?: string; preview?: boolean; assets?: Asset[]; scene: Scene; scenes: Scene[]; onSaved: (scene: Scene) => void; onNavigate: (id: string,arrival?:{pose:Arrival;regionId:string}) => void }) {
+function SupportedSceneViewer({ scene, scenes, onSaved, onNavigate, preview = false, assets = [], publicSlug,arrival }: {arrival?:{pose:Arrival;regionId:string}; publicSlug?: string; preview?: boolean; assets?: Asset[]; scene: Scene; scenes: Scene[]; onSaved: (scene: Scene) => void; onNavigate: (id: string,arrival?:{pose:Arrival;regionId:string}) => void }) {
   const [pageVisible, setPageVisible] = useState(() => !document.hidden);
   useEffect(() => { const change = () => setPageVisible(!document.hidden); document.addEventListener('visibilitychange', change); return () => document.removeEventListener('visibilitychange', change); }, []);
   const [quality, setQuality] = useState<QualityPreference>(readQualityPreference);
@@ -458,4 +458,10 @@ export function SceneViewer({ scene, scenes, onSaved, onNavigate, preview = fals
 
 function ImportedControls(props:React.ComponentProps<typeof WalkControls>){
  return props.streaming&&supportsChunkStreaming(resolveAssetSource(props.url)?.response)?<StreamingSceneControls {...props}/>:<WalkControls {...props}/>;
+}
+
+// Phases 0–2 persist splat contracts and sources. Shared viewing arrives in phase 3.
+export function SceneViewer(props: React.ComponentProps<typeof SupportedSceneViewer>) {
+ if(props.scene.type==='SPLAT') return <section aria-label="Gaussian splat scene"><h2>{props.scene.name}</h2><p role="status">Gaussian splat source is ready. Shared tour viewing is pending phase 3.</p></section>;
+ return <SupportedSceneViewer {...props}/>;
 }

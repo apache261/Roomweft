@@ -6,6 +6,7 @@ import { AnimationMixer, Box3, Group, Matrix4, Mesh, MeshStandardMaterial, Prope
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 
 export type SceneSettings = {
+ splat?: {version:1;position:[number,number,number];controls:'orbit';min_distance:number;max_distance:number};
  navigation?:NavigationSettings;
  materials?:MaterialPreset[];surface_materials?:Record<string,string>;
   appearance: { hq_shadows?:boolean; exposure: number; environment_intensity: number; light_intensity: number; background: string; tint: string; roughness: number | null };

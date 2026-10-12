@@ -24,13 +24,13 @@ export async function request<T>(path: string, options: RequestInit = {}): Promi
   return response.json();
 }
 
-export type Asset = { id: string; project_id: string; name: string; file_type: 'GLB' | 'PANORAMA' | 'IMAGE' | 'TEXTURE_BASE_COLOR' | 'TEXTURE_NORMAL' | 'TEXTURE_ROUGHNESS' | 'TEXTURE_AO' | 'TEXTURE_LIGHTMAP'; upload_status: 'pending' | 'ready'; size: number };
+export type Asset = { id: string; project_id: string; name: string; file_type: 'GLB' | 'SPLAT' | 'PANORAMA' | 'IMAGE' | 'TEXTURE_BASE_COLOR' | 'TEXTURE_NORMAL' | 'TEXTURE_ROUGHNESS' | 'TEXTURE_AO' | 'TEXTURE_LIGHTMAP'; upload_status: 'pending' | 'ready'; size: number };
 export type CameraView = { position: [number, number, number]; yaw: number; pitch: number };
 export type PanoramaView = { yaw: number; pitch: number };
 export type StartView = CameraView | PanoramaView;
 export type HotspotPosition = { x: number; y: number; z: number; attachment?: Attachment } | PanoramaView;
 export type Hotspot = { id: string; scene_id: string; type: 'NAVIGATION' | 'INFO'; title: string; description: string; external_link: string; image_asset_id: string | null; position: HotspotPosition; destination_scene_id: string | null };
-export type Scene = { id: string; project_id: string; asset_id: string | null; layout: LayoutDocument; layout_revision: number; name: string; type: '3D' | 'PANORAMA' | 'LAYOUT'; sort_order: number; settings: SceneSettings; start_camera: StartView | Record<string, never> };
+export type Scene = { id: string; project_id: string; asset_id: string | null; layout: LayoutDocument; layout_revision: number; name: string; type: '3D' | 'SPLAT' | 'PANORAMA' | 'LAYOUT'; sort_order: number; settings: SceneSettings; start_camera: StartView | Record<string, never> };
 export type UploadTicket = { asset: Asset; upload: { url: string; fields: Record<string, string>; expires_at: string } };
 export function uploadFile(ticket: UploadTicket, file: File, progress: (percent: number) => void): Promise<void> {
   return new Promise((resolve, reject) => {

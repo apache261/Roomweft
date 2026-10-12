@@ -75,7 +75,7 @@ func (q *Queries) ChangeScene(ctx context.Context, change SceneChange) (Scene, e
 	}
 	if change.Settings != nil {
 		old, next := sceneconfig.Decode(scene.Settings), sceneconfig.Decode(change.Settings)
-		if err := next.Validate(); err != nil {
+		if err := next.ValidateForScene(scene.Type); err != nil {
 			return Scene{}, err
 		}
 		if old.Model != next.Model && next.Navigation != nil {
@@ -95,7 +95,7 @@ func (q *Queries) ChangeScene(ctx context.Context, change SceneChange) (Scene, e
 		if navigationChanged(scene.Settings, change.Settings) {
 			change.Camera = json.RawMessage(`{}`)
 		}
-		if old.Model != next.Model {
+		if sceneconfig.SourceTransformChanged(old, next) {
 			hotspots, err := queries.LockSceneHotspots(ctx, scene.ID)
 			if err != nil {
 				return Scene{}, err
@@ -109,7 +109,7 @@ func (q *Queries) ChangeScene(ctx context.Context, change SceneChange) (Scene, e
 				if err := json.Unmarshal(h.Position, &point); err != nil {
 					return Scene{}, err
 				}
-				p := sceneconfig.Reposition([3]float64{point.X, point.Y, point.Z}, old.Model, next.Model)
+				p := sceneconfig.RepositionForSettings([3]float64{point.X, point.Y, point.Z}, old, next)
 				point.X, point.Y, point.Z = p[0], p[1], p[2]
 				for _, n := range p {
 					if n < -1e6 || n > 1e6 {
