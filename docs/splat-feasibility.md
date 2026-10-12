@@ -1,4 +1,4 @@
-# Gaussian splats: phases 0–2
+# Gaussian splats: phases 0–3
 
 The selected renderer proof uses the MIT shader, covariance packing and worker sorter from `@react-three/drei` **10.7.9**, with Three **0.186.1** and React Three Fiber **9.8.1**. These installed versions are pinned in the frontend dependency/lock files. The adapted driver and complete MIT notice live in `web/src/splat/`. Its deliberate changes provide bounded whole-source loading, quaternion normalization, a constant-depth sorting fix, demand-frame invalidation and explicit worker/geometry/material/texture disposal. No conversion service, decoder download or runtime CDN is required.
 
@@ -42,7 +42,7 @@ The asset library accepts `.splat` sources, checks size/record alignment and a b
 
 Splat public reads require a published project and an actual referenced ready source. The existing 15-minute signed URL expiry, project cleanup, source reference restrictions and CORS configuration apply. No secure-context-only decoder is introduced: local HTTP MinIO works and production must continue using the configured HTTPS browser origin/S3 CORS. Upload URLs and credentials must not be logged.
 
-Shared tour rendering, authoring controls and splat hotspots are phases 3–5. Until those are implemented, persisted SPLAT scenes show an explicit phase-3 viewing message instead of entering the GLB loader. Uploading a source and creating a scene through the API is supported; the new-scene authoring dialog remains deferred to phase 4.
+Phase 3 now lazy-loads a dedicated splat adapter in the shared builder/preview/public/embed viewer. It provides orbit inspection, a bounds-based fallback camera, progress and explicit retry. Sources never enter the GLB loader or walking controller. The new-scene dialog and capture/hotspot authoring controls follow in phase 4.
 
 ## Validation commands
 
@@ -50,6 +50,16 @@ Shared tour rendering, authoring controls and splat hotspots are phases 3–5. U
 - `npm --prefix web test` covers the browser profile and existing model/navigation/material/runtime contracts.
 - `npm --prefix web run build` checks TypeScript and production bundling.
 - `npm --prefix web run test:splat-proof` checks the renderer, motion, resize, repeated teardown and context recovery against Vite.
-- `npm --prefix web run test:splat-upload` exercises local API/MinIO from a real browser, including early malformed-data feedback, signed POST CORS, completion, byte-identical signed download and the saved scene's explicit viewing status. It creates and deletes its own project.
+- `npm --prefix web run test:splat-upload` exercises local API/MinIO from a real browser, including early malformed-data feedback, signed POST CORS, completion, byte-identical signed download and the shared splat renderer. It creates and deletes its own project.
 
 Production S3 CORS and physical devices require separate deployment/device acceptance; local MinIO/browser success does not establish those measurements.
+
+## Shared renderer ownership (phase 3)
+
+`splatAssetCache` keys leases by the scoped asset endpoint, independent of signed transport URLs. Two simultaneous owners in the same browser realm share validated source bytes; each Canvas owns its covariance buffers, worker, geometry, material and GPU textures. Releasing the last source owner aborts pending transfer/validation and removes the cache entry. Failed or late work cannot delete a newer entry. The adapter ignores obsolete completions and disposes resources if a scene leaves during preparation.
+
+Source fetches read bounded streams even when Content-Length is missing and enforce the 64,000,000-byte profile. Validation yields between batches; covariance preparation yields every 8,192 records. Source loading and preparation have 60-second deadlines, and each asynchronous sort has a 15-second watchdog. Expired signed reads (401/403) renew the scoped descriptor once. User-visible failures offer Retry scene; raw signed URLs are not included in errors.
+
+The sort worker admits one pending sort per viewer, invalidates a demand frame on completion, and resubmits using the latest camera/transform if it changed. Idle views do not run a permanent render loop. Visibility handling is shared with ViewerRuntime; context restoration rebuilds the Canvas and all renderer-owned resources. Antialiasing is disabled for splat canvases, as in the local proof. Exposure/background use the splat's supported appearance controls. Existing GLB, panorama and layout routes retain their own adapters.
+
+`test:splat-viewer` passed scoped URL renewal, actual rendered color, failure/retry, saved camera, repeated reloads with stable worker counts, independent viewers, context restoration, and splat/GLB/panorama transitions. `test:splat-cache` unit coverage verifies shared ownership, cancellation, URL renewal, missing-length bounds and malformed bytes. Existing hotspot browser acceptance also passed after replacing nested overlay roots with explicitly owned DOM anchors, which avoid a teardown race exposed by mixed-scene transitions.

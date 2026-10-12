@@ -120,7 +120,7 @@ Acceptance:
 
 ## Phase 3 — Shared viewer and renderer ownership
 
-Status: Pending. Depends on Phase 2.
+Status: Implemented and verified locally. Shared builder/preview/public/embed inspection uses scoped source ownership, bounded async preparation, retry, URL renewal and per-Canvas sorting/GPU disposal.
 
 Introduce a dedicated adapter, for example `SplatSceneControls` plus `splatAssetCache`, rather than passing splats through `PreparedGLTFLoader`. Lazy-load it from the shared `SceneViewer` so builder, preview, public and embed use the same decoding/rendering path.
 
@@ -130,11 +130,11 @@ Provide inspection controls and a supported initial camera fallback. Walking rem
 
 Acceptance:
 
-- [ ] Every viewer mode renders the same capture and prepared transform.
-- [ ] URL expiration can recover without confusing URL identity with source identity.
-- [ ] Rapid scene changes cancel obsolete work and ignore late completion safely.
-- [ ] Repeated transitions settle resource counts instead of accumulating workers/buffers.
-- [ ] Load failure offers retry and leaves the application responsive.
+- [x] Every viewer mode renders the same capture and prepared transform.
+- [x] URL expiration can recover without confusing URL identity with source identity.
+- [x] Rapid scene changes cancel obsolete work and ignore late completion safely.
+- [x] Repeated transitions settle resource counts instead of accumulating workers/buffers.
+- [x] Load failure offers retry and leaves the application responsive.
 
 ## Phase 4 — Authoring, cameras and hotspots
 

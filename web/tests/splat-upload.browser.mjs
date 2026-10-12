@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 const origin=process.env.TOUR_ORIGIN||'http://localhost:5173';
-const browser=await chromium.launch({headless:true});
+const browser=await chromium.launch({headless:true,args:['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
 const context=await browser.newContext();let project;
 try{
  const created=await context.request.post(origin+'/api/v1/projects',{data:{name:'Splat browser admission'}});assert.equal(created.status(),201);project=await created.json();
@@ -18,8 +18,8 @@ try{
  const hash=await page.evaluate(async url=>{const r=await fetch(url);if(!r.ok)throw new Error('Source download failed');const b=await r.arrayBuffer();return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',b))).map(v=>v.toString(16).padStart(2,'0')).join('');},descriptor.url);
  assert.equal(hash,createHash('sha256').update(good).digest('hex'));
  const made=await context.request.post(origin+`/api/v1/projects/${project.id}/scenes`,{data:{name:'Splat source',asset_id:assets[0].id}});assert.equal(made.status(),201);assert.equal((await made.json()).type,'SPLAT');
- await page.reload();await page.getByText('Gaussian splat source is ready. Shared tour viewing is pending phase 3.',{exact:true}).waitFor();
- assert.deepEqual(errors,[]);console.log('Splat browser admission passed: early attribute feedback, signed POST with CORS, completion, byte-identical private browser read and explicit phase-3 viewer state.');
+ await page.reload();await page.getByText('Gaussian splat ready: 441 splats. Inspection only.',{exact:true}).waitFor();
+ assert.deepEqual(errors,[]);console.log('Splat browser admission passed: early attribute feedback, signed POST with CORS, completion, byte-identical private browser read and the shared splat renderer.');
 }finally{
  if(project)await context.request.delete(origin+'/api/v1/projects/'+project.id);await browser.close();
 }

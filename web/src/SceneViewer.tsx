@@ -13,7 +13,7 @@ import { resolveAssetSource, registerAsset, type AssetResponse } from './runtime
 import {validatePortalArrival} from './portalValidation';
 import { MaterialEditor, type MaterialTarget } from './MaterialEditor';
 import { textureIds } from './materials';
-import { Component, Suspense, useEffect, startTransition, useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
+import { Component, Suspense, lazy, useEffect, startTransition, useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Canvas, type ThreeEvent } from '@react-three/fiber';
 import { useProgress } from '@react-three/drei';
 import { Matrix3, Matrix4 } from 'three';
@@ -33,8 +33,10 @@ import {useTheme} from './Theme';
 import { SceneSettingsPanel } from './SceneSettingsPanel';
 import { firstInvalidNumericInput } from './NumericInput';
 import {readWalkingPreference,saveWalkingPreference} from './walkingEffects';
+import { SplatAppearance } from './splat/SplatAppearance';
 import { panoramaAngles } from './panorama';
 
+const SplatSceneControls=lazy(()=>import('./splat/SplatSceneControls').then(m=>({default:m.SplatSceneControls})));
 class ViewerError extends Component<{ children: ReactNode; panorama: boolean }, { error: string }> {
   state = { error: '' };
   static getDerivedStateFromError(error: Error) { return { error: error.message }; }
@@ -44,7 +46,7 @@ function ModelProgress() {
   const { active, progress } = useProgress();
   return active ? <div className="model-progress" role="status">Loading scene… {Math.round(progress)}%</div> : null;
 }
-function SupportedSceneViewer({ scene, scenes, onSaved, onNavigate, preview = false, assets = [], publicSlug,arrival }: {arrival?:{pose:Arrival;regionId:string}; publicSlug?: string; preview?: boolean; assets?: Asset[]; scene: Scene; scenes: Scene[]; onSaved: (scene: Scene) => void; onNavigate: (id: string,arrival?:{pose:Arrival;regionId:string}) => void }) {
+export function SceneViewer({ scene, scenes, onSaved, onNavigate, preview = false, assets = [], publicSlug,arrival }: {arrival?:{pose:Arrival;regionId:string}; publicSlug?: string; preview?: boolean; assets?: Asset[]; scene: Scene; scenes: Scene[]; onSaved: (scene: Scene) => void; onNavigate: (id: string,arrival?:{pose:Arrival;regionId:string}) => void }) {
   const [pageVisible, setPageVisible] = useState(() => !document.hidden);
   useEffect(() => { const change = () => setPageVisible(!document.hidden); document.addEventListener('visibilitychange', change); return () => document.removeEventListener('visibilitychange', change); }, []);
   const [quality, setQuality] = useState<QualityPreference>(readQualityPreference);
@@ -86,7 +88,9 @@ function SupportedSceneViewer({ scene, scenes, onSaved, onNavigate, preview = fa
   useEffect(()=>{if(currentRun&&diagnostics)currentRun.metadata={...currentRun.metadata,assetTier,textureVariantBudget:assetPolicy};},[assetTier,assetPolicy,diagnostics]);
   const [error, setError] = useState('');
   const [attempt, setAttempt] = useState(0);
-  const [walking, setWalking] = useState((preview||!!arrival) && scene.type !== 'PANORAMA');
+  const splat=scene.type==='SPLAT';
+  const [contextEpoch,setContextEpoch]=useState(0);
+  const [walking, setWalking] = useState((preview||!!arrival) && (scene.type==='3D'||scene.type==='LAYOUT'));
   const [actions, setActions] = useState<ViewerActions | null>(null);
   const [layoutDocument,setLayoutDocument]=useState<LayoutDocument>(scene.type==='LAYOUT'?scene.layout:{version:1,elements:[],doors:[]});
   const layoutDirty=scene.type==='LAYOUT' && canonicalLayout(layoutDocument)!==canonicalLayout(scene.layout);
@@ -165,13 +169,13 @@ function SupportedSceneViewer({ scene, scenes, onSaved, onNavigate, preview = fa
   const movement = useRef(new Set<string>());
   useEffect(() => {
     let active = true; setRuntimeResponse(null); setURL(''); setError(''); setActions(null); setNotice(''); setHotspotError(''); setHotspotsReady(false);
-    if(scene.type==='LAYOUT'){setURL('layout');return ()=>{active=false;};}
+    if(scene.type==='LAYOUT'||splat){setURL(splat?'splat':'layout');return ()=>{active=false;};}
     request<Asset & AssetResponse>(`${source}/assets/${scene.asset_id}`).then(asset => {
       if (active) { if (!asset.url) setError('This asset is not ready.'); else {setRuntimeResponse(asset);setURL(panorama ? asset.url : registerAsset(scene.asset_id!, `${source}/assets/${scene.asset_id}`, asset, assetTier));} }
     }).catch(err => { if (active) setError(err.message); });
     return () => { active = false; };
   }, [scene.id, scene.asset_id, attempt, source]);
-  useEffect(()=>{if(runtimeResponse&&!panorama)startTransition(()=>setURL(registerAsset(scene.asset_id!,`${source}/assets/${scene.asset_id}`,runtimeResponse,assetTier)));},[runtimeResponse,assetTier,panorama,scene.asset_id,source]);
+  useEffect(()=>{if(runtimeResponse&&!panorama&&!splat)startTransition(()=>setURL(registerAsset(scene.asset_id!,`${source}/assets/${scene.asset_id}`,runtimeResponse,assetTier)));},[runtimeResponse,assetTier,panorama,scene.asset_id,source]);
   useEffect(()=>{
     if(scene.type!=='LAYOUT')return;
     let active=true;setLayoutLoading(true);setError('');
@@ -297,7 +301,7 @@ function SupportedSceneViewer({ scene, scenes, onSaved, onNavigate, preview = fa
   }
   function hoverPlace(event: ThreeEvent<PointerEvent> | null) { setHover(event ? placement(event) : null); }
   async function saveHotspot() {
-    if(!position)return;
+    if(!position||!validNumericInputs())return;
     setLinkBusy(true);setHotspotError('');
     try {
       const h=await request<Hotspot>(editing ? `/hotspots/${editing}` : `/scenes/${scene.id}/hotspots`,{method:editing?'PATCH':'POST',body:JSON.stringify({type:kind,title:title.trim(),position,destination_scene_id:kind==='NAVIGATION'?destination:null,description:kind==='INFO'?description:'',external_link:kind==='INFO'?externalLink:'',image_asset_id:kind==='INFO'?(image||null):null})});
@@ -333,7 +337,7 @@ function SupportedSceneViewer({ scene, scenes, onSaved, onNavigate, preview = fa
 
   return <section ref={panel} className={`viewer-panel ${preview ? 'visitor-scene' : 'editor-scene'}`} aria-label="Scene viewer">
     <div className="viewport-column">
-    {!preview&&<div className="viewer-toolbar"><div className="viewport-title"><span className="viewport-kind">{panorama?'360°':'3D'}</span><h2>{scene.name}</h2><span className="viewport-state">{preview?'Preview':layoutDirty||settingsDirty?'Unsaved changes':'Saved'}</span></div><button onClick={reloadScene} disabled={saving || linkBusy}>Reload scene</button></div>}
+    {!preview&&<div className="viewer-toolbar"><div className="viewport-title"><span className="viewport-kind">{panorama?'360°':splat?'Gaussian splat':'3D'}</span><h2>{scene.name}</h2><span className="viewport-state">{preview?'Preview':layoutDirty||settingsDirty?'Unsaved changes':'Saved'}</span></div><button onClick={reloadScene} disabled={saving || linkBusy}>Reload scene</button></div>}
     {!preview&&<div className="editor-quick-tools" aria-label="Scene actions">
       {scene.type==='LAYOUT'&&<button disabled={saving||linkBusy||walking} onClick={()=>{setTool('plan');quickRoom.current?.();}}>+ Add room</button>}
       <button disabled={linkBusy||settingsDirty||layoutDirty} onClick={()=>{setTool('hotspots');setWalking(false);newHotspot();}}>+ Add hotspot</button>
@@ -342,31 +346,34 @@ function SupportedSceneViewer({ scene, scenes, onSaved, onNavigate, preview = fa
     </div>}
     <div className="walk-toolbar">
       <label className="quality-control"><span className="sr-only">Rendering quality</span><select aria-label="Rendering quality" value={quality} onChange={event => { const next = event.target.value as QualityPreference; setQuality(next); saveQualityPreference(next); }}><option value="auto">Auto ({autoTier === 'hq' ? 'HQ' : autoTier === 'low' ? 'Low' : 'Balanced'})</option><option value="low">Low</option><option value="balanced">Balanced</option><option value="hq">HQ</option></select></label>
-      {!preview&&!panorama&&<button aria-pressed={showGrid} onClick={()=>setShowGrid(!showGrid)}>Grid</button>}
+      {!preview&&!panorama&&!splat&&<button aria-pressed={showGrid} onClick={()=>setShowGrid(!showGrid)}>Grid</button>}
       {preview&&<button aria-expanded={directoryOpen} aria-controls="visitor-hotspots" onClick={()=>{stop();setDirectoryOpen(!directoryOpen);}}>{directoryOpen?'Hide hotspots':'Hotspots'}</button>}
       {document.fullscreenEnabled && <button onClick={()=>{const task=document.fullscreenElement?document.exitFullscreen():panel.current?.requestFullscreen();task?.catch(()=>setNotice('Fullscreen unavailable in this browser.'));}}>Fullscreen</button>}
-      {!panorama && <button disabled={!actions || saving || placing || preview&&!!modelInfo&&!modelInfo.walkable&&!walking} onClick={()=>void toggleWalking()}>{walking ? 'Inspect model' : !preview&&modelInfo&&!modelInfo.walkable?'Set up walking':layoutDirty||settingsDirty?'Save & walk':'Walk inside'}</button>}
+      {!panorama && !splat && <button disabled={!actions || saving || placing || preview&&!!modelInfo&&!modelInfo.walkable&&!walking} onClick={()=>void toggleWalking()}>{walking ? 'Inspect model' : !preview&&modelInfo&&!modelInfo.walkable?'Set up walking':layoutDirty||settingsDirty?'Save & walk':'Walk inside'}</button>}
       {!panorama&&walking&&<div className="walking-effects" role="group" aria-label="Walking effects">
         <button aria-pressed={walkingEffects&&!reducedMotion} disabled={reducedMotion} title={reducedMotion?'Head bob is disabled by your reduced-motion preference.':'Gentle camera bob while moving. This preference is saved in your browser.'} onClick={()=>{const next=!walkingEffects;setWalkingEffects(next);saveWalkingPreference('effects',next);}}>Head bob</button>
         <button aria-pressed={smoothMovement??preview} title="Smooth acceleration and braking. Wall and floor collisions always stay enabled." onClick={()=>{const next=!(smoothMovement??preview);setSmoothMovement(next);saveWalkingPreference('smooth',next);}}>Smooth movement</button>
       </div>}
-      {!preview && <button disabled={!actions || (!panorama && !walking) || saving || settingsDirty || layoutDirty} onClick={save}>{saving ? 'Saving…' : 'Save start view'}</button>}
-      <button disabled={!actions || (!panorama && !walking) || saving} onClick={() => { actions?.reset(); movement.current.clear(); wakeViewer(); }}>Reset view</button>
+      {!preview && <button disabled={!actions || (!panorama && !splat && !walking) || saving || settingsDirty || layoutDirty} onClick={save}>{saving ? 'Saving…' : 'Save start view'}</button>}
+      <button disabled={!actions || (!panorama && !splat && !walking) || saving} onClick={() => { actions?.reset(); movement.current.clear(); wakeViewer(); }}>Reset view</button>
       {preview&&<button onClick={reloadScene} disabled={saving||linkBusy}>Reload scene</button>}
     </div>
     <div className={`viewer ${walking ? 'walking' : ''} ${panorama ? 'panorama' : ''} ${placing ? 'placing' : ''}`} key={`${scene.id}-${attempt}`}>
-      {error || textureError ? <p className="error" role="alert">{error || textureError}</p> : !url || layoutLoading || textureLoading ? <p role="status">Loading scene…</p> :
-        <ViewerError panorama={panorama}><ModelProgress /><Canvas frameloop={pageVisible ? 'demand' : 'never'} dpr={[.5, qualityCaps[tier]]} onCreated={state => { invalidateViewer.current = state.invalidate; }} camera={{ position: panorama ? [0,0,0] : [4,3,6], fov: panorama ? 75 : 60 }} gl={{ antialias: true }} fallback={<p role="alert">WebGL is unavailable in this browser.</p>}>
+      {error || textureError ? <p className="error" role="alert">{error || textureError} <button onClick={reloadScene}>Retry scene</button></p> : !url || layoutLoading || textureLoading ? <p role="status">Loading scene…</p> :
+        <ViewerError panorama={panorama}><ModelProgress /><Canvas key={contextEpoch} frameloop={pageVisible ? 'demand' : 'never'} dpr={[.5, qualityCaps[tier]]} onCreated={state => { invalidateViewer.current = state.invalidate;
+            if(splat){state.gl.domElement.addEventListener('webglcontextlost',()=>{setActions(null);setNotice('Graphics context lost. Waiting for restoration…');},{once:true});state.gl.domElement.addEventListener('webglcontextrestored',()=>setContextEpoch(n=>n+1),{once:true});}
+          }} camera={{ position: panorama ? [0,0,0] : [4,3,6], fov: panorama ? 75 : 60 }} gl={{ antialias: !splat }} fallback={<p role="alert">WebGL is unavailable in this browser.</p>}>
           <ViewerRuntime preference={quality} onAutoTier={setAutoTier} onAssetTier={setAutoAssetTier}>
-          {panorama ? <color attach="background" args={['#edf1e8']} /> : <SceneLighting tier={requestedAssetTier} enabled={new URLSearchParams(location.search).get('hq')!=='0'} appearance={settings.appearance} background={!preview?(resolved==='dark'?'#18232f':'#eaf0f5'):undefined} />}
-          {!preview&&!panorama&&showGrid&&<EditorGrid dark={resolved==='dark'} info={modelInfo}/>}
+          {panorama ? <color attach="background" args={['#edf1e8']} /> : splat ? <SplatAppearance appearance={settings.appearance}/> : <SceneLighting tier={requestedAssetTier} enabled={new URLSearchParams(location.search).get('hq')!=='0'} appearance={settings.appearance} background={!preview?(resolved==='dark'?'#18232f':'#eaf0f5'):undefined} />}
+          {!preview&&!panorama&&!splat&&showGrid&&<EditorGrid dark={resolved==='dark'} info={modelInfo}/>}
           {diagnostics && <PerformanceSampler walkingUsable={!panorama && walking && !!modelInfo?.walkable && !!actions && hotspotsReady && !layoutLoading && !textureLoading} usable={!!actions && hotspotsReady && !layoutLoading && !textureLoading} />}
           <Suspense fallback={null}>
             {panorama ? <PanoramaControls url={url} saved={savedPanorama} ready={setActions} placing={placing && !linkBusy} onPlace={place} onHover={hoverPlace} /> :
+              splat?<SplatSceneControls endpoint={`${source}/assets/${scene.asset_id}`} settings={settings} saved={savedWalk} ready={setActions} onError={setError} onProgress={setNotice} paused={paused}/> :
               scene.type==='LAYOUT'?<LayoutControls bakeRevision={bakeKey} streaming={preview && chunkStreamingEnabled(import.meta.env.VITE_CHUNK_STREAMING,location.search)} onStreamingState={roomStatus} optimizeVisuals={preview && new URLSearchParams(location.search).get('spatial') !== '0'} document={lastValidLayout.current} urls={instanceURLs} textureURLs={textureURLs} walking={walking} effects={walkingEffects&&!reducedMotion} smoothMovement={smoothMovement??preview} instant={!preview} onSelectElement={selectElement} arrival={arrival} onNearby={setNearby} saved={savedWalk} movement={movement} ready={setActions} report={setNotice} placing={placing && !linkBusy} onPlace={place} onHover={hoverPlace} paused={paused} onInfo={reportModelInfo} /> :
               <ImportedControls streaming={preview && chunkStreamingEnabled(import.meta.env.VITE_CHUNK_STREAMING,location.search)} onStreamingState={roomStatus} bakeRevision={bakeKey} optimizeVisuals={preview && new URLSearchParams(location.search).get('spatial') !== '0'} url={url} walking={walking} effects={walkingEffects&&!reducedMotion} smoothMovement={smoothMovement??preview} instant={!preview} onSelectElement={selectElement} arrival={arrival} onNearby={setNearby} saved={savedWalk} movement={movement} ready={setActions} report={setNotice} placing={placing && !linkBusy} onPlace={place} onHover={hoverPlace} paused={paused} settings={settings} textureURLs={textureURLs} onInfo={reportModelInfo} />}
-            {!panorama&&<NavigationOverlay regions={sceneRegions(draftScene)} portals={walkingConfig.portals} builder={!preview} nearby={nearby} onActivate={activatePortal} onTarget={setExitTarget}/>}
-            <HotspotLayer hotspots={displayHotspots} onActivate={activate} placing={placing} draft={placing ? hover : dirty ? position : null} selected={editing} reveal={!preview && reveal} panorama={panorama} onTarget={setTarget} />
+            {!panorama&&!splat&&<NavigationOverlay regions={sceneRegions(draftScene)} portals={walkingConfig.portals} builder={!preview} nearby={nearby} onActivate={activatePortal} onTarget={setExitTarget}/>}
+            <HotspotLayer hotspots={displayHotspots} onActivate={activate} placing={placing} draft={placing ? hover : dirty ? position : null} selected={editing} reveal={!preview && reveal} panorama={panorama} screenOnly={splat} onTarget={setTarget} />
           </Suspense>
           </ViewerRuntime>
         </Canvas></ViewerError>}
@@ -382,7 +389,7 @@ function SupportedSceneViewer({ scene, scenes, onSaved, onNavigate, preview = fa
         onKeyUp={() => (movement.current.delete(key), wakeViewer())}>{preview?<><span aria-hidden="true">{{w:'↑',a:'←',s:'↓',d:'→'}[key]}</span><span className="sr-only">{label}</span></>:label}</button>)}</div>}
     {roomLoading!=='ready'&&<p className="viewer-notice" role="status">{roomLoading==='failed'?<>Room could not load. Entry remains blocked. <button onClick={()=>retryRooms.current?.()}>Retry room loading</button></>:'Loading nearby rooms… Entry opens when ready.'}</p>}
     {notice && <p className="viewer-notice" role="status">{notice}</p>}
-    <p className="viewer-help">{preview?(panorama?'Drag to look · Pinch to zoom':walking?'WASD to move · Drag to look · Escape for controls':'Drag to orbit · Scroll to zoom'):panorama ? 'Drag to look · Scroll or pinch to zoom' : walking ? 'WASD or arrow keys to walk · Click scene for mouse look · Aim at a hotspot and click · Escape releases mouse for controls · Drag to look on touch · Hold buttons to move' : 'Click viewport, then WASD / arrows to move · Drag to orbit · Scroll to zoom · Right-drag to pan'}</p>
+    <p className="viewer-help">{splat?'Drag to orbit · Scroll or pinch to zoom · Inspection only':preview?(panorama?'Drag to look · Pinch to zoom':walking?'WASD to move · Drag to look · Escape for controls':'Drag to orbit · Scroll to zoom'):panorama ? 'Drag to look · Scroll or pinch to zoom' : walking ? 'WASD or arrow keys to walk · Click scene for mouse look · Aim at a hotspot and click · Escape releases mouse for controls · Drag to look on touch · Hold buttons to move' : 'Click viewport, then WASD / arrows to move · Drag to orbit · Scroll to zoom · Right-drag to pan'}</p>
     {popup && <dialog ref={dialog} className="info-popup" aria-label={popup.title} onCancel={()=>setPopup(null)}>
       <button autoFocus className="secondary" onClick={()=>setPopup(null)}>Close information</button><h3>{popup.title}</h3>
       <p className="plain-description">{popup.description}</p>
@@ -396,8 +403,8 @@ function SupportedSceneViewer({ scene, scenes, onSaved, onNavigate, preview = fa
     </div>
     <aside id={preview?'visitor-hotspots':undefined} hidden={preview&&!directoryOpen} className={preview?'visitor-directory':'editor-inspector'} aria-label={preview?'Explore scene':'Scene inspector'} onKeyDown={event=>{if(preview&&event.key==='Escape'){setDirectoryOpen(false);panel.current?.querySelector<HTMLButtonElement>('[aria-controls="visitor-hotspots"]')?.focus();}}}>
     {preview&&<div className="visitor-directory-heading"><span>Explore this space</span><button className="secondary" aria-label="Close hotspot list" onClick={()=>{setDirectoryOpen(false);panel.current?.querySelector<HTMLButtonElement>('[aria-controls="visitor-hotspots"]')?.focus();}}>✕</button></div>}
-    {!preview && <div className="inspector-heading"><h2>Inspector</h2><span>{scene.type==='LAYOUT'?'Layout':panorama?'Panorama':'Model'}</span></div>}
-    {!preview && <nav className="inspector-sections" role="tablist" aria-label="Inspector sections">{[...(scene.type==='LAYOUT'?[['plan','Plan']]:[]),['hotspots','Hotspots'],...(!panorama?[['walking','Walking'],['materials','Materials'],['partition','Partition'],['appearance','Appearance']]:[])].map(([id,label])=><button key={id} id={`tab-${id}`} role="tab" aria-selected={tool===id} tabIndex={tool===id?0:-1} onKeyDown={e=>{const tabs=Array.from(e.currentTarget.parentElement!.querySelectorAll<HTMLButtonElement>('[role="tab"]'));const index=tabs.indexOf(e.currentTarget);const next=e.key==='ArrowRight'?(index+1)%tabs.length:e.key==='ArrowLeft'?(index+tabs.length-1)%tabs.length:e.key==='Home'?0:e.key==='End'?tabs.length-1:-1;if(next>=0){e.preventDefault();tabs[next].click();tabs[next].focus();}}} aria-controls={`panel-${id}`} className="secondary" onClick={()=>chooseTool(id)}>{label}</button>)}</nav>}
+    {!preview && <div className="inspector-heading"><h2>Inspector</h2><span>{scene.type==='LAYOUT'?'Layout':panorama?'Panorama':splat?'Gaussian splat':'Model'}</span></div>}
+    {!preview && <nav className="inspector-sections" role="tablist" aria-label="Inspector sections">{[...(scene.type==='LAYOUT'?[['plan','Plan']]:[]),['hotspots','Hotspots'],...(!panorama?splat?[['appearance','Capture']]:[['walking','Walking'],['materials','Materials'],['partition','Partition'],['appearance','Appearance']]:[])].map(([id,label])=><button key={id} id={`tab-${id}`} role="tab" aria-selected={tool===id} tabIndex={tool===id?0:-1} onKeyDown={e=>{const tabs=Array.from(e.currentTarget.parentElement!.querySelectorAll<HTMLButtonElement>('[role="tab"]'));const index=tabs.indexOf(e.currentTarget);const next=e.key==='ArrowRight'?(index+1)%tabs.length:e.key==='ArrowLeft'?(index+tabs.length-1)%tabs.length:e.key==='Home'?0:e.key==='End'?tabs.length-1:-1;if(next>=0){e.preventDefault();tabs[next].click();tabs[next].focus();}}} aria-controls={`panel-${id}`} className="secondary" onClick={()=>chooseTool(id)}>{label}</button>)}</nav>}
     <div id="panel-plan" role="tabpanel" aria-labelledby="tab-plan" hidden={preview||tool!=='plan'}>
 
     {!preview && scene.type==='LAYOUT' && <LayoutEditor key={scene.layout_revision} document={layoutDocument} onChange={setLayoutDocument} onSave={saveLayout} dirty={layoutDirty} busy={saving||linkBusy} assets={assets} attached={attached} surfaces={modelInfo?.surfaces||[]} selection={selectedElement} onSelection={setSelectedElement} onQuickAdd={bindQuickRoom} />}
@@ -416,7 +423,7 @@ function SupportedSceneViewer({ scene, scenes, onSaved, onNavigate, preview = fa
       </>}
       {scene.type==='LAYOUT' && position && 'x' in position && <label>Hotspot attachment<select aria-label="Hotspot attachment" value={position.attachment?.element_id||''} onChange={event=>{const {attachment,...p}=position;const e=layoutDocument.elements.find(e=>e.id===event.target.value);setPosition(e?{...p,attachment:attachPoint(e,p)}:p);setDirty(true);}}><option value="">Keep at world position</option>{layoutDocument.elements.map(e=><option key={e.id} value={e.id}>Move with {e.name}</option>)}</select></label>}
       {layoutDirty && <p>Save the layout before editing hotspots or saving a start view.</p>}
-      <button disabled={!actions || !hotspotsReady} onClick={()=>{stop();setWalking(false);setHover(null);setPlacing(p=>!p);}}>{placing?'Cancel placement':position?'Reposition hotspot':'Place hotspot'}</button>
+      {!splat && <button disabled={!actions || !hotspotsReady} onClick={()=>{stop();setWalking(false);setHover(null);setPlacing(p=>!p);}}>{placing?'Cancel placement':position?'Reposition hotspot':'Place hotspot'}</button>}
       {placing && <p role="status">Click a {panorama?'point in the panorama':'model surface'} to set the position, then Save hotspot. Drag to inspect without placing.</p>}
       {position && <p role="status">{dirty ? 'Unsaved placement — click Save hotspot.' : 'Saved hotspot selected.'}</p>}
       <button disabled={!position || !title.trim() || (kind==='NAVIGATION' && !destination) || placing} onClick={saveHotspot}>{linkBusy?'Saving…':'Save hotspot'}</button>
@@ -434,21 +441,21 @@ function SupportedSceneViewer({ scene, scenes, onSaved, onNavigate, preview = fa
     </div>
     </div>
     <div id="panel-walking" role="tabpanel" aria-labelledby="tab-walking" hidden={preview||tool!=='walking'}>
-    {!preview&&!panorama&&<div className="walking-guide"><h3>{modelInfo?.walkable?'Ready to walk':'Set up a walking area'}</h3><p>{scene.type==='LAYOUT'?'Generated room floors are approved automatically. For imported rooms, select each module in Plan and choose its floor meshes. Save, walk with WASD, then save the starting view.':'1. Add a region. 2. Select its structural floor meshes and check the height range. 3. Save changes, then Walk inside.'}</p><button disabled={!actions||saving} onClick={()=>void toggleWalking()}>{walking?'Stop walking test':modelInfo?.walkable?'Test walking':'Check walking setup'}</button></div>}
-    {!preview&&!panorama&&<WalkingPanel scene={draftScene} scenes={draftScenes} config={walkingConfig} onChange={navigation=>scene.type==='LAYOUT'?setLayoutDocument({...layoutDocument,navigation}):setSettings({...settings,navigation})} info={modelInfo} busy={saving||linkBusy||exitBusy} current={()=>{const v=walking&&actions?.view();return v&&'position'in v?v:undefined;}}/>}
+    {!preview&&!panorama&&!splat&&<div className="walking-guide"><h3>{modelInfo?.walkable?'Ready to walk':'Set up a walking area'}</h3><p>{scene.type==='LAYOUT'?'Generated room floors are approved automatically. For imported rooms, select each module in Plan and choose its floor meshes. Save, walk with WASD, then save the starting view.':'1. Add a region. 2. Select its structural floor meshes and check the height range. 3. Save changes, then Walk inside.'}</p><button disabled={!actions||saving} onClick={()=>void toggleWalking()}>{walking?'Stop walking test':modelInfo?.walkable?'Test walking':'Check walking setup'}</button></div>}
+    {!preview&&!panorama&&!splat&&<WalkingPanel scene={draftScene} scenes={draftScenes} config={walkingConfig} onChange={navigation=>scene.type==='LAYOUT'?setLayoutDocument({...layoutDocument,navigation}):setSettings({...settings,navigation})} info={modelInfo} busy={saving||linkBusy||exitBusy} current={()=>{const v=walking&&actions?.view();return v&&'position'in v?v:undefined;}}/>}
     </div>
     <div id="panel-materials" role="tabpanel" aria-labelledby="tab-materials" hidden={preview||tool!=='materials'}>
-    {!preview && !panorama && <MaterialEditor bakeRevision={bakeKey} presets={presets} assets={assets} busy={saving||linkBusy} targets={materialTargets()} onChange={materials=>scene.type==='LAYOUT'?setLayoutDocument({...layoutDocument,materials}):setSettings({...settings,materials})} onAssign={assignMaterial} />}
+    {!preview && !panorama && !splat && <MaterialEditor bakeRevision={bakeKey} presets={presets} assets={assets} busy={saving||linkBusy} targets={materialTargets()} onChange={materials=>scene.type==='LAYOUT'?setLayoutDocument({...layoutDocument,materials}):setSettings({...settings,materials})} onAssign={assignMaterial} />}
     </div>
     <div id="panel-partition" role="tabpanel" aria-labelledby="tab-partition" hidden={preview||tool!=='partition'}>
-    {!preview&&!panorama&&tool==='partition'&&(scene.type==='3D'&&scene.asset_id?<PartitionInspector key={scene.asset_id} assetId={scene.asset_id} transform={modelMatrix(settings.model)}/>:<>
+    {!preview&&!panorama&&!splat&&tool==='partition'&&(scene.type==='3D'&&scene.asset_id?<PartitionInspector key={scene.asset_id} assetId={scene.asset_id} transform={modelMatrix(settings.model)}/>:<>
      <label>Imported parent asset<select aria-label="Partition parent asset" value={partitionAsset} onChange={e=>setPartitionAsset(e.target.value)}><option value="">Choose an imported asset</option>{[...new Set(layoutDocument.elements.filter(e=>e.kind==='INSTANCE'&&e.asset_id).map(e=>e.asset_id!))].map(id=><option key={id} value={id}>{assets.find(a=>a.id===id)?.name||id}</option>)}</select></label>
      <p>Generated rooms retain their existing template ownership. A parent partition applies to every placement of that asset; it does not change instance room assignments.</p>
      {partitionAsset&&(()=>{const e=layoutDocument.elements.find(e=>e.asset_id===partitionAsset);return e?<PartitionInspector key={partitionAsset} assetId={partitionAsset} transform={new Matrix4().makeTranslation(e.x,0,e.z).multiply(modelMatrix({scale:e.scale,rotation:e.rotation,up_axis:'Y'}))}/>:null;})()}
     </>)}
     </div>
     <div id="panel-appearance" role="tabpanel" aria-labelledby="tab-appearance" hidden={preview||tool!=='appearance'}>
-    {!preview && !panorama && <SceneSettingsPanel layout={scene.type==='LAYOUT'} settings={settings} onChange={setSettings} onSave={saveSettings} busy={saving || linkBusy} dirty={settingsDirty} info={modelInfo} />}
+    {!preview && !panorama && !splat && <SceneSettingsPanel layout={scene.type==='LAYOUT'} settings={settings} onChange={setSettings} onSave={saveSettings} busy={saving || linkBusy} dirty={settingsDirty} info={modelInfo} />}
 
 
     </div>
@@ -458,10 +465,4 @@ function SupportedSceneViewer({ scene, scenes, onSaved, onNavigate, preview = fa
 
 function ImportedControls(props:React.ComponentProps<typeof WalkControls>){
  return props.streaming&&supportsChunkStreaming(resolveAssetSource(props.url)?.response)?<StreamingSceneControls {...props}/>:<WalkControls {...props}/>;
-}
-
-// Phases 0–2 persist splat contracts and sources. Shared viewing arrives in phase 3.
-export function SceneViewer(props: React.ComponentProps<typeof SupportedSceneViewer>) {
- if(props.scene.type==='SPLAT') return <section aria-label="Gaussian splat scene"><h2>{props.scene.name}</h2><p role="status">Gaussian splat source is ready. Shared tour viewing is pending phase 3.</p></section>;
- return <SupportedSceneViewer {...props}/>;
 }

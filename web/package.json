@@ -9,6 +9,7 @@
     "build": "tsc --noEmit && vite build",
     "test": "node --test tests/*.test.mjs",
     "test:splat-upload": "node tests/splat-upload.browser.mjs",
+    "test:splat-viewer": "node tests/splat-viewer.browser.mjs",
     "test:splat-proof": "node tests/splat-proof.browser.mjs",
     "test:hotspots": "node tests/hotspots.browser.mjs",
     "demo:hotspots": "node scripts/create-hotspot-demo.mjs",

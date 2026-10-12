@@ -194,6 +194,8 @@ function pushDataBuffer(shared, buffer, vertexCount) {
     destOffset = shared.loadedVertexCount * 8 + i * 4 * 2;
     for (let j = 0; j < cov_indexes.length; j++) covAndColorData_int16[destOffset + j] = mtx.elements[cov_indexes[j]] * 32767.0 / max_value;
 
+    shared.bounds?.expandByPoint(new THREE.Vector3(center.x, -center.y, center.z));
+
     // RGBA
     destOffset = shared.loadedVertexCount * 16 + (i * 4 + 3) * 4;
     const col = new THREE.Color(u_buffer[32 * i + 24 + 0] / 255, u_buffer[32 * i + 24 + 1] / 255, u_buffer[32 * i + 24 + 2] / 255);
@@ -237,16 +239,13 @@ function pushDataBuffer(shared, buffer, vertexCount) {
   return matrices;
 }
 
-export function createSplat(bytes, gl, invalidate, onSorted) {
+export function createSplat(bytes, gl, invalidate, onSorted, onError, deferred = false) {
   const count = bytes.byteLength / 32;
   const context = gl.getContext();
   const width = Math.min(context.getParameter(context.MAX_TEXTURE_SIZE), Math.max(1, count));
   const height = Math.ceil(count / width);
   if (height > context.getParameter(context.MAX_TEXTURE_SIZE)) throw new Error('Capture exceeds GPU texture capacity');
-  const workerURL = URL.createObjectURL(new Blob(['(', createWorker.toString(), ')(self)'], {type:'application/javascript'}));
-  const worker = new Worker(workerURL);
-  URL.revokeObjectURL(workerURL);
-  const shared = {gl, worker, rowLength:32, numVertices:count, maxVertexes:count,
+  const shared = {gl, worker:null, bounds:new THREE.Box3(), rowLength:32, numVertices:count, maxVertexes:count,
     loadedVertexCount:0, bufferTextureWidth:width, bufferTextureHeight:height,
     centerAndScaleData:new Float32Array(width*height*4), covAndColorData:new Uint32Array(width*height*4)};
   shared.centerAndScaleTexture = new THREE.DataTexture(shared.centerAndScaleData,width,height,THREE.RGBAFormat,THREE.FloatType);
@@ -260,17 +259,29 @@ export function createSplat(bytes, gl, invalidate, onSorted) {
   const material=new SplatMaterial();
   Object.assign(material,{transparent:true,depthTest:true,depthWrite:false,blending:THREE.CustomBlending,blendSrcAlpha:THREE.OneFactor,toneMapped:true,
     centerAndScaleTexture:shared.centerAndScaleTexture,covAndColorTexture:shared.covAndColorTexture});
-  const mesh=new THREE.Mesh(geometry,material);mesh.frustumCulled=false;
-  let disposed=false,pending=false,lastView='';
-  const dispose=()=>{if(disposed)return;disposed=true;worker.terminate();geometry.dispose();material.dispose();shared.centerAndScaleTexture.dispose();shared.covAndColorTexture.dispose();};
+  const mesh=new THREE.Mesh(geometry,material);mesh.frustumCulled=false;mesh.raycast=()=>{};
+  const workerURL = URL.createObjectURL(new Blob(['(', createWorker.toString(), ')(self)'], {type:'application/javascript'}));
+  const worker = new Worker(workerURL);
+  URL.revokeObjectURL(workerURL);
+  shared.worker=worker;
+  let disposed=false,pending=false,lastView='',sortTimeout;
+  const dispose=()=>{if(disposed)return;disposed=true;clearTimeout(sortTimeout);worker.terminate();geometry.dispose();material.dispose();shared.centerAndScaleTexture.dispose();shared.covAndColorTexture.dispose();};
   try {
     gl.initTexture(shared.centerAndScaleTexture);gl.initTexture(shared.covAndColorTexture);
-    const matrices=pushDataBuffer(shared,bytes,count);
-    worker.postMessage({method:'push',length:count*16,matrices:matrices.buffer},[matrices.buffer]);
+    if(!deferred){const matrices=pushDataBuffer(shared,bytes,count);
+    worker.postMessage({method:'push',length:count*16,matrices:matrices.buffer},[matrices.buffer]);}
   } catch(error) {dispose();throw error;}
-  worker.onmessage=e=>{if(disposed)return;indices.set(e.data.indices);indices.needsUpdate=true;geometry.instanceCount=e.data.indices.length;pending=false;onSorted?.();invalidate();};
+  worker.onerror=()=>{if(!disposed){dispose();onError?.(new Error("Splat sorting failed. Retry the scene."));}};
+  worker.onmessage=e=>{if(disposed)return;clearTimeout(sortTimeout);indices.set(e.data.indices);indices.needsUpdate=true;geometry.instanceCount=e.data.indices.length;pending=false;onSorted?.();invalidate();};
   const viewport=new THREE.Vector4(),viewMatrix=new THREE.Matrix4();
-  return {mesh,dispose,count,cpuBytes:bytes.byteLength+width*height*32+count*76,gpuBytes:width*height*32+count*4,
+  return {mesh,dispose,count,bounds:shared.bounds,
+    async decode(signal,onProgress){
+      try {for(let start=0;start<count;start+=8192){signal.throwIfAborted();if(disposed)throw new Error('Splat decoding cancelled');
+        const n=Math.min(8192,count-start),matrices=pushDataBuffer(shared,bytes.slice(start*32,(start+n)*32),n);
+        worker.postMessage({method:'push',length:count*16,matrices:matrices.buffer},[matrices.buffer]);onProgress?.((start+n)/count);
+        await new Promise(resolve=>setTimeout(resolve,0));}signal.throwIfAborted();
+      }catch(error){dispose();throw error;}
+    },cpuBytes:bytes.byteLength+width*height*32+count*76,gpuBytes:width*height*32+count*4,
     update(camera){
       if(disposed)return;
       gl.getCurrentViewport(viewport); material.viewport.set(viewport.z,viewport.w);
@@ -279,6 +290,13 @@ export function createSplat(bytes, gl, invalidate, onSorted) {
       viewMatrix.multiplyMatrices(camera.matrixWorldInverse,mesh.matrixWorld);
       const m=viewMatrix.elements,view=new Float32Array([m[2],-m[6],m[10],m[14]]),key=Array.from(view).join(',');
       if(pending||key===lastView)return;pending=true;lastView=key;
+      sortTimeout=setTimeout(()=>{if(!disposed){dispose();onError?.(new Error('Splat sorting timed out. Retry the scene.'));}},15000);
       worker.postMessage({method:'sort',key:mesh.uuid,view:view.buffer,hashed:false},[view.buffer]);
     }};
+}
+
+export async function createSplatAsync(bytes,gl,invalidate,onSorted,signal,onProgress,onError){
+ signal.throwIfAborted();
+ const driver=createSplat(bytes,gl,invalidate,onSorted,onError,true);
+ await driver.decode(signal,onProgress);return driver;
 }
