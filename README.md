@@ -382,10 +382,12 @@ Large static GLBs can be partitioned into author-reviewed room groups with indep
 API rollout defaults to `ASSET_CHUNK_STREAMING=off`. Use `reviewed` for verified room groups or `spatial` to also permit reviewed experimental cells. `VITE_CHUNK_STREAMING=0` and `?streaming=0` provide viewer rollback. All processor modules are included in the Docker image; migrations 014–016 establish partition, job and storage retirement records. See [final validation, measurements and rollout](docs/chunking-acceptance.md) and [the implementation plan](rendering_pland_phase.md). Automated generated-fixture/live-stack checks do not replace real-building or physical-device acceptance.
 
 
-## Gaussian splat sources (phases 0–2)
+## Gaussian splats (phases 0–4)
 
 The asset library accepts self-contained raw `.splat` captures with at most 2,000,000 fixed 32-byte records (64,000,000 bytes). The API creates `SPLAT` scenes from ready same-project sources and stores versioned inspection settings and world cameras. Completion validates every record and promotes immutable private originals; signed reads use the existing project/publication scope. PLY and compressed formats are not supported.
 
 Run `npm --prefix web run dev` and open `/dev/splat` for the local renderer proof. `npm --prefix web run test:splat-proof` verifies generated captures, teardown and context restoration; `npm --prefix web run test:splat-upload` verifies browser admission and private delivery against the running local API/MinIO. See [the exact profile, evidence and limits](docs/splat-feasibility.md).
 
-Shared tour rendering and authoring are phases 3–5. Saved splat scenes currently display a clear phase-3 viewing message. Real reconstructed indoor capture and physical-device acceptance remain pending.
+Choose **New scene → Gaussian splat**, upload/select a capture, and use **Capture** to prepare scale, axis, yaw, position, exposure and orbit bounds. Save an inspection start view. Add information/navigation hotspots with explicit world coordinates or **Place 2 m in front of camera**. Transform saves move hotspots and clear the old start view. Markers use screen visibility; capture walls do not occlude them. Walking and mesh-only controls are unavailable until a reviewed proxy is supported.
+
+Builder, preview, public and embed share the lazy splat renderer with progress, signed-URL renewal, Retry scene and owned worker/GPU cleanup. Run `npm --prefix web run test:splat-viewer` and `npm --prefix web run test:splat-authoring` for the local viewing/authoring checks. Phase 5 release acceptance, real reconstructed indoor captures and physical-device measurements remain pending.

@@ -1,4 +1,4 @@
-# Gaussian splats: phases 0–3
+# Gaussian splats: phases 0–4
 
 The selected renderer proof uses the MIT shader, covariance packing and worker sorter from `@react-three/drei` **10.7.9**, with Three **0.186.1** and React Three Fiber **9.8.1**. These installed versions are pinned in the frontend dependency/lock files. The adapted driver and complete MIT notice live in `web/src/splat/`. Its deliberate changes provide bounded whole-source loading, quaternion normalization, a constant-depth sorting fix, demand-frame invalidation and explicit worker/geometry/material/texture disposal. No conversion service, decoder download or runtime CDN is required.
 
@@ -42,7 +42,7 @@ The asset library accepts `.splat` sources, checks size/record alignment and a b
 
 Splat public reads require a published project and an actual referenced ready source. The existing 15-minute signed URL expiry, project cleanup, source reference restrictions and CORS configuration apply. No secure-context-only decoder is introduced: local HTTP MinIO works and production must continue using the configured HTTPS browser origin/S3 CORS. Upload URLs and credentials must not be logged.
 
-Phase 3 now lazy-loads a dedicated splat adapter in the shared builder/preview/public/embed viewer. It provides orbit inspection, a bounds-based fallback camera, progress and explicit retry. Sources never enter the GLB loader or walking controller. The new-scene dialog and capture/hotspot authoring controls follow in phase 4.
+Phase 3 now lazy-loads a dedicated splat adapter in the shared builder/preview/public/embed viewer. It provides orbit inspection, a bounds-based fallback camera, progress and explicit retry. Sources never enter the GLB loader or walking controller. Phase 4 adds capture creation, supported authoring controls, saved inspection views and world-positioned hotspots.
 
 ## Validation commands
 
@@ -62,4 +62,14 @@ Source fetches read bounded streams even when Content-Length is missing and enfo
 
 The sort worker admits one pending sort per viewer, invalidates a demand frame on completion, and resubmits using the latest camera/transform if it changed. Idle views do not run a permanent render loop. Visibility handling is shared with ViewerRuntime; context restoration rebuilds the Canvas and all renderer-owned resources. Antialiasing is disabled for splat canvases, as in the local proof. Exposure/background use the splat's supported appearance controls. Existing GLB, panorama and layout routes retain their own adapters.
 
-`test:splat-viewer` passed scoped URL renewal, actual rendered color, failure/retry, saved camera, repeated reloads with stable worker counts, independent viewers, context restoration, and splat/GLB/panorama transitions. `test:splat-cache` unit coverage verifies shared ownership, cancellation, URL renewal, missing-length bounds and malformed bytes. Existing hotspot browser acceptance also passed after replacing nested overlay roots with explicitly owned DOM anchors, which avoid a teardown race exposed by mixed-scene transitions.
+`test:splat-viewer` passed scoped URL renewal, actual rendered color, failure/retry, saved camera, repeated reloads with stable worker counts, independent viewers, context restoration, and splat/GLB/panorama transitions. `splat-cache.test.mjs` unit coverage verifies shared ownership, cancellation, URL renewal, missing-length bounds and malformed bytes. Existing hotspot browser acceptance also passed after replacing nested overlay roots with explicitly owned DOM anchors, which avoid a teardown race exposed by mixed-scene transitions.
+
+## Capture authoring and hotspot policy (phase 4)
+
+Choose **New scene → Gaussian splat** to use an existing ready source or upload/create a raw `.splat` capture. The asset library labels captures and supports Create scene. In **Capture**, prepare scale, corrected up axis, yaw and world translation; set exposure/background and orbit distance bounds. Preview uses the same source transform in builder, preview, public and embed. Mesh materials, texture painting, partition review, mesh animation, floor review and walking controls are absent for this scene type.
+
+**Save start view** records the current world position plus yaw/pitch in the existing radians convention. Reload and Reset view restore it. Transform saves reposition hotspots atomically on the server and clear the start view, as specified in phase 1. The frontend's draft transform and dirty comparison include translation; appearance-only saves retain the camera.
+
+Create information or navigation hotspots in **Hotspots**. Set **Hotspot position X/Y/Z (m)** in prepared world coordinates or choose **Place 2 m in front of camera**, then Save hotspot. No surface attachment or triangle raycast is fabricated for a visual capture. Markers show only when projected inside the camera view; capture walls do not hide markers. The hotspot directory remains available for information and navigation. A later aligned proxy can add verified occlusion/walking. Captures cannot be selected as walking-exit destinations.
+
+`test:splat-authoring` passed upload/create, hidden unsupported controls, exact camera restoration, information hotspots, translated/scaled hotspot persistence, appearance edits and splat → panorama → GLB → splat navigation in visitor preview. Existing hotspot acceptance passed normal mesh placement, occlusion/reveal, pointer-lock actions, public/embed and emulated touch. The physical-device matrix, representative reconstructed interior, performance/quality budgets and viewing MVP release acceptance are still separate pending work.

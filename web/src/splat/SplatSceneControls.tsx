@@ -44,7 +44,7 @@ export function SplatSceneControls({endpoint,settings,saved,ready,onError,onProg
   gl.domElement.setAttribute('aria-label','Gaussian splat scene. Drag to orbit, scroll or pinch to zoom.');
   return()=>{active=false;clearTimeout(timeout);abort.abort();lease.release();latest.current.ready(null);if(driver){scene.remove(driver.mesh);driver.dispose();}resource.current=undefined;};
  },[endpoint,gl,scene,camera,invalidate]);
- useEffect(()=>{const driver=resource.current;if(!driver)return;driver.mesh.matrix.copy(modelMatrix(settings.model));driver.mesh.matrix.setPosition(...settings.splat!.position);driver.mesh.updateMatrixWorld(true);invalidate();},[settings.model.scale,settings.model.rotation,settings.model.up_axis,settings.splat?.position.join(','),loaded,invalidate]);
+ useEffect(()=>{const driver=resource.current;if(!driver)return;driver.mesh.matrix.copy(modelMatrix(settings.model));driver.mesh.matrix.setPosition(...settings.splat!.position);driver.mesh.updateMatrixWorld(true);camera.far=Math.max(1000,driver.bounds.clone().applyMatrix4(driver.mesh.matrixWorld).getSize(new Vector3()).length()*10,settings.splat!.max_distance*2);camera.updateProjectionMatrix();invalidate();},[settings.model.scale,settings.model.rotation,settings.model.up_axis,settings.splat?.position.join(','),settings.splat?.max_distance,loaded,camera,invalidate]);
  useFrame(()=>{resource.current?.update(camera);if(controls.current)controls.current.enabled=!paused.current;});
  return <OrbitControls ref={controls} makeDefault enableDamping={false} minDistance={settings.splat!.min_distance} maxDistance={settings.splat!.max_distance} minPolarAngle={.011} maxPolarAngle={Math.PI-.011}/>;
 }

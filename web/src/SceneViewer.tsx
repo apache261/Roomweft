@@ -25,12 +25,14 @@ import { StreamingSceneControls } from './StreamingSceneControls';
 import { WalkControls, type ViewerActions, type ModelInfo } from './WalkControls';
 import { PanoramaControls } from './PanoramaControls';
 import { HotspotLayer } from './HotspotLayer';
-import { defaultSettings, modelMatrix, moveHotspots, sameModel, sameSettings, type SceneSettings } from './sceneSettings';
+import { defaultSettings, modelMatrix, moveHotspotsForSettings, sameSourceTransform, sameSettings, type SceneSettings } from './sceneSettings';
 import { bakeContext, bakeRevision } from './hqRendering';
 import { SceneLighting } from './SceneLighting';
 import {EditorGrid} from './EditorGrid';
 import {useTheme} from './Theme';
 import { SceneSettingsPanel } from './SceneSettingsPanel';
+import { SplatSettingsPanel } from './splat/SplatSettingsPanel';
+import { NumericInput } from './NumericInput';
 import { firstInvalidNumericInput } from './NumericInput';
 import {readWalkingPreference,saveWalkingPreference} from './walkingEffects';
 import { SplatAppearance } from './splat/SplatAppearance';
@@ -118,7 +120,7 @@ export function SceneViewer({ scene, scenes, onSaved, onNavigate, preview = fals
   const roomStatus=useCallback((status:'ready'|'loading'|'failed',retry?:()=>void)=>{setRoomLoading(status);retryRooms.current=retry;},[]);
   const [saving, setSaving] = useState(false);
   const [hotspots, setHotspots] = useState<Hotspot[]>([]);
-  const displayHotspots = useMemo(() => scene.type==='LAYOUT'?layoutHotspots(hotspots,layoutDocument):moveHotspots(hotspots, (scene.settings || defaultSettings).model, settings.model), [hotspots, scene.settings, settings.model,scene.type,layoutDocument]);
+  const displayHotspots = useMemo(() => scene.type==='LAYOUT'?layoutHotspots(hotspots,layoutDocument):moveHotspotsForSettings(hotspots, scene.settings || defaultSettings, settings), [hotspots, scene.settings, settings,scene.type,layoutDocument]);
   const attached=useMemo(()=>new Set(hotspots.flatMap(h=>'x' in h.position && h.position.attachment?[h.position.attachment.element_id]:[])),[hotspots]);
   const [hotspotError, setHotspotError] = useState('');
   const [hotspotsReady, setHotspotsReady] = useState(false);
@@ -234,12 +236,12 @@ export function SceneViewer({ scene, scenes, onSaved, onNavigate, preview = fals
     stop(); setSaving(true); setNotice('');
     try {
       const updated = await request<Scene>(`/scenes/${scene.id}`, { method: 'PATCH', body: JSON.stringify({ settings }) });
-      const transformed = !sameModel(settings.model, (scene.settings || defaultSettings).model);
+      const transformed = !sameSourceTransform(settings, scene.settings || defaultSettings);
       savedWalk.current = 'position' in updated.start_camera ? updated.start_camera as CameraView : undefined;
-      if (transformed) setHotspots(items => moveHotspots(items, (scene.settings || defaultSettings).model, updated.settings.model));
+      if (transformed) setHotspots(items => moveHotspotsForSettings(items, scene.settings || defaultSettings, updated.settings));
       setSettings(updated.settings); onSaved(updated);
       if (transformed) { setWalking(false); newHotspot(); setHotspotAttempt(n => n + 1); }
-      setNotice(transformed ? 'Settings saved. Hotspots moved with the model. Walk inside and save a new start view.' : 'Settings saved.');return true;
+      setNotice(transformed ? splat?'Settings saved. Hotspots moved with the capture. Save a new inspection start view.':'Settings saved. Hotspots moved with the model. Walk inside and save a new start view.' : 'Settings saved.');return true;
     } catch (err) { setNotice(err instanceof Error ? err.message : 'Could not save settings.');return false; }
     finally { setSaving(false); }
   }
@@ -423,6 +425,10 @@ export function SceneViewer({ scene, scenes, onSaved, onNavigate, preview = fals
       </>}
       {scene.type==='LAYOUT' && position && 'x' in position && <label>Hotspot attachment<select aria-label="Hotspot attachment" value={position.attachment?.element_id||''} onChange={event=>{const {attachment,...p}=position;const e=layoutDocument.elements.find(e=>e.id===event.target.value);setPosition(e?{...p,attachment:attachPoint(e,p)}:p);setDirty(true);}}><option value="">Keep at world position</option>{layoutDocument.elements.map(e=><option key={e.id} value={e.id}>Move with {e.name}</option>)}</select></label>}
       {layoutDirty && <p>Save the layout before editing hotspots or saving a start view.</p>}
+      {splat && <><p>Markers appear when inside the camera view. Capture walls do not hide them. Set explicit world coordinates; splats do not provide a mesh surface for placement.</p>
+        {(['X','Y','Z'] as const).map((axis,i)=><NumericInput key={axis} label={`Hotspot position ${axis} (m)`} value={position&&'x'in position?[position.x,position.y,position.z][i]:0} min={-1e6} max={1e6} onChange={value=>{const p=position&&'x'in position?{x:position.x,y:position.y,z:position.z}:{x:0,y:0,z:0};p[(['x','y','z'] as const)[i]]=value;setPosition(p);setDirty(true);}}/>)}
+        <button disabled={!actions||!hotspotsReady} onClick={()=>{const view=actions?.view();if(!view||!('position'in view))return;const {yaw,pitch}=view;setPosition({x:view.position[0]-Math.sin(yaw)*Math.cos(pitch)*2,y:view.position[1]+Math.sin(pitch)*2,z:view.position[2]-Math.cos(yaw)*Math.cos(pitch)*2});setDirty(true);}}>Place 2 m in front of camera</button>
+      </>}
       {!splat && <button disabled={!actions || !hotspotsReady} onClick={()=>{stop();setWalking(false);setHover(null);setPlacing(p=>!p);}}>{placing?'Cancel placement':position?'Reposition hotspot':'Place hotspot'}</button>}
       {placing && <p role="status">Click a {panorama?'point in the panorama':'model surface'} to set the position, then Save hotspot. Drag to inspect without placing.</p>}
       {position && <p role="status">{dirty ? 'Unsaved placement — click Save hotspot.' : 'Saved hotspot selected.'}</p>}
@@ -455,6 +461,7 @@ export function SceneViewer({ scene, scenes, onSaved, onNavigate, preview = fals
     </>)}
     </div>
     <div id="panel-appearance" role="tabpanel" aria-labelledby="tab-appearance" hidden={preview||tool!=='appearance'}>
+    {!preview && splat && <SplatSettingsPanel settings={settings} onChange={setSettings} onSave={saveSettings} busy={saving||linkBusy} dirty={settingsDirty}/>}
     {!preview && !panorama && !splat && <SceneSettingsPanel layout={scene.type==='LAYOUT'} settings={settings} onChange={setSettings} onSave={saveSettings} busy={saving || linkBusy} dirty={settingsDirty} info={modelInfo} />}
 
 

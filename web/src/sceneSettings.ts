@@ -79,6 +79,23 @@ export function sameModel(a: SceneSettings['model'], b: SceneSettings['model']) 
   return a.scale === b.scale && a.up_axis === b.up_axis && a.rotation === b.rotation;
 }
 export function sameSettings(a: SceneSettings, b: SceneSettings) {
-  return !!a.appearance.hq_shadows===!!b.appearance.hq_shadows && JSON.stringify(navigationSettings(a.navigation))===JSON.stringify(navigationSettings(b.navigation)) && JSON.stringify(a.materials||[])===JSON.stringify(b.materials||[]) && JSON.stringify(a.surface_materials||{})===JSON.stringify(b.surface_materials||{}) && sameModel(a.model, b.model) && (Object.keys(defaultSettings.appearance) as (keyof SceneSettings['appearance'])[])
+  return sameSplatSettings(a.splat,b.splat) && !!a.appearance.hq_shadows===!!b.appearance.hq_shadows && JSON.stringify(navigationSettings(a.navigation))===JSON.stringify(navigationSettings(b.navigation)) && JSON.stringify(a.materials||[])===JSON.stringify(b.materials||[]) && JSON.stringify(a.surface_materials||{})===JSON.stringify(b.surface_materials||{}) && sameModel(a.model, b.model) && (Object.keys(defaultSettings.appearance) as (keyof SceneSettings['appearance'])[])
     .every(key => a.appearance[key] === b.appearance[key]);
+}
+
+export const defaultSplatSettings:SceneSettings={...defaultSettings,appearance:{...defaultSettings.appearance,environment_intensity:0,light_intensity:0},splat:{version:1,position:[0,0,0],controls:'orbit',min_distance:.1,max_distance:1000}};
+export function sourceMatrix(settings:SceneSettings):Matrix4 {
+ const matrix=modelMatrix(settings.model);
+ if(settings.splat)matrix.setPosition(...settings.splat.position);
+ return matrix;
+}
+export function sameSourceTransform(a:SceneSettings,b:SceneSettings){return sameModel(a.model,b.model)&&JSON.stringify(a.splat?.position)===JSON.stringify(b.splat?.position);}
+export function moveHotspotsForSettings<T extends {position:{x:number;y:number;z:number}|{yaw:number;pitch:number}}>(hotspots:T[],old:SceneSettings,next:SceneSettings):T[]{
+ const conversion=sourceMatrix(next).multiply(sourceMatrix(old).invert());
+ return hotspots.map(h=>{if(!('x'in h.position))return h;const p=new Vector3(h.position.x,h.position.y,h.position.z).applyMatrix4(conversion);return {...h,position:{...h.position,x:p.x,y:p.y,z:p.z}};});
+}
+
+function sameSplatSettings(a:SceneSettings['splat'],b:SceneSettings['splat']){
+ if(!a||!b)return a===b;
+ return a.version===b.version&&a.controls===b.controls&&a.min_distance===b.min_distance&&a.max_distance===b.max_distance&&a.position.every((value,i)=>value===b.position[i]);
 }

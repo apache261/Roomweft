@@ -1,6 +1,6 @@
 # 3D Gaussian Splatting — phased implementation plan
 
-Status: Phases 0–2 implemented locally: renderer proof, SPLAT contracts, bounded raw upload admission and private source delivery. Phase 0 representative reconstructed-capture and physical-device acceptance remains pending. Shared tour viewing/authoring starts in phases 3–5; phases 3–9 remain pending. See [implementation evidence and supported profile](docs/splat-feasibility.md).
+Status: Phases 0–4 implemented locally: renderer proof, SPLAT contracts, bounded private admission, shared inspection viewing and capture/camera/hotspot authoring. Phase 0 representative reconstructed-capture and physical-device acceptance remains pending. Phases 5–9 remain pending. See [implementation evidence and supported profile](docs/splat-feasibility.md).
 
 Goal: Extend Virtual Tour Studio so authors can upload an externally reconstructed Gaussian-splat capture, prepare its coordinates, save views, place hotspots and publish it through the existing private-storage delivery flow. Add reviewed walking with a separate aligned collision model after the viewing release is accepted.
 
@@ -138,7 +138,7 @@ Acceptance:
 
 ## Phase 4 — Authoring, cameras and hotspots
 
-Status: Pending. Depends on Phase 3.
+Status: Implemented and verified locally. Gaussian capture creation, supported preparation/appearance, world camera round trips and explicit world-positioned information/navigation hotspots share the normal editor/preview viewer. Hotspots use screen visibility without wall occlusion.
 
 Add a “Gaussian splat” choice to scene creation and identify splat assets in the library. Expose coordinate preparation and supported visual controls. Hide mesh-only material, floor-selection, animation and chunk-review controls for splat scenes.
 
@@ -148,10 +148,10 @@ Define hotspot visibility clearly. Without a verified occlusion representation, 
 
 Acceptance:
 
-- [ ] Author can prepare the capture, save a start view and reload it accurately.
-- [ ] Hotspot positions survive saves and documented transform edits.
-- [ ] Information and navigation work across splat/GLB/panorama scenes.
-- [ ] Editor labels and controls accurately describe the available behavior.
+- [x] Author can prepare the capture, save a start view and reload it accurately.
+- [x] Hotspot positions survive saves and documented transform edits.
+- [x] Information and navigation work across splat/GLB/panorama scenes.
+- [x] Editor labels and controls accurately describe the available behavior.
 
 ## Phase 5 — Publication and viewing MVP acceptance
 
@@ -256,7 +256,7 @@ Run the existing Go and frontend test/build commands when their code changes. Ad
 
 1. Exact initial file-format profile and renderer/dependency versions, resolved in Phase 0.
 2. Accepted source/decoded-count limits and target devices, established from fixtures and measurements.
-3. MVP hotspot placement and visibility policy, resolved before Phase 4.
+3. MVP hotspot placement and visibility policy: resolved in Phase 4 as explicit world coordinates or 2 m ahead of the camera, with in-camera-screen visibility and no capture-wall occlusion.
 4. Inspection-only first release versus a later reviewed proxy walking release; this plan sequences viewing first.
 5. Whether conversion, streaming or reconstruction has demonstrated need; all remain deferred until scoped.
 
