@@ -1,8 +1,8 @@
 # 3D Gaussian Splatting — phased implementation plan
 
-Status: Phases 0–7 implemented locally: renderer proof, SPLAT contracts, bounded private admission, shared inspection viewing and capture/camera/hotspot authoring. Phase 0 representative reconstructed-capture and physical-device acceptance remains pending. Phase 5 viewing MVP acceptance passes locally; Phase 6 physical-device/performance and Phase 7 production HTTPS/S3 acceptance remain pending. Phases 8–9 remain pending. See [rollout evidence and open acceptance](docs/splat-rollout.md). See [implementation evidence and supported profile](docs/splat-feasibility.md).
+Status: Phases 0–9 implemented locally (Phase 9 scope: exact splat tile streaming): renderer proof, SPLAT contracts, bounded private admission, shared inspection viewing and capture/camera/hotspot authoring. Phase 0 representative reconstructed-capture and physical-device acceptance remains pending. Phase 5 viewing MVP acceptance passes locally; Phase 6 physical-device/performance and Phase 7 production HTTPS/S3 acceptance remain pending. Phases 8–9 proxy walking and exact tile streaming are implemented and accepted with local deterministic fixtures; representative-capture/device/production release acceptance remains pending. See [walking and streaming evidence](docs/splat-walking-streaming.md). See [rollout evidence and open acceptance](docs/splat-rollout.md). See [implementation evidence and supported profile](docs/splat-feasibility.md).
 
-Goal: Extend Virtual Tour Studio so authors can upload an externally reconstructed Gaussian-splat capture, prepare its coordinates, save views, place hotspots and publish it through the existing private-storage delivery flow. Add reviewed walking with a separate aligned collision model after the viewing release is accepted.
+Goal: Extend Virtual Tour Studio so authors can upload an externally reconstructed Gaussian-splat capture, prepare its coordinates, save views, place hotspots and publish it through the existing private-storage delivery flow. Reviewed walking uses a separately aligned GLB proxy and an independent rollout gate. Exact-record tile streaming is independently gated. Production release still requires representative-capture/device acceptance.
 
 Related documentation: [technical architecture](technical.md), [performance plan](performace_phase.md), [runtime assets](docs/runtime-assets.md), [GLB chunking plan](rendering_pland_phase.md).
 
@@ -12,8 +12,8 @@ Related documentation: [technical architecture](technical.md), [performance plan
 | --- | --- | --- |
 | Viewing MVP | Upload an existing splat capture, inspect it, save a camera, add information/navigation hotspots, preview and publish | 0–5 |
 | Performance and rollout | Bounded loading, disposal, quality controls, device measurements and explicit deployment rollback | 6–7 |
-| Reviewed walking | Attach and align a GLB collision/occlusion proxy, approve floors, walk and use explicit exits | 8 |
-| Optional extensions | Derived LOD/streaming, layout placements or photo-to-splat reconstruction | 9; separately scoped work |
+| Reviewed walking | Attach and align a GLB collision/occlusion proxy, approve floors, walk and use explicit exits | 8, independently gated |
+| Tile streaming | Generate exact-record spatial tiles and load/commit bounded visual sets with proxy admission | 9, implemented; layout placements/reconstruction remain separately scoped |
 
 The MVP uses already generated captures. Training from photos/video requires a separate GPU processing pipeline and is outside its scope. Mesh materials, texture painting, embedded GLB animation and GLB chunk partitioning remain features of their existing asset paths. A splat scene exposes controls that its renderer actually supports.
 
@@ -30,7 +30,7 @@ The MVP uses already generated captures. Training from photos/video requires a s
 | Navigation | Triangle indexes, reviewed floors and clearance | Separate authored GLB proxy; visual splats grant no standing permission |
 | Cleanup | Owned browser caches and durable storage retirements | Splat decoder/worker/GPU ownership and registered derivative keys |
 
-`SPLAT` and the raw `splat-v1` admission profile are implemented. `ASSET_SPLAT_SUPPORT` and `VITE_SPLAT_SUPPORT` now gate admission/viewing. Later derivative products remain design names.
+`SPLAT` and the raw `splat-v1` admission profile are implemented. `ASSET_SPLAT_SUPPORT` and `VITE_SPLAT_SUPPORT` now gate admission/viewing. `splat-tiles-v1` is a separate implemented product; optional LOD/layout/reconstruction remain future work.
 
 ## Architecture and data flow
 
@@ -203,7 +203,7 @@ Acceptance:
 
 ## Phase 8 — Aligned proxy, reviewed walking and exits
 
-Status: Pending. Depends on accepted viewing support; independently gated.
+Status: Implemented and accepted locally: durable same-project proxy references, alignment overlay/review, exact collision walking, optional proxy occlusion, approval invalidation and explicit public/embed exits/returns. Rollout remains independently gated; real-capture/device/deployment acceptance remains outstanding. [Evidence](docs/splat-walking-streaming.md).
 
 Attach a ready same-project GLB as the splat scene's navigation proxy. Define durable source/proxy reference rows so deletion protection, publication validation and public asset scoping include the proxy. Store a reviewed alignment transform and source/proxy identity. A transform or proxy change invalidates affected approvals and arrival validation.
 
@@ -213,15 +213,15 @@ Enable walking only after both the required splat visuals and proxy indexes are 
 
 Acceptance:
 
-- [ ] Walls, thin barriers, stairs, unsupported gaps and floor boundaries obey existing navigation checks.
-- [ ] Review overlays expose alignment errors before walking is enabled.
-- [ ] Invalid/missing proxy leaves inspection available and walking disabled.
-- [ ] Proxy changes invalidate stale floor/arrival approvals.
-- [ ] Public/embed walking, exit/return transitions and proxy deletion protection pass.
+- [x] Walls, thin barriers, stairs, unsupported gaps and floor boundaries obey existing navigation checks.
+- [x] Review overlays expose alignment errors before walking is enabled.
+- [x] Invalid/missing proxy leaves inspection available and walking disabled.
+- [x] Proxy changes invalidate stale floor/arrival approvals.
+- [x] Public/embed walking, exit/return transitions and proxy deletion protection pass.
 
 ## Phase 9 — Optional derived products and later expansion
 
-Status: Deferred. Scope each extension separately after measurements.
+Status: Selected scope implemented and accepted locally: `splat-tiles-v1` exact-record spatial tiles, leased atomic generation, private scoped delivery, bounded browser ownership, one global resident sort and tile-aware walking admission. Synthetic cold/warm byte comparisons include proxy payloads. LOD reduction, layout placements and photo/video reconstruction remain separately scoped future projects. [Evidence and limits](docs/splat-walking-streaming.md).
 
 For large captures, evaluate renderer-native LOD or independently addressable splat tiles. Define a new versioned manifest/product namespace, bounded generation, source identity, descriptor validation, dependencies, attempt/lease publication and retirement. Do not reuse `chunks-v1` mesh surface/triangle contracts for splats. Do not label loading followed by hiding splats as network streaming.
 
@@ -229,10 +229,10 @@ Consider layout placements only after defining instance transforms, shared owner
 
 Acceptance for any streaming extension:
 
-- [ ] Same-capture cold/warm comparisons show measured benefit, including all visual/proxy bytes.
-- [ ] Tile/LOD transitions retain supported cameras and avoid unacceptable visible gaps.
-- [ ] Neighbor failures and eviction preserve readiness requirements for walking.
-- [ ] Derived products validate, publish atomically and retire durably.
+- [x] Same-capture cold/warm comparisons show measured benefit, including all visual/proxy bytes.
+- [x] Exact-record tile commits retain the supported camera and previous visuals through replacement sorting; one global sort avoids per-tile transparency ordering gaps. No LOD reduction is implemented. Representative-capture visual acceptance remains pending.
+- [x] Neighbor failures and eviction preserve readiness requirements for walking.
+- [x] Derived products validate, publish atomically and retire durably.
 
 ## Implementation map and validation strategy
 
@@ -258,7 +258,7 @@ Run the existing Go and frontend test/build commands when their code changes. Ad
 2. Accepted source/decoded-count limits and target devices, established from fixtures and measurements.
 3. MVP hotspot placement and visibility policy: resolved in Phase 4 as explicit world coordinates or 2 m ahead of the camera, with in-camera-screen visibility and no capture-wall occlusion.
 4. Inspection-only first release versus a later reviewed proxy walking release; this plan sequences viewing first.
-5. Whether conversion, streaming or reconstruction has demonstrated need; all remain deferred until scoped.
+5. Phase 9 scope resolved as exact-record spatial tile streaming. LOD reduction, layout placement and photo/video reconstruction remain separate future projects.
 
 ## Sources
 

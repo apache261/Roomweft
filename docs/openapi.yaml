@@ -22,6 +22,10 @@ paths:
                     type: boolean
                   splat_authoring:
                     type: boolean
+                  splat_walking:
+                    type: boolean
+                  splat_streaming:
+                    type: boolean
   /health:
     get:
       summary: Check database health
@@ -30,6 +34,41 @@ paths:
           description: Healthy
         '503':
           description: Database unavailable
+  /api/v1/assets/{id}/splat-tiles:
+    get:
+      summary: Read a ready exact-record splat tile manifest
+      description: Requires ready SPLAT parent and enabled streaming. Source/hash/attempt identity is immutable; private bucket keys are omitted. Public equivalents under /public/tours/{slug}/assets/{id}/splat-tiles additionally recheck publication and actual parent references.
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema: {type: string, format: uuid}
+      - in: query
+        name: source_sha256
+        schema: {type: string}
+      responses:
+        '200': {description: Versioned splat-tiles-v1 manifest with bounded counts and corrected conservative tile bounds}
+        '404': {description: Disabled or not ready}
+        '409': {description: Source identity changed}
+  /api/v1/assets/{id}/splat-tiles/{tile}:
+    get:
+      summary: Sign one verified splat tile payload
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema: {type: string, format: uuid}
+      - in: path
+        name: tile
+        required: true
+        schema: {type: string, pattern: '^tile-[0-9]{3}$'}
+      - in: query
+        name: source_sha256
+        schema: {type: string}
+      responses:
+        '200': {description: Scoped signed URL plus expected SHA-256, bytes and source SHA-256}
+        '404': {description: Parent unavailable or tile unknown}
+        '409': {description: Source identity changed}
   /api/v1/projects:
     get:
       summary: List projects, newest first
@@ -1349,11 +1388,36 @@ components:
           oneOf:
           - $ref: '#/components/schemas/CameraView'
           - $ref: '#/components/schemas/PanoramaView'
+    SplatProxy:
+      type: object
+      additionalProperties: false
+      required: [asset_id, model, position, reviewed, occlusion]
+      description: Ready same-project static GLB proxy, independently prepared in world metres. Save its transform before approving alignment. Source/proxy transform edits revoke review, navigation and saved cameras.
+      properties:
+        asset_id:
+          type: string
+          format: uuid
+        model:
+          type: object
+          required: [scale, up_axis, rotation]
+          properties:
+            scale: {type: number, minimum: 0.000001, maximum: 1000000}
+            up_axis: {type: string, enum: [Y, Z]}
+            rotation: {type: number, minimum: -180, maximum: 180}
+        position:
+          type: array
+          minItems: 3
+          maxItems: 3
+          items: {type: number, minimum: -1000, maximum: 1000}
+        reviewed: {type: boolean}
+        occlusion: {type: boolean}
     SplatSettings:
       type: object
       additionalProperties: false
       required: [version, position, controls, min_distance, max_distance]
       properties:
+        proxy:
+          $ref: '#/components/schemas/SplatProxy'
         version:
           type: integer
           enum: [1]
@@ -1378,7 +1442,7 @@ components:
           maximum: 1000000
           description: Must be at least min_distance.
     SceneSettings:
-      description: SPLAT requires splat version 1; model scale/up-axis/yaw prepare the source before splat.position translation. Only exposure and background appearance controls apply; lighting intensities must be zero, tint empty, roughness null and shadows disabled. Materials and navigation are unavailable. Transform edits move hotspots atomically and clear saved cameras. Existing scene types cannot include splat settings.
+      description: SPLAT requires splat version 1; model scale/up-axis/yaw prepare the source before splat.position translation. Only exposure and background appearance controls apply; lighting intensities must be zero, tint empty, roughness null and shadows disabled. Mesh materials are unavailable. Navigation requires reviewed splat.proxy alignment and enabled walking support; exact proxy geometry rechecks starts and arrivals in the browser. Transform edits move hotspots atomically, revoke proxy/navigation approvals and clear saved cameras. Existing scene types cannot include splat settings.
       type: object
       additionalProperties: false
       required:
