@@ -24,6 +24,7 @@ func (a *API) publicationRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/v1/public/tours/{slug}", a.publicTour)
 	mux.HandleFunc("GET /api/v1/public/tours/{slug}/assets/{id}", a.publicAsset)
 	a.registerChunks(mux, "/api/v1/public/tours/{slug}/assets/{id}")
+	a.registerSplatTiles(mux, "/api/v1/public/tours/{slug}/assets/{id}")
 	mux.HandleFunc("GET /api/v1/public/tours/{slug}/scenes/{id}/hotspots", a.publicHotspots)
 	mux.HandleFunc("GET /api/v1/public/tours/{slug}/scenes/{id}/layout", a.getLayout)
 }

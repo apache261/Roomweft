@@ -1,7 +1,7 @@
 import {currentRun,summarize,performanceStage} from '../performanceMetrics';
 import {splatRendererStats} from './budget.js';
 import {splatCacheStats} from './splatAssetCache';
-import {useEffect,useRef,useState, type MutableRefObject} from 'react';
+import {useEffect,useRef,useState,useMemo, type MutableRefObject} from 'react';
 import {useFrame,useThree} from '@react-three/fiber';
 import {OrbitControls} from '@react-three/drei';
 import {Box3,Euler,Vector3} from 'three';
@@ -14,10 +14,11 @@ import {acquireSplat} from './splatAssetCache';
 import {createSplatAsync, type createSplat} from './driver.js';
 
 type Driver=ReturnType<typeof createSplat>;
-export function SplatSceneControls({endpoint,settings,saved,ready,onError,onProgress,paused}:{
- endpoint:string;settings:SceneSettings;saved:MutableRefObject<CameraView|undefined>;ready:(actions:ViewerActions|null)=>void;onError:(error:string)=>void;onProgress:(message:string)=>void;paused:MutableRefObject<boolean>;
+export function SplatSceneControls({endpoint,settings,saved,ready,onError,onProgress,paused,controlCamera=true}:{
+ controlCamera?:boolean;endpoint:string;settings:SceneSettings;saved:MutableRefObject<CameraView|undefined>;ready:(actions:ViewerActions|null)=>void;onError:(error:string)=>void;onProgress:(message:string)=>void;paused:MutableRefObject<boolean>;
 }) {
  const {gl,scene,camera,invalidate}=useThree();
+ const orbitTarget=useMemo(()=>camera.position.clone().addScaledVector(camera.getWorldDirection(new Vector3()),5),[controlCamera,camera]);
  const controls=useRef<OrbitControlsImpl>(null),resource=useRef<Driver>(undefined);
  const latest=useRef({settings,saved,ready,onError,onProgress});latest.current={settings,saved,ready,onError,onProgress};
  const [loaded,setLoaded]=useState(false);
@@ -31,7 +32,7 @@ export function SplatSceneControls({endpoint,settings,saved,ready,onError,onProg
    latest.current.onProgress(`Gaussian splat ready: ${driver.count.toLocaleString()} splats. Inspection only.`);latest.current.ready(actions);
   },abort.signal,f=>{if(active)latest.current.onProgress(`Preparing splat… ${Math.round(f*100)}%`);},fail).then(result=>{finish();return result;},error=>{finish('failed');throw error;});}).then(result=>{
    clearTimeout(timeout);if(!active){result.dispose();return;}
-   driver=result;resource.current=result;scene.add(result.mesh);applyTransform();reset();invalidate();
+   driver=result;resource.current=result;scene.add(result.mesh);applyTransform();if(controlCamera)reset();invalidate();
   }).catch(fail);
   function applyTransform(){if(!driver)return;driver.mesh.matrixAutoUpdate=false;driver.mesh.matrix.copy(modelMatrix(latest.current.settings.model));driver.mesh.matrix.setPosition(...latest.current.settings.splat!.position);driver.mesh.updateMatrixWorld(true);}
   function bounds(){return driver?driver.bounds.clone().applyMatrix4(driver.mesh.matrixWorld):new Box3(new Vector3(-1,-1,-1),new Vector3(1,1,1));}
@@ -49,5 +50,5 @@ export function SplatSceneControls({endpoint,settings,saved,ready,onError,onProg
  },[endpoint,gl,scene,camera,invalidate]);
  useEffect(()=>{const driver=resource.current;if(!driver)return;driver.mesh.matrix.copy(modelMatrix(settings.model));driver.mesh.matrix.setPosition(...settings.splat!.position);driver.mesh.updateMatrixWorld(true);camera.far=Math.max(1000,driver.bounds.clone().applyMatrix4(driver.mesh.matrixWorld).getSize(new Vector3()).length()*10,settings.splat!.max_distance*2);camera.updateProjectionMatrix();invalidate();},[settings.model.scale,settings.model.rotation,settings.model.up_axis,settings.splat?.position.join(','),settings.splat?.max_distance,loaded,camera,invalidate]);
  useFrame(()=>{resource.current?.update(camera);if(currentRun&&resource.current){const {sortMs,...metrics}=resource.current.diagnostics();currentRun.resources.splat={...metrics,sortMs:summarize(sortMs),cache:splatCacheStats(),resident:splatRendererStats(),qualityPolicy:'DPR only; full capture retained'};}if(controls.current)controls.current.enabled=!paused.current;});
- return <OrbitControls ref={controls} makeDefault enableDamping={false} minDistance={settings.splat!.min_distance} maxDistance={settings.splat!.max_distance} minPolarAngle={.011} maxPolarAngle={Math.PI-.011}/>;
+ return controlCamera?<OrbitControls ref={controls} target={orbitTarget} makeDefault enableDamping={false} minDistance={settings.splat!.min_distance} maxDistance={settings.splat!.max_distance} minPolarAngle={.011} maxPolarAngle={Math.PI-.011}/>:null;
 }

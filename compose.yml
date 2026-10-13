@@ -56,6 +56,8 @@ services:
       - .env
     environment:
       ASSET_PROCESSOR_SCRIPT: /app/asset-tools/process.mjs
+      ASSET_SPLAT_WALKING: ${ASSET_SPLAT_WALKING:-off}
+      ASSET_SPLAT_STREAMING: ${ASSET_SPLAT_STREAMING:-off}
       ASSET_SPLAT_SUPPORT: ${ASSET_SPLAT_SUPPORT:-off}
       ASSET_CHUNK_STREAMING: ${ASSET_CHUNK_STREAMING:-off}
       HTTP_ADDR: 0.0.0.0:8080
@@ -78,9 +80,13 @@ services:
       context: ./web
       args:
         VITE_SPLAT_SUPPORT: ${VITE_SPLAT_SUPPORT:-off}
+        VITE_SPLAT_WALKING: ${VITE_SPLAT_WALKING:-off}
+        VITE_SPLAT_STREAMING: ${VITE_SPLAT_STREAMING:-off}
     environment:
-      VITE_SPLAT_SUPPORT: ${VITE_SPLAT_SUPPORT:-off}
       API_PROXY_TARGET: http://api:8080
+      VITE_SPLAT_SUPPORT: ${VITE_SPLAT_SUPPORT:-off}
+      VITE_SPLAT_WALKING: ${VITE_SPLAT_WALKING:-off}
+      VITE_SPLAT_STREAMING: ${VITE_SPLAT_STREAMING:-off}
     ports:
       - "${BIND_ADDRESS:-0.0.0.0}:${WEB_PORT:-5173}:5173"
     depends_on:

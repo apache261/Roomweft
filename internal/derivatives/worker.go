@@ -66,8 +66,17 @@ func Process(ctx context.Context, store Store, objects Objects, script string, j
 		return errors.New("model exceeds the 256 MiB processing limit; original remains usable; use a smaller GLB and retry")
 	}
 	source := filepath.Join(dir, "source.glb")
+	if job.Version == "splat-tiles-v1" {
+		if job.Kind != "SPLAT" || job.Size > 64_000_000 {
+			return errors.New("invalid splat tile source")
+		}
+		source = filepath.Join(dir, "source.splat")
+	}
 	if err = objects.Download(ctx, job.Key, source, job.Size); err != nil {
 		return fmt.Errorf("could not read original; retry processing: %w", err)
+	}
+	if job.Version == "splat-tiles-v1" {
+		return processSplatTiles(ctx, store, objects, job, source, dir)
 	}
 	if job.Version == "chunks-v1" {
 		return processChunks(ctx, store, objects, script, job, source, dir)

@@ -19,6 +19,11 @@ type DerivativeStore interface {
 }
 
 func (a *API) queueDerivative(ctx context.Context, asset database.Asset, retry bool) error {
+	if asset.FileType == "SPLAT" && a.splatStreaming && asset.UploadStatus == "ready" {
+		if store, ok := a.store.(SplatTileStore); ok {
+			return store.QueueSplatTiles(ctx, asset.ID, retry)
+		}
+	}
 	if (asset.FileType != "GLB" && !strings.HasPrefix(asset.FileType, "TEXTURE_")) || asset.UploadStatus != "ready" {
 		return nil
 	}
@@ -80,6 +85,10 @@ func (a *API) processAsset(w http.ResponseWriter, r *http.Request) {
 	asset, err := a.assets.GetAsset(r.Context(), id)
 	if err != nil {
 		a.resourceError(w, err)
+		return
+	}
+	if asset.FileType == "SPLAT" {
+		a.processSplatTiles(w, r, asset)
 		return
 	}
 	if (asset.FileType != "GLB" && !strings.HasPrefix(asset.FileType, "TEXTURE_")) || asset.UploadStatus != "ready" {

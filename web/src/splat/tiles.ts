@@ -1,0 +1,37 @@
+import {reserveSplatSource} from './budget.js';
+import {Box3,Frustum,Matrix4,Vector3,type Camera} from 'three';
+import {validateSplatBytes,maxSplatBytes} from './profile.ts';
+export type SplatTile={id:string;sha256:string;bytes:number;count:number;bounds:[number,number,number,number,number,number]};
+export type SplatTileManifest={version:'splat-tiles-v1';parent_asset_id:string;source_sha256:string;source_bytes:number;count:number;cell_size:8;tiles:SplatTile[]};
+const digest=/^[a-f0-9]{64}$/;
+export function validateTileManifest(m:SplatTileManifest){
+ if(m.version!=='splat-tiles-v1'||!digest.test(m.source_sha256)||!/^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$/.test(m.parent_asset_id)||m.cell_size!==8||!Number.isSafeInteger(m.count)||m.count<1||m.count>2_000_000||m.source_bytes!==m.count*32||!Array.isArray(m.tiles)||!m.tiles.length||m.tiles.length>512)throw Error('Unsupported splat tile manifest');
+ const ids=new Set<string>();let count=0;
+ for(const t of m.tiles){if(!/^tile-\d{3}$/.test(t.id)||ids.has(t.id)||!digest.test(t.sha256)||!Number.isSafeInteger(t.count)||t.count<1||t.count>2_000_000||t.bytes!==t.count*32||t.bounds.length!==6||t.bounds.some(n=>!Number.isFinite(n)||Math.abs(n)>1_010_000)||t.bounds.slice(0,3).some((n,i)=>n>t.bounds[i+3]))throw Error('Invalid splat tile coverage');ids.add(t.id);count+=t.count;}
+ if(count!==m.count)throw Error('Splat tile coverage count changed');return m;
+}
+export const tileBounds=(t:SplatTile,matrix:Matrix4)=>new Box3(new Vector3(...t.bounds.slice(0,3)),new Vector3(...t.bounds.slice(3,6))).applyMatrix4(matrix);
+export function requiredSplatTiles(manifest:SplatTileManifest,p:Vector3,matrix:Matrix4,radius=.4,height=1.65){const box=new Box3(new Vector3(p.x-radius,p.y-height-.4,p.z-radius),new Vector3(p.x+radius,p.y+.4,p.z+radius));return manifest.tiles.filter(t=>tileBounds(t,matrix).intersectsBox(box)).map(t=>t.id);}
+export function plannedSplatTiles(m:SplatTileManifest,camera:Camera,matrix:Matrix4){camera.updateMatrixWorld();const p=camera.getWorldPosition(new Vector3()),frustum=new Frustum().setFromProjectionMatrix(new Matrix4().multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse));const wanted=m.tiles.filter(t=>{const b=tileBounds(t,matrix);const distance=b.distanceToPoint(p);return distance<=8||frustum.intersectsBox(b.expandByScalar(Math.max(.05,distance*.02)));}).sort((a,b)=>tileBounds(a,matrix).distanceToPoint(p)-tileBounds(b,matrix).distanceToPoint(p));if(!wanted.length)wanted.push([...m.tiles].sort((a,b)=>tileBounds(a,matrix).distanceToPoint(p)-tileBounds(b,matrix).distanceToPoint(p))[0]);return wanted.map(t=>t.id);}
+async function bounded(response:Response,limit:number){if(!response.ok||!response.body)throw Error('Splat tile request unavailable; retry');const reader=response.body.getReader(),chunks:Uint8Array[]=[];let total=0;try{for(;;){const r=await reader.read();if(r.done)break;total+=r.value.length;if(total>limit)throw Error('Splat tile byte limit exceeded');chunks.push(r.value);}}finally{await reader.cancel().catch(()=>{});reader.releaseLock();}const bytes=new Uint8Array(total);let offset=0;for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.length;}return bytes.buffer;}
+export class SplatTileSession {
+ manifest!:SplatTileManifest;
+ readonly cache=new Map<string,{bytes?:ArrayBuffer;abort?:AbortController;failed?:boolean;used:number}>();
+ committed=new Set<string>();wanted:string[]=[];private releaseBudget:(()=>void)|undefined;private disposed=false;private bootstrap=new AbortController();private lastFingerprint='';private generation=0;
+ fetchedBytes=0;requests=0;
+ readonly endpoint:string;readonly changed:()=>void;
+ constructor(endpoint:string,changed:()=>void){this.endpoint=endpoint;this.changed=changed;}
+ async initialize(){this.releaseBudget=reserveSplatSource();const response=await fetch('/api/v1'+this.endpoint+'/splat-tiles',{cache:'no-store',signal:this.bootstrap.signal});this.manifest=validateTileManifest(JSON.parse(new TextDecoder().decode(await bounded(response,256*1024))));if(!this.endpoint.endsWith('/'+this.manifest.parent_asset_id))throw Error('Splat tile parent identity changed');}
+ request(ids:string[]){if(this.disposed)return;this.wanted=ids;const now=performance.now();for(const [id,e] of this.cache){if(ids.includes(id))e.used=now;else if(e.abort||now-e.used>2000){e.abort?.abort();this.cache.delete(id);}}this.pump();}
+ private pump(){if(this.disposed)return;let active=[...this.cache.values()].filter(e=>e.abort).length;for(const id of this.wanted){if(active>=2)break;if(this.cache.has(id))continue;const t=this.manifest.tiles.find(t=>t.id===id)!;const entry={abort:new AbortController(),used:performance.now()} as {bytes?:ArrayBuffer;abort?:AbortController;failed?:boolean;used:number};this.cache.set(id,entry);active++;const timeout=setTimeout(()=>entry.abort?.abort(),60000);
+ void this.download(t,entry.abort!.signal).then(bytes=>{if(!this.disposed&&this.cache.get(id)===entry)entry.bytes=bytes;}).catch(()=>{if(!this.disposed&&this.cache.get(id)===entry)entry.failed=true;}).finally(()=>{clearTimeout(timeout);entry.abort=undefined;if(!this.disposed){this.changed();this.pump();}});}}
+ private async download(t:SplatTile,signal:AbortSignal){for(let attempt=0;attempt<2;attempt++){const response=await fetch('/api/v1'+this.endpoint+'/splat-tiles/'+t.id+'?source_sha256='+this.manifest.source_sha256,{signal,cache:'no-store'});const p=JSON.parse(new TextDecoder().decode(await bounded(response,16384)));if(p.bytes!==t.bytes||p.sha256!==t.sha256||p.source_sha256!==this.manifest.source_sha256||typeof p.url!=='string'||!/^https?:/.test(p.url))throw Error('Splat tile identity changed');const signed=await fetch(p.url,{signal});this.requests++;if([401,403].includes(signed.status)&&attempt===0){await signed.body?.cancel();continue;}const bytes=await bounded(signed,t.bytes);if(bytes.byteLength!==t.bytes)throw Error('Truncated splat tile');const hashed=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),n=>n.toString(16).padStart(2,'0')).join('');if(hashed!==t.sha256)throw Error('Splat tile integrity mismatch');validateSplatBytes(bytes);this.fetchedBytes+=bytes.byteLength;return bytes;}throw Error('Splat tile renewal failed');}
+ retry(){for(const [id,e] of this.cache)if(e.failed)this.cache.delete(id);this.pump();}
+ pending(){return this.wanted.some(id=>!this.cache.get(id)?.bytes);}
+ failed(){return this.wanted.some(id=>this.cache.get(id)?.failed);}
+ candidate(){if(this.pending())return;const ids=[...this.wanted].sort(),key=ids.join(',');if(key===this.lastFingerprint)return;let size=0;for(const id of ids)size+=this.cache.get(id)!.bytes!.byteLength;if(size>maxSplatBytes)throw Error('Resident splat tile limit exceeded');const bytes=new Uint8Array(size);let offset=0;for(const id of ids){const b=this.cache.get(id)!.bytes!;bytes.set(new Uint8Array(b),offset);offset+=b.byteLength;}this.lastFingerprint=key;return {bytes:bytes.buffer,ids,generation:++this.generation};}
+ commit(candidate:{ids:string[];generation:number}){if(candidate.generation===this.generation&&!this.disposed)this.committed=new Set(candidate.ids);}
+ invalidateCandidate(){this.lastFingerprint='';}
+ admits(p:Vector3,matrix:Matrix4,radius:number,height:number){return requiredSplatTiles(this.manifest,p,matrix,radius,height).every(id=>this.committed.has(id));}
+ dispose(){this.disposed=true;this.releaseBudget?.();this.releaseBudget=undefined;this.bootstrap.abort();this.cache.forEach(e=>e.abort?.abort());this.cache.clear();this.committed.clear();}
+}

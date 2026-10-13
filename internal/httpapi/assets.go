@@ -51,6 +51,7 @@ func (a *API) assetRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/v1/assets/{id}", a.getAsset)
 	mux.HandleFunc("POST /api/v1/assets/{id}/process", a.processAsset)
 	a.registerChunks(mux, "/api/v1/assets/{id}")
+	a.registerSplatTiles(mux, "/api/v1/assets/{id}")
 	mux.HandleFunc("GET /api/v1/assets/{id}/partition", a.getPartition)
 	mux.HandleFunc("POST /api/v1/assets/{id}/partition/inventory", a.inspectPartition)
 	mux.HandleFunc("PUT /api/v1/assets/{id}/partition", a.putPartition)
@@ -143,6 +144,15 @@ func (a *API) updateScene(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		a.resourceError(w, err)
 		return
+	}
+	if body.Settings != nil && scene.Type == "SPLAT" && !a.splatWalking && body.Settings.Splat != nil && body.Settings.Splat.Proxy != nil && (body.Settings.Splat.Proxy.Reviewed || body.Settings.Navigation != nil) {
+		old := sceneconfig.Decode(scene.Settings)
+		oldNav, _ := json.Marshal(old.Navigation)
+		newNav, _ := json.Marshal(body.Settings.Navigation)
+		if !sceneconfig.WalkingProxy(old) || sceneconfig.ProxyChanged(old, *body.Settings) || string(oldNav) != string(newNav) {
+			fail(w, 503, "Reviewed splat walking is disabled")
+			return
+		}
 	}
 	if body.Settings != nil {
 		if err := body.Settings.ValidateForScene(scene.Type); err != nil {

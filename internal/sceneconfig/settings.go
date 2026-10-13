@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"github.com/google/uuid"
 	"math"
 	"regexp"
 	"virtual-tour/internal/materials"
@@ -26,12 +27,38 @@ type Model struct {
 	UpAxis   string  `json:"up_axis"`
 	Rotation float64 `json:"rotation"`
 }
+type SplatProxy struct {
+	AssetID   string     `json:"asset_id"`
+	Model     Model      `json:"model"`
+	Position  [3]float64 `json:"position"`
+	Reviewed  bool       `json:"reviewed"`
+	Occlusion bool       `json:"occlusion"`
+}
+
+func ProxyChanged(a, b Settings) bool {
+	var x, y *SplatProxy
+	if a.Splat != nil {
+		x = a.Splat.Proxy
+	}
+	if b.Splat != nil {
+		y = b.Splat.Proxy
+	}
+	if x == nil || y == nil {
+		return x != y
+	}
+	return x.AssetID != y.AssetID || x.Model != y.Model || x.Position != y.Position
+}
+func WalkingProxy(s Settings) bool {
+	return s.Splat != nil && s.Splat.Proxy != nil && s.Splat.Proxy.Reviewed
+}
+
 type Splat struct {
-	Version     int        `json:"version"`
-	Position    [3]float64 `json:"position"`
-	Controls    string     `json:"controls"`
-	MinDistance float64    `json:"min_distance"`
-	MaxDistance float64    `json:"max_distance"`
+	Proxy       *SplatProxy `json:"proxy,omitempty"`
+	Version     int         `json:"version"`
+	Position    [3]float64  `json:"position"`
+	Controls    string      `json:"controls"`
+	MinDistance float64     `json:"min_distance"`
+	MaxDistance float64     `json:"max_distance"`
 }
 
 func DefaultSplat() Settings {
@@ -69,6 +96,19 @@ func (s Settings) Validate() error {
 	}
 	if s.Splat != nil {
 		v := s.Splat
+		if p := v.Proxy; p != nil {
+			if _, err := uuid.Parse(p.AssetID); err != nil {
+				return errors.New("proxy requires a GLB asset UUID")
+			}
+			if !bounded(p.Model.Scale, .000001, 1e6) || (p.Model.UpAxis != "Y" && p.Model.UpAxis != "Z") || !bounded(p.Model.Rotation, -180, 180) {
+				return errors.New("invalid proxy preparation")
+			}
+			for _, n := range p.Position {
+				if !bounded(n, -1000, 1000) {
+					return errors.New("invalid proxy world position")
+				}
+			}
+		}
 		if v.Version != 1 || v.Controls != "orbit" || !bounded(v.MinDistance, 0.01, 1e6) || !bounded(v.MaxDistance, v.MinDistance, 1e6) {
 			return errors.New("invalid splat v1 inspection bounds or controls")
 		}
@@ -119,8 +159,8 @@ func (s Settings) ValidateForScene(kind string) error {
 		}
 		return nil
 	}
-	if s.Splat == nil || s.Navigation != nil || len(s.Materials) > 0 || len(s.SurfaceMaterials) > 0 || s.Appearance.HQShadows || s.Appearance.EnvironmentIntensity != 0 || s.Appearance.LightIntensity != 0 || s.Appearance.Tint != "" || s.Appearance.Roughness != nil {
-		return errors.New("SPLAT requires versioned inspection settings; mesh materials, lighting and walking are unavailable")
+	if s.Splat == nil || (s.Navigation != nil && !WalkingProxy(s)) || len(s.Materials) > 0 || len(s.SurfaceMaterials) > 0 || s.Appearance.HQShadows || s.Appearance.EnvironmentIntensity != 0 || s.Appearance.LightIntensity != 0 || s.Appearance.Tint != "" || s.Appearance.Roughness != nil {
+		return errors.New("SPLAT requires versioned inspection settings; mesh materials and lighting are unavailable; walking requires reviewed proxy alignment")
 	}
 	return nil
 }
@@ -147,11 +187,12 @@ func RepositionForSettings(p [3]float64, a, b Settings) [3]float64 {
 
 func (v *Splat) UnmarshalJSON(raw []byte) error {
 	type wire struct {
-		Version     int        `json:"version"`
-		Position    []*float64 `json:"position"`
-		Controls    string     `json:"controls"`
-		MinDistance float64    `json:"min_distance"`
-		MaxDistance float64    `json:"max_distance"`
+		Proxy       *SplatProxy `json:"proxy,omitempty"`
+		Version     int         `json:"version"`
+		Position    []*float64  `json:"position"`
+		Controls    string      `json:"controls"`
+		MinDistance float64     `json:"min_distance"`
+		MaxDistance float64     `json:"max_distance"`
 	}
 	var w wire
 	decoder := json.NewDecoder(bytes.NewReader(raw))
@@ -162,6 +203,31 @@ func (v *Splat) UnmarshalJSON(raw []byte) error {
 	if len(w.Position) != 3 || w.Position[0] == nil || w.Position[1] == nil || w.Position[2] == nil {
 		return errors.New("splat position requires exactly three coordinates")
 	}
-	*v = Splat{Version: w.Version, Position: [3]float64{*w.Position[0], *w.Position[1], *w.Position[2]}, Controls: w.Controls, MinDistance: w.MinDistance, MaxDistance: w.MaxDistance}
+	*v = Splat{Proxy: w.Proxy, Version: w.Version, Position: [3]float64{*w.Position[0], *w.Position[1], *w.Position[2]}, Controls: w.Controls, MinDistance: w.MinDistance, MaxDistance: w.MaxDistance}
+	return nil
+}
+
+func (p *SplatProxy) UnmarshalJSON(raw []byte) error {
+	type plain SplatProxy
+	var v plain
+	var fields map[string]json.RawMessage
+	if err := json.Unmarshal(raw, &fields); err != nil {
+		return err
+	}
+	for _, key := range []string{"asset_id", "model", "position", "reviewed", "occlusion"} {
+		if fields[key] == nil || string(fields[key]) == "null" {
+			return errors.New("proxy requires asset, transform and explicit review/occlusion fields")
+		}
+	}
+	var pos []*float64
+	if json.Unmarshal(fields["position"], &pos) != nil || len(pos) != 3 || pos[0] == nil || pos[1] == nil || pos[2] == nil {
+		return errors.New("proxy position requires three finite coordinates")
+	}
+	d := json.NewDecoder(bytes.NewReader(raw))
+	d.DisallowUnknownFields()
+	if err := d.Decode(&v); err != nil {
+		return err
+	}
+	*p = SplatProxy(v)
 	return nil
 }

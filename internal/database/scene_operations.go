@@ -78,11 +78,19 @@ func (q *Queries) ChangeScene(ctx context.Context, change SceneChange) (Scene, e
 		if err := next.ValidateForScene(scene.Type); err != nil {
 			return Scene{}, err
 		}
+		if scene.Type == "SPLAT" && (sceneconfig.SourceTransformChanged(old, next) || sceneconfig.ProxyChanged(old, next)) {
+			if next.Splat.Proxy != nil {
+				next.Splat.Proxy.Reviewed = false
+			}
+			next.Navigation = nil
+			change.Camera = json.RawMessage(`{}`)
+			change.Settings, _ = json.Marshal(next)
+		}
 		if old.Model != next.Model && next.Navigation != nil {
 			next.Navigation = nil
 			change.Settings, _ = json.Marshal(next)
 		}
-		if scene.Type == "3D" {
+		if scene.Type == "3D" || scene.Type == "SPLAT" {
 			candidate := scene
 			candidate.Settings = change.Settings
 			if err := queries.portalRefs(ctx, candidate); err != nil {

@@ -49,7 +49,8 @@
     "test:chunk-comparison": "node tests/chunking-comparison.browser.mjs",
     "test:chunk-live": "node tests/chunking-live.browser.mjs",
     "test:chunk-acceptance": "node ../scripts/validate-chunking.mjs",
-    "prebuild": "node scripts/copy-splat-license.mjs"
+    "prebuild": "node scripts/copy-splat-license.mjs",
+    "test:splat-walking-tiles": "node tests/splat-walking-tiles.browser.mjs"
   },
   "dependencies": {
     "@react-three/drei": "10.7.9",

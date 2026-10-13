@@ -11,3 +11,8 @@ export function reserveSplatRenderer(bytes) {
  let released = false;
  return () => { if (!released) { released = true; rendererBytes -= bytes; renderers--; } };
 }
+let sourceBytes=0;
+export function reserveSplatSource(bytes=64_000_000){
+ if(!Number.isFinite(bytes)||bytes<=0||sourceBytes+bytes>sourceResidentLimit)throw new Error('Too many capture sources are open. Close another viewer and retry.');
+ sourceBytes+=bytes;let released=false;return ()=>{if(!released){released=true;sourceBytes-=bytes;}};
+}

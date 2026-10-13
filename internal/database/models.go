@@ -73,6 +73,13 @@ type ScenePortalRef struct {
 	DestinationSceneID pgtype.UUID `json:"destination_scene_id"`
 }
 
+type SceneSplatProxyRef struct {
+	SceneID       pgtype.UUID `json:"scene_id"`
+	ProjectID     pgtype.UUID `json:"project_id"`
+	SourceAssetID pgtype.UUID `json:"source_asset_id"`
+	ProxyAssetID  pgtype.UUID `json:"proxy_asset_id"`
+}
+
 type SceneTextureRef struct {
 	SceneID   pgtype.UUID `json:"scene_id"`
 	ProjectID pgtype.UUID `json:"project_id"`

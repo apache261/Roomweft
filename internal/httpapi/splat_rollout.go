@@ -25,7 +25,7 @@ func ParseSplatRollout(value string) (SplatRollout, error) {
 }
 func (a *API) splatCapabilities(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-store")
-	respond(w, 200, map[string]bool{"splat_viewer": a.splatSupport == SplatOn || a.splatSupport == SplatViewer, "splat_authoring": a.splatSupport == SplatOn})
+	respond(w, 200, map[string]bool{"splat_viewer": a.splatSupport == SplatOn || a.splatSupport == SplatViewer, "splat_walking": a.splatWalking && (a.splatSupport == SplatOn || a.splatSupport == SplatViewer), "splat_streaming": a.splatStreaming && (a.splatSupport == SplatOn || a.splatSupport == SplatViewer), "splat_authoring": a.splatSupport == SplatOn})
 }
 func (a *API) allowSplat(w http.ResponseWriter, kind string, authoring bool) bool {
 	if kind != "SPLAT" {
@@ -36,4 +36,14 @@ func (a *API) allowSplat(w http.ResponseWriter, kind string, authoring bool) boo
 	}
 	fail(w, http.StatusServiceUnavailable, "Gaussian splat support is unavailable. Choose another scene or retry later.")
 	return false
+}
+
+func ParseSplatFeature(name, value string) (bool, error) {
+	if value == "" || value == "off" {
+		return false, nil
+	}
+	if value == "on" {
+		return true, nil
+	}
+	return false, fmt.Errorf("%s must be off or on", name)
 }

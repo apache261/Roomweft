@@ -33,6 +33,14 @@ func run() error {
 	if err != nil {
 		return err
 	}
+	walking, err := httpapi.ParseSplatFeature("ASSET_SPLAT_WALKING", os.Getenv("ASSET_SPLAT_WALKING"))
+	if err != nil {
+		return err
+	}
+	streaming, err := httpapi.ParseSplatFeature("ASSET_SPLAT_STREAMING", os.Getenv("ASSET_SPLAT_STREAMING"))
+	if err != nil {
+		return err
+	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	pool, err := pgxpool.New(ctx, os.Getenv("DATABASE_URL"))
@@ -62,7 +70,7 @@ func run() error {
 		go func() { defer close(workerDone); derivatives.Run(ctx, queries, objects, script) }()
 		defer func() { stop(); <-workerDone }()
 	}
-	server := &http.Server{Addr: addr, Handler: httpapi.NewWithOptions(queries, pool.Ping, httpapi.Options{ChunkStreaming: chunkMode, SplatSupport: splatMode}, objects), ReadHeaderTimeout: 5 * time.Second}
+	server := &http.Server{Addr: addr, Handler: httpapi.NewWithOptions(queries, pool.Ping, httpapi.Options{ChunkStreaming: chunkMode, SplatSupport: splatMode, SplatWalking: walking, SplatStreaming: streaming}, objects), ReadHeaderTimeout: 5 * time.Second}
 	result := make(chan error, 1)
 	go func() { slog.Info("API listening", "address", addr); result <- server.ListenAndServe() }()
 	select {

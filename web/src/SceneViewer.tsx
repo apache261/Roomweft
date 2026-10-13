@@ -1,3 +1,5 @@
+import {SplatProxyPanel} from './splat/SplatProxyPanel';
+import {proxyReady} from './splat/proxy';
 import {useSplatSupport} from './splat/rollout';
 import { chunkStreamingEnabled, supportsChunkStreaming } from './chunkRollout';
 import { bakeAssetIdentity } from './bakeAssetIdentity';
@@ -39,7 +41,7 @@ import {readWalkingPreference,saveWalkingPreference} from './walkingEffects';
 import { SplatAppearance } from './splat/SplatAppearance';
 import { panoramaAngles } from './panorama';
 
-const SplatSceneControls=lazy(()=>import('./splat/SplatSceneControls').then(m=>({default:m.SplatSceneControls})));
+const SplatSceneControls=lazy(()=>import('./splat/SplatExperience').then(m=>({default:m.SplatExperience})));
 class ViewerError extends Component<{ children: ReactNode; panorama: boolean }, { error: string }> {
   state = { error: '' };
   static getDerivedStateFromError(error: Error) { return { error: error.message }; }
@@ -93,8 +95,10 @@ export function SceneViewer({ scene, scenes, onSaved, onNavigate, preview = fals
   const [attempt, setAttempt] = useState(0);
   const splat=scene.type==='SPLAT';
   const splatSupport=useSplatSupport(attempt);
+  const [proxyOverlay,setProxyOverlay]=useState(false);
   const [contextEpoch,setContextEpoch]=useState(0);
-  const [walking, setWalking] = useState((preview||!!arrival) && (scene.type==='3D'||scene.type==='LAYOUT'));
+  const [walking, setWalking] = useState((preview||!!arrival) && (scene.type==='3D'||scene.type==='LAYOUT'||scene.type==='SPLAT'&&proxyReady(scene.settings)));
+  useEffect(()=>{if(splat&&!splatSupport.loading&&!splatSupport.walking)setWalking(false);},[splat,splatSupport.loading,splatSupport.walking]);
   const [actions, setActions] = useState<ViewerActions | null>(null);
   const [layoutDocument,setLayoutDocument]=useState<LayoutDocument>(scene.type==='LAYOUT'?scene.layout:{version:1,elements:[],doors:[]});
   const layoutDirty=scene.type==='LAYOUT' && canonicalLayout(layoutDocument)!==canonicalLayout(scene.layout);
@@ -114,7 +118,8 @@ export function SceneViewer({ scene, scenes, onSaved, onNavigate, preview = fals
  const presets=scene.type==='LAYOUT'?layoutDocument.materials||[]:settings.materials||[];
   const bakeKey=new URLSearchParams(location.search).get('hq')==='0'?'':bakeRevision(bakeContext(scene.type==='LAYOUT'?Object.entries(instanceResponses).map(([id,a])=>[id,bakeAssetIdentity(id,a)]).sort():bakeAssetIdentity(scene.asset_id,runtimeResponse),scene.type==='LAYOUT'?{...layoutDocument,materials:undefined,navigation:undefined}:settings.model,presets,scene.type==='LAYOUT'?layoutDocument.elements.map(e=>[e.id,e.floor_material,e.wall_material,e.mesh_materials]):settings.surface_materials,settings.appearance));
  const textureKey=textureIds(presets.map(p=>bakeKey&&p.bake_revision===bakeKey?p:{...p,light_map:undefined,ao_map:undefined})).join(',');
- const reportModelInfo=useCallback((info:ModelInfo)=>{setModelInfo(info);if(!info.walkable)setWalking(false);},[]);
+ const autoSplatStarted=useRef(false);
+ const reportModelInfo=useCallback((info:ModelInfo)=>{setModelInfo(info);if(!info.walkable)setWalking(false);else if(splat&&splatSupport.walking&&(preview||arrival)&&!autoSplatStarted.current){autoSplatStarted.current=true;setWalking(true);}},[splat,splatSupport.walking,preview,arrival]);
   const settingsDirty = !sameSettings(settings, scene.settings || defaultSettings);
   const [notice, setNotice] = useState('');
   const [roomLoading,setRoomLoading]=useState<'ready'|'loading'|'failed'>('ready');
@@ -353,7 +358,7 @@ export function SceneViewer({ scene, scenes, onSaved, onNavigate, preview = fals
       {!preview&&!panorama&&!splat&&<button aria-pressed={showGrid} onClick={()=>setShowGrid(!showGrid)}>Grid</button>}
       {preview&&<button aria-expanded={directoryOpen} aria-controls="visitor-hotspots" onClick={()=>{stop();setDirectoryOpen(!directoryOpen);}}>{directoryOpen?'Hide hotspots':'Hotspots'}</button>}
       {document.fullscreenEnabled && <button onClick={()=>{const task=document.fullscreenElement?document.exitFullscreen():panel.current?.requestFullscreen();task?.catch(()=>setNotice('Fullscreen unavailable in this browser.'));}}>Fullscreen</button>}
-      {!panorama && !splat && <button disabled={!actions || saving || placing || preview&&!!modelInfo&&!modelInfo.walkable&&!walking} onClick={()=>void toggleWalking()}>{walking ? 'Inspect model' : !preview&&modelInfo&&!modelInfo.walkable?'Set up walking':layoutDirty||settingsDirty?'Save & walk':'Walk inside'}</button>}
+      {!panorama && (!splat||splatSupport.walking&&!!settings.splat?.proxy) && <button disabled={!actions || saving || placing || preview&&!!modelInfo&&!modelInfo.walkable&&!walking} onClick={()=>void toggleWalking()}>{walking ? 'Inspect model' : !preview&&modelInfo&&!modelInfo.walkable?'Set up walking':layoutDirty||settingsDirty?'Save & walk':'Walk inside'}</button>}
       {!panorama&&walking&&<div className="walking-effects" role="group" aria-label="Walking effects">
         <button aria-pressed={walkingEffects&&!reducedMotion} disabled={reducedMotion} title={reducedMotion?'Head bob is disabled by your reduced-motion preference.':'Gentle camera bob while moving. This preference is saved in your browser.'} onClick={()=>{const next=!walkingEffects;setWalkingEffects(next);saveWalkingPreference('effects',next);}}>Head bob</button>
         <button aria-pressed={smoothMovement??preview} title="Smooth acceleration and braking. Wall and floor collisions always stay enabled." onClick={()=>{const next=!(smoothMovement??preview);setSmoothMovement(next);saveWalkingPreference('smooth',next);}}>Smooth movement</button>
@@ -373,17 +378,17 @@ export function SceneViewer({ scene, scenes, onSaved, onNavigate, preview = fals
           {diagnostics && <PerformanceSampler walkingUsable={!panorama && walking && !!modelInfo?.walkable && !!actions && hotspotsReady && !layoutLoading && !textureLoading} usable={!!actions && hotspotsReady && !layoutLoading && !textureLoading} />}
           <Suspense fallback={null}>
             {panorama ? <PanoramaControls url={url} saved={savedPanorama} ready={setActions} placing={placing && !linkBusy} onPlace={place} onHover={hoverPlace} /> :
-              splat?<SplatSceneControls endpoint={`${source}/assets/${scene.asset_id}`} settings={settings} saved={savedWalk} ready={setActions} onError={setError} onProgress={setNotice} paused={paused}/> :
+              splat?<SplatSceneControls source={source} overlay={!preview&&proxyOverlay} streamingAllowed={splatSupport.streaming&&new URLSearchParams(location.search).get('splat_streaming')!=='0'} onStreamingState={roomStatus} walkingAllowed={splatSupport.walking} walking={walking} onNearby={setNearby} movement={movement} placing={false} onPlace={place} onHover={hoverPlace} onInfo={reportModelInfo} report={setNotice} instant={!preview} arrival={arrival} effects={walkingEffects&&!reducedMotion} smoothMovement={smoothMovement??preview} endpoint={`${source}/assets/${scene.asset_id}`} settings={settings} saved={savedWalk} ready={setActions} onError={setError} paused={paused}/> :
               scene.type==='LAYOUT'?<LayoutControls bakeRevision={bakeKey} streaming={preview && chunkStreamingEnabled(import.meta.env.VITE_CHUNK_STREAMING,location.search)} onStreamingState={roomStatus} optimizeVisuals={preview && new URLSearchParams(location.search).get('spatial') !== '0'} document={lastValidLayout.current} urls={instanceURLs} textureURLs={textureURLs} walking={walking} effects={walkingEffects&&!reducedMotion} smoothMovement={smoothMovement??preview} instant={!preview} onSelectElement={selectElement} arrival={arrival} onNearby={setNearby} saved={savedWalk} movement={movement} ready={setActions} report={setNotice} placing={placing && !linkBusy} onPlace={place} onHover={hoverPlace} paused={paused} onInfo={reportModelInfo} /> :
               <ImportedControls streaming={preview && chunkStreamingEnabled(import.meta.env.VITE_CHUNK_STREAMING,location.search)} onStreamingState={roomStatus} bakeRevision={bakeKey} optimizeVisuals={preview && new URLSearchParams(location.search).get('spatial') !== '0'} url={url} walking={walking} effects={walkingEffects&&!reducedMotion} smoothMovement={smoothMovement??preview} instant={!preview} onSelectElement={selectElement} arrival={arrival} onNearby={setNearby} saved={savedWalk} movement={movement} ready={setActions} report={setNotice} placing={placing && !linkBusy} onPlace={place} onHover={hoverPlace} paused={paused} settings={settings} textureURLs={textureURLs} onInfo={reportModelInfo} />}
-            {!panorama&&!splat&&<NavigationOverlay regions={sceneRegions(draftScene)} portals={walkingConfig.portals} builder={!preview} nearby={nearby} onActivate={activatePortal} onTarget={setExitTarget}/>}
-            <HotspotLayer hotspots={displayHotspots} onActivate={activate} placing={placing} draft={placing ? hover : dirty ? position : null} selected={editing} reveal={!preview && reveal} panorama={panorama} screenOnly={splat} onTarget={setTarget} />
+            {!panorama&&(!splat||splatSupport.walking&&proxyReady(settings))&&<NavigationOverlay regions={sceneRegions(draftScene)} portals={walkingConfig.portals} builder={!preview} nearby={nearby} onActivate={activatePortal} onTarget={setExitTarget}/>}
+            <HotspotLayer hotspots={displayHotspots} onActivate={activate} placing={placing} draft={placing ? hover : dirty ? position : null} selected={editing} reveal={!preview && reveal} panorama={panorama} screenOnly={splat&&(!settings.splat?.proxy?.reviewed||!settings.splat.proxy.occlusion)} onTarget={setTarget} />
           </Suspense>
           </ViewerRuntime>
         </Canvas></ViewerError>}
       {locked && <div className="walk-reticle" aria-live="polite"><span>＋</span><small>{exitTarget?`Click: ${exitTarget.label}`:target ? `Click: ${target.title}` : 'Aim at a hotspot or exit · Escape for controls'}</small></div>}
     </div>
-    {!preview&&!panorama&&modelInfo&&<p className="model-readiness" role="status">Prepared dimensions: {modelInfo.dimensions.map(n=>n.toFixed(2)).join(' × ')} m · {modelInfo.textures} embedded textures · {modelInfo.walkable?'Standing floor found':'No standing floor found'}</p>}
+    {!preview&&!panorama&&modelInfo&&(!splat||settings.splat?.proxy)&&<p className="model-readiness" role="status">Prepared dimensions: {modelInfo.dimensions.map(n=>n.toFixed(2)).join(' × ')} m · {modelInfo.textures} embedded textures · {modelInfo.walkable?'Standing floor found':'No standing floor found'}</p>}
     {diagnostics && <PerformancePanel />}
     {!panorama&&modelInfo?.navigationError&&<p role="status">{modelInfo.navigationError} Inspection remains available.</p>}
     {walking && <div className="movement-pad" aria-label="Movement controls">{[['w','Forward'],['a','Left'],['s','Backward'],['d','Right']].map(([key, label]) =>
@@ -391,9 +396,9 @@ export function SceneViewer({ scene, scenes, onSaved, onNavigate, preview = fals
         onPointerUp={() => (movement.current.delete(key), wakeViewer())} onPointerCancel={() => (movement.current.delete(key), wakeViewer())} onLostPointerCapture={() => (movement.current.delete(key), wakeViewer())} onBlur={() => (movement.current.delete(key), wakeViewer())}
         onKeyDown={event => { if (event.key === ' ' || event.key === 'Enter') { event.preventDefault(); movement.current.add(key); wakeViewer(); } }}
         onKeyUp={() => (movement.current.delete(key), wakeViewer())}>{preview?<><span aria-hidden="true">{{w:'↑',a:'←',s:'↓',d:'→'}[key]}</span><span className="sr-only">{label}</span></>:label}</button>)}</div>}
-    {roomLoading!=='ready'&&<p className="viewer-notice" role="status">{roomLoading==='failed'?<>Room could not load. Entry remains blocked. <button onClick={()=>retryRooms.current?.()}>Retry room loading</button></>:'Loading nearby rooms… Entry opens when ready.'}</p>}
+    {roomLoading!=='ready'&&<p className="viewer-notice" role="status">{roomLoading==='failed'?<>Visuals could not load. Entry remains blocked. <button onClick={()=>retryRooms.current?.()}>{splat?'Retry capture loading':'Retry room loading'}</button></>:splat?'Loading capture tiles… Walking waits for committed visuals.':'Loading nearby rooms… Entry opens when ready.'}</p>}
     {notice && <p className="viewer-notice" role="status">{notice}</p>}
-    <p className="viewer-help">{splat?'Drag to orbit · Scroll or pinch to zoom · Inspection only':preview?(panorama?'Drag to look · Pinch to zoom':walking?'WASD to move · Drag to look · Escape for controls':'Drag to orbit · Scroll to zoom'):panorama ? 'Drag to look · Scroll or pinch to zoom' : walking ? 'WASD or arrow keys to walk · Click scene for mouse look · Aim at a hotspot and click · Escape releases mouse for controls · Drag to look on touch · Hold buttons to move' : 'Click viewport, then WASD / arrows to move · Drag to orbit · Scroll to zoom · Right-drag to pan'}</p>
+    <p className="viewer-help">{splat&&!walking?'Drag to orbit · Scroll or pinch to zoom · Inspection viewing':preview?(panorama?'Drag to look · Pinch to zoom':walking?'WASD to move · Drag to look · Escape for controls':'Drag to orbit · Scroll to zoom'):panorama ? 'Drag to look · Scroll or pinch to zoom' : walking ? 'WASD or arrow keys to walk · Click scene for mouse look · Aim at a hotspot and click · Escape releases mouse for controls · Drag to look on touch · Hold buttons to move' : 'Click viewport, then WASD / arrows to move · Drag to orbit · Scroll to zoom · Right-drag to pan'}</p>
     {popup && <dialog ref={dialog} className="info-popup" aria-label={popup.title} onCancel={()=>setPopup(null)}>
       <button autoFocus className="secondary" onClick={()=>setPopup(null)}>Close information</button><h3>{popup.title}</h3>
       <p className="plain-description">{popup.description}</p>
@@ -408,7 +413,7 @@ export function SceneViewer({ scene, scenes, onSaved, onNavigate, preview = fals
     <aside id={preview?'visitor-hotspots':undefined} hidden={preview&&!directoryOpen} className={preview?'visitor-directory':'editor-inspector'} aria-label={preview?'Explore scene':'Scene inspector'} onKeyDown={event=>{if(preview&&event.key==='Escape'){setDirectoryOpen(false);panel.current?.querySelector<HTMLButtonElement>('[aria-controls="visitor-hotspots"]')?.focus();}}}>
     {preview&&<div className="visitor-directory-heading"><span>Explore this space</span><button className="secondary" aria-label="Close hotspot list" onClick={()=>{setDirectoryOpen(false);panel.current?.querySelector<HTMLButtonElement>('[aria-controls="visitor-hotspots"]')?.focus();}}>✕</button></div>}
     {!preview && <div className="inspector-heading"><h2>Inspector</h2><span>{scene.type==='LAYOUT'?'Layout':panorama?'Panorama':splat?'Gaussian splat':'Model'}</span></div>}
-    {!preview && <nav className="inspector-sections" role="tablist" aria-label="Inspector sections">{[...(scene.type==='LAYOUT'?[['plan','Plan']]:[]),['hotspots','Hotspots'],...(!panorama?splat?[['appearance','Capture']]:[['walking','Walking'],['materials','Materials'],['partition','Partition'],['appearance','Appearance']]:[])].map(([id,label])=><button key={id} id={`tab-${id}`} role="tab" aria-selected={tool===id} tabIndex={tool===id?0:-1} onKeyDown={e=>{const tabs=Array.from(e.currentTarget.parentElement!.querySelectorAll<HTMLButtonElement>('[role="tab"]'));const index=tabs.indexOf(e.currentTarget);const next=e.key==='ArrowRight'?(index+1)%tabs.length:e.key==='ArrowLeft'?(index+tabs.length-1)%tabs.length:e.key==='Home'?0:e.key==='End'?tabs.length-1:-1;if(next>=0){e.preventDefault();tabs[next].click();tabs[next].focus();}}} aria-controls={`panel-${id}`} className="secondary" onClick={()=>chooseTool(id)}>{label}</button>)}</nav>}
+    {!preview && <nav className="inspector-sections" role="tablist" aria-label="Inspector sections">{[...(scene.type==='LAYOUT'?[['plan','Plan']]:[]),['hotspots','Hotspots'],...(!panorama?splat?[['appearance','Capture'],...(splatSupport.walking?[['walking','Walking']]:[])]:[['walking','Walking'],['materials','Materials'],['partition','Partition'],['appearance','Appearance']]:[])].map(([id,label])=><button key={id} id={`tab-${id}`} role="tab" aria-selected={tool===id} tabIndex={tool===id?0:-1} onKeyDown={e=>{const tabs=Array.from(e.currentTarget.parentElement!.querySelectorAll<HTMLButtonElement>('[role="tab"]'));const index=tabs.indexOf(e.currentTarget);const next=e.key==='ArrowRight'?(index+1)%tabs.length:e.key==='ArrowLeft'?(index+tabs.length-1)%tabs.length:e.key==='Home'?0:e.key==='End'?tabs.length-1:-1;if(next>=0){e.preventDefault();tabs[next].click();tabs[next].focus();}}} aria-controls={`panel-${id}`} className="secondary" onClick={()=>chooseTool(id)}>{label}</button>)}</nav>}
     <div id="panel-plan" role="tabpanel" aria-labelledby="tab-plan" hidden={preview||tool!=='plan'}>
 
     {!preview && scene.type==='LAYOUT' && <LayoutEditor key={scene.layout_revision} document={layoutDocument} onChange={setLayoutDocument} onSave={saveLayout} dirty={layoutDirty} busy={saving||linkBusy} assets={assets} attached={attached} surfaces={modelInfo?.surfaces||[]} selection={selectedElement} onSelection={setSelectedElement} onQuickAdd={bindQuickRoom} />}
@@ -450,7 +455,8 @@ export function SceneViewer({ scene, scenes, onSaved, onNavigate, preview = fals
     </div>
     <div id="panel-walking" role="tabpanel" aria-labelledby="tab-walking" hidden={preview||tool!=='walking'}>
     {!preview&&!panorama&&!splat&&<div className="walking-guide"><h3>{modelInfo?.walkable?'Ready to walk':'Set up a walking area'}</h3><p>{scene.type==='LAYOUT'?'Generated room floors are approved automatically. For imported rooms, select each module in Plan and choose its floor meshes. Save, walk with WASD, then save the starting view.':'1. Add a region. 2. Select its structural floor meshes and check the height range. 3. Save changes, then Walk inside.'}</p><button disabled={!actions||saving} onClick={()=>void toggleWalking()}>{walking?'Stop walking test':modelInfo?.walkable?'Test walking':'Check walking setup'}</button></div>}
-    {!preview&&!panorama&&!splat&&<WalkingPanel scene={draftScene} scenes={draftScenes} config={walkingConfig} onChange={navigation=>scene.type==='LAYOUT'?setLayoutDocument({...layoutDocument,navigation}):setSettings({...settings,navigation})} info={modelInfo} busy={saving||linkBusy||exitBusy} current={()=>{const v=walking&&actions?.view();return v&&'position'in v?v:undefined;}}/>}
+    {!preview&&splat&&splatSupport.walking&&tool==='walking'&&<SplatProxyPanel settings={settings} assets={assets} onChange={setSettings} overlay={proxyOverlay} onOverlay={setProxyOverlay} busy={saving||linkBusy} dirty={settingsDirty}/>}
+    {!preview&&!panorama&&(!splat||splatSupport.walking)&&<WalkingPanel scene={draftScene} scenes={draftScenes} config={walkingConfig} onChange={navigation=>scene.type==='LAYOUT'?setLayoutDocument({...layoutDocument,navigation}):setSettings({...settings,navigation})} info={modelInfo} busy={saving||linkBusy||exitBusy} current={()=>{const v=walking&&actions?.view();return v&&'position'in v?v:undefined;}}/>}
     </div>
     <div id="panel-materials" role="tabpanel" aria-labelledby="tab-materials" hidden={preview||tool!=='materials'}>
     {!preview && !panorama && !splat && <MaterialEditor bakeRevision={bakeKey} presets={presets} assets={assets} busy={saving||linkBusy} targets={materialTargets()} onChange={materials=>scene.type==='LAYOUT'?setLayoutDocument({...layoutDocument,materials}):setSettings({...settings,materials})} onAssign={assignMaterial} />}
@@ -463,6 +469,7 @@ export function SceneViewer({ scene, scenes, onSaved, onNavigate, preview = fals
     </>)}
     </div>
     <div id="panel-appearance" role="tabpanel" aria-labelledby="tab-appearance" hidden={preview||tool!=='appearance'}>
+
     {!preview && splat && <SplatSettingsPanel settings={settings} onChange={setSettings} onSave={saveSettings} busy={saving||linkBusy} dirty={settingsDirty}/>}
     {!preview && !panorama && !splat && <SceneSettingsPanel layout={scene.type==='LAYOUT'} settings={settings} onChange={setSettings} onSave={saveSettings} busy={saving || linkBusy} dirty={settingsDirty} info={modelInfo} />}
 

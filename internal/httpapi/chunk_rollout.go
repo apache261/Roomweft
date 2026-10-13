@@ -29,6 +29,8 @@ func ParseChunkRollout(value string) (ChunkRollout, error) {
 type Options struct {
 	ChunkStreaming ChunkRollout
 	SplatSupport   SplatRollout
+	SplatWalking   bool
+	SplatStreaming bool
 }
 
 func (a *API) allowsChunks(m chunking.Manifest) bool {

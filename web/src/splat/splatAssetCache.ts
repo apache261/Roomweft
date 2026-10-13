@@ -1,9 +1,9 @@
-import {sourceResidentLimit} from './budget.js';
+import {sourceResidentLimit,reserveSplatSource} from './budget.js';
 import {assetLoadMeasurement,performanceStage} from '../performanceMetrics.ts';
 import {maxSplatBytes, validateSplatBytes} from './profile.ts';
 
 export type SplatProgress = {stage:'download'|'validate';bytes:number;total:number};
-type Entry = {owners:number;abort:AbortController;listeners:Set<(p:SplatProgress)=>void>;promise:Promise<ArrayBuffer>;progress?:SplatProgress};
+type Entry = {releaseBudget:()=>void;owners:number;abort:AbortController;listeners:Set<(p:SplatProgress)=>void>;promise:Promise<ArrayBuffer>;progress?:SplatProgress};
 const entries = new Map<string,Entry>();
 export const splatCacheStats = () => ({sources:entries.size,owners:[...entries.values()].reduce((n,e)=>n+e.owners,0)});
 
@@ -52,8 +52,8 @@ async function load(endpoint:string,entry:Entry) {
 // Source bytes can be shared; workers, sorting and GPU allocations belong to each Canvas.
 export function acquireSplat(endpoint:string,onProgress:(p:SplatProgress)=>void=()=>{}) {
   let entry=entries.get(endpoint);
-  if(!entry){if((entries.size+1)*maxSplatBytes>sourceResidentLimit)return {promise:Promise.reject<ArrayBuffer>(new Error('Too many capture sources are open. Close another viewer and retry.')),release(){}};entry={owners:0,abort:new AbortController(),listeners:new Set(),promise:undefined as unknown as Promise<ArrayBuffer>};entries.set(endpoint,entry);entry.promise=load(endpoint,entry);}
+  if(!entry){if((entries.size+1)*maxSplatBytes>sourceResidentLimit)return {promise:Promise.reject<ArrayBuffer>(new Error('Too many capture sources are open. Close another viewer and retry.')),release(){}};let releaseBudget:()=>void;try{releaseBudget=reserveSplatSource();}catch(error){return {promise:Promise.reject<ArrayBuffer>(error),release(){}};}entry={releaseBudget,owners:0,abort:new AbortController(),listeners:new Set(),promise:undefined as unknown as Promise<ArrayBuffer>};entries.set(endpoint,entry);entry.promise=load(endpoint,entry);}
   const owned=entry;owned.owners++;owned.listeners.add(onProgress);if(owned.progress)onProgress(owned.progress);
   let released=false;
-  return {promise:owned.promise,release(){if(released)return;released=true;owned.listeners.delete(onProgress);if(--owned.owners===0){owned.abort.abort();if(entries.get(endpoint)===owned)entries.delete(endpoint);}}};
+  return {promise:owned.promise,release(){if(released)return;released=true;owned.listeners.delete(onProgress);if(--owned.owners===0){owned.abort.abort();owned.releaseBudget();if(entries.get(endpoint)===owned)entries.delete(endpoint);}}};
 }

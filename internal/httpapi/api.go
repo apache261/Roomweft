@@ -28,6 +28,8 @@ type Store interface {
 type API struct {
 	chunkStreaming ChunkRollout
 	splatSupport   SplatRollout
+	splatWalking   bool
+	splatStreaming bool
 	layouts        LayoutStore
 	publication    PublicationStore
 	store          Store
@@ -40,10 +42,13 @@ func New(store Store, ping func(context.Context) error, storage ...ObjectStorage
 	return NewWithOptions(store, ping, Options{ChunkStreaming: ChunkReviewed, SplatSupport: SplatOn}, storage...)
 }
 func NewWithOptions(store Store, ping func(context.Context) error, options Options, storage ...ObjectStorage) http.Handler {
+	if options.SplatSupport == "" {
+		options.SplatSupport = SplatOff
+	}
 	if options.ChunkStreaming == "" {
 		options.ChunkStreaming = ChunkOff
 	}
-	a := &API{store: store, ping: ping, chunkStreaming: options.ChunkStreaming, splatSupport: options.SplatSupport}
+	a := &API{store: store, ping: ping, chunkStreaming: options.ChunkStreaming, splatSupport: options.SplatSupport, splatWalking: options.SplatWalking, splatStreaming: options.SplatStreaming}
 	a.assets, _ = store.(AssetStore)
 	a.layouts, _ = store.(LayoutStore)
 	a.publication, _ = store.(PublicationStore)

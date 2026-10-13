@@ -6,7 +6,7 @@ import { AnimationMixer, Box3, Group, Matrix4, Mesh, MeshStandardMaterial, Prope
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 
 export type SceneSettings = {
- splat?: {version:1;position:[number,number,number];controls:'orbit';min_distance:number;max_distance:number};
+ splat?: {proxy?:{asset_id:string;model:SceneSettings['model'];position:[number,number,number];reviewed:boolean;occlusion:boolean};version:1;position:[number,number,number];controls:'orbit';min_distance:number;max_distance:number};
  navigation?:NavigationSettings;
  materials?:MaterialPreset[];surface_materials?:Record<string,string>;
   appearance: { hq_shadows?:boolean; exposure: number; environment_intensity: number; light_intensity: number; background: string; tint: string; roughness: number | null };
@@ -79,7 +79,7 @@ export function sameModel(a: SceneSettings['model'], b: SceneSettings['model']) 
   return a.scale === b.scale && a.up_axis === b.up_axis && a.rotation === b.rotation;
 }
 export function sameSettings(a: SceneSettings, b: SceneSettings) {
-  return sameSplatSettings(a.splat,b.splat) && !!a.appearance.hq_shadows===!!b.appearance.hq_shadows && JSON.stringify(navigationSettings(a.navigation))===JSON.stringify(navigationSettings(b.navigation)) && JSON.stringify(a.materials||[])===JSON.stringify(b.materials||[]) && JSON.stringify(a.surface_materials||{})===JSON.stringify(b.surface_materials||{}) && sameModel(a.model, b.model) && (Object.keys(defaultSettings.appearance) as (keyof SceneSettings['appearance'])[])
+  return JSON.stringify(a.splat?.proxy)===JSON.stringify(b.splat?.proxy) && sameSplatSettings(a.splat,b.splat) && !!a.appearance.hq_shadows===!!b.appearance.hq_shadows && JSON.stringify(navigationSettings(a.navigation))===JSON.stringify(navigationSettings(b.navigation)) && JSON.stringify(a.materials||[])===JSON.stringify(b.materials||[]) && JSON.stringify(a.surface_materials||{})===JSON.stringify(b.surface_materials||{}) && sameModel(a.model, b.model) && (Object.keys(defaultSettings.appearance) as (keyof SceneSettings['appearance'])[])
     .every(key => a.appearance[key] === b.appearance[key]);
 }
 

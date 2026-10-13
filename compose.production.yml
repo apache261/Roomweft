@@ -22,6 +22,8 @@ services:
       HTTP_ADDR: 0.0.0.0:8080
       DATABASE_URL: postgres://${POSTGRES_USER:-tour}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-virtual_tours}?sslmode=disable
       ASSET_PROCESSOR_SCRIPT: /app/asset-tools/process.mjs
+      ASSET_SPLAT_WALKING: ${ASSET_SPLAT_WALKING:-off}
+      ASSET_SPLAT_STREAMING: ${ASSET_SPLAT_STREAMING:-off}
       ASSET_SPLAT_SUPPORT: ${ASSET_SPLAT_SUPPORT:-off}
       ASSET_CHUNK_STREAMING: ${ASSET_CHUNK_STREAMING:-off}
       S3_ENDPOINT: ${S3_ENDPOINT:?Set S3_ENDPOINT}
@@ -40,6 +42,8 @@ services:
       context: ./web
       target: production
       args:
+        VITE_SPLAT_WALKING: ${VITE_SPLAT_WALKING:-off}
+        VITE_SPLAT_STREAMING: ${VITE_SPLAT_STREAMING:-off}
         VITE_SPLAT_SUPPORT: ${VITE_SPLAT_SUPPORT:-off}
     restart: unless-stopped
 

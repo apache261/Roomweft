@@ -43,7 +43,7 @@ func (q *Queries) GetDerivative(ctx context.Context, id pgtype.UUID) (Derivative
 func (q *Queries) ClaimDerivative(ctx context.Context) (DerivativeJob, error) {
 	var j DerivativeJob
 	err := q.db.QueryRow(ctx, `WITH candidate AS (
- SELECT asset_id,version FROM asset_derivatives WHERE version IN ($1,'chunks-v1') AND (version=$1 OR EXISTS(SELECT 1 FROM asset_partitions p WHERE p.asset_id=asset_derivatives.asset_id AND p.revision=asset_derivatives.partition_revision AND p.source_sha256=asset_derivatives.source_sha256 AND p.document->>'policy'='reviewed-rooms')) AND
+ SELECT asset_id,version FROM asset_derivatives WHERE version IN ($1,'chunks-v1','splat-tiles-v1') AND (version IN ($1,'splat-tiles-v1') OR EXISTS(SELECT 1 FROM asset_partitions p WHERE p.asset_id=asset_derivatives.asset_id AND p.revision=asset_derivatives.partition_revision AND p.source_sha256=asset_derivatives.source_sha256 AND p.document->>'policy'='reviewed-rooms')) AND
  (state='queued' OR (state='processing' AND lease_until<now())) ORDER BY updated_at
  FOR UPDATE SKIP LOCKED LIMIT 1), claimed AS (
  UPDATE asset_derivatives d SET state='processing',attempt=gen_random_uuid(),lease_until=now()+interval '15 minutes',updated_at=now()
@@ -79,4 +79,15 @@ func (q *Queries) QueueChunks(ctx context.Context, id pgtype.UUID, retry bool) e
  ON CONFLICT(asset_id,version) DO UPDATE SET partition_revision=EXCLUDED.partition_revision,source_sha256=EXCLUDED.source_sha256,state='queued',manifest=NULL,error='',attempt=NULL,lease_until=NULL,updated_at=now()
  WHERE asset_derivatives.partition_revision<>EXCLUDED.partition_revision OR asset_derivatives.source_sha256<>EXCLUDED.source_sha256 OR ($2 AND asset_derivatives.state='failed')`, id, retry)
 	return err
+}
+
+func (q *Queries) QueueSplatTiles(ctx context.Context, id pgtype.UUID, retry bool) error {
+	_, err := q.db.Exec(ctx, `INSERT INTO asset_derivatives(asset_id,version) SELECT id,'splat-tiles-v1' FROM assets WHERE id=$1 AND file_type='SPLAT' AND upload_status='ready'
+ ON CONFLICT(asset_id,version) DO UPDATE SET state='queued',error='',manifest=NULL,attempt=NULL,lease_until=NULL,updated_at=now() WHERE $2 AND asset_derivatives.state='failed'`, id, retry)
+	return err
+}
+func (q *Queries) GetSplatTiles(ctx context.Context, id pgtype.UUID) (Derivative, error) {
+	var d Derivative
+	err := q.db.QueryRow(ctx, `SELECT state,error,manifest FROM asset_derivatives WHERE asset_id=$1 AND version='splat-tiles-v1'`, id).Scan(&d.State, &d.Error, &d.Manifest)
+	return d, err
 }
