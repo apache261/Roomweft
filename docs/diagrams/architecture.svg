@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1160" height="550" viewBox="0 0 1160 550" role="img" aria-labelledby="title desc">
+<title id="title">Roomweft architecture</title>
+<desc id="desc">The browser uses the Go API through a web proxy. PostgreSQL stores metadata; private object storage serves signed media. An asset worker produces optimized derivatives.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#67808a"/></marker></defs>
+<rect width="1160" height="550" rx="18" fill="#f8faf9"/>
+<g font-family="Arial, Helvetica, sans-serif">
+<text x="40" y="58" fill="#173b35" font-size="30" font-weight="700">Roomweft architecture</text>
+<text x="40" y="90" fill="#52676b" font-size="16">Metadata through the API. Media bytes directly between the browser and private storage.</text>
+<polyline points="340,195 430,195" fill="none" stroke="#67808a" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="385" y="180" text-anchor="middle" font-size="12" fill="#52676b">Requests</text>
+<polyline points="730,195 820,195" fill="none" stroke="#67808a" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="775" y="180" text-anchor="middle" font-size="12" fill="#52676b">JSON API</text>
+<polyline points="970,245 970,370" fill="none" stroke="#67808a" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="1010" y="310" text-anchor="middle" font-size="12" fill="#52676b">Metadata</text>
+<polyline points="190,245 190,370" fill="none" stroke="#67808a" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="275" y="310" text-anchor="middle" font-size="12" fill="#52676b">Signed uploads &amp; reads</text>
+<polyline points="920,245 920,290 580,290 580,370" fill="none" stroke="#67808a" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="650" y="278" text-anchor="middle" font-size="12" fill="#52676b">Leased processing jobs</text>
+<polyline points="430,420 340,420" fill="none" stroke="#67808a" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="385" y="495" text-anchor="middle" font-size="12" fill="#52676b">Immutable products</text>
+<rect x="40" y="145" width="300" height="100" rx="12" fill="#e4f2ee" stroke="#397d6c"/>
+<text x="60" y="185" font-size="19" font-weight="700" fill="#173b35">Browser</text>
+<text x="60" y="213" font-size="13" fill="#52676b">React · TypeScript · Three.js</text>
+<rect x="430" y="145" width="300" height="100" rx="12" fill="#e9eff9" stroke="#5879aa"/>
+<text x="450" y="185" font-size="19" font-weight="700" fill="#173b35">Web &amp; HTTPS proxy</text>
+<text x="450" y="213" font-size="13" fill="#52676b">Vite locally · Nginx in production</text>
+<rect x="820" y="145" width="300" height="100" rx="12" fill="#e4f2ee" stroke="#397d6c"/>
+<text x="840" y="185" font-size="19" font-weight="700" fill="#173b35">Go API</text>
+<text x="840" y="213" font-size="13" fill="#52676b">Validation · publication · signed URLs</text>
+<rect x="40" y="370" width="300" height="100" rx="12" fill="#fff1df" stroke="#b18037"/>
+<text x="60" y="410" font-size="19" font-weight="700" fill="#173b35">Private object storage</text>
+<text x="60" y="438" font-size="13" fill="#52676b">MinIO locally · S3 in production</text>
+<rect x="430" y="370" width="300" height="100" rx="12" fill="#e9eff9" stroke="#5879aa"/>
+<text x="450" y="410" font-size="19" font-weight="700" fill="#173b35">Asset worker</text>
+<text x="450" y="438" font-size="13" fill="#52676b">GLB derivatives · chunks · splat tiles</text>
+<rect x="820" y="370" width="300" height="100" rx="12" fill="#f0eafb" stroke="#8865a8"/>
+<text x="840" y="410" font-size="19" font-weight="700" fill="#173b35">PostgreSQL</text>
+<text x="840" y="438" font-size="13" fill="#52676b">Projects · scenes · references · jobs</text>
+<text x="40" y="518" fill="#52676b" font-size="13">Shared viewer: 3D models · connected layouts · 360° panoramas · Gaussian captures</text>
+</g></svg>

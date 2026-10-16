@@ -6,6 +6,18 @@ The browser editor includes a floor-plan builder, furniture placement, material 
 
 The editor and project API have no authentication. Deploy them only where access is restricted to trusted users; published tours use scoped read endpoints.
 
+## Screenshots
+
+The visual editor combines the scene library, 3D viewport and floor-plan inspector.
+
+![Roomweft visual editor showing connected rooms and the floor-plan inspector](docs/screenshots/editor.png)
+
+| Published walkthrough | Imported model inspection |
+| --- | --- |
+| ![Walking tour with navigation controls and an information hotspot directory](docs/screenshots/walkthrough.png) | ![Practice house GLB in the editor with model appearance controls](docs/screenshots/model-inspection.png) |
+
+Screenshots use repository sample assets and demo project data. Select an image to view it at full size.
+
 ## Documentation
 
 - [Technical architecture and data flow](technical.md)
@@ -14,6 +26,12 @@ The editor and project API have no authentication. Deploy them only where access
 - [Rendering quality](docs/viewer-quality.md) and [performance benchmarks](docs/performance-benchmarks.md)
 - [Runtime asset processing](docs/runtime-assets.md) and [reviewed GLB chunking](docs/chunking-acceptance.md)
 - [Gaussian capture format and viewer](docs/splat-feasibility.md), [deployment](docs/splat-rollout.md) and [walking and streaming](docs/splat-walking-streaming.md)
+
+## Architecture
+
+![Roomweft architecture: browser, web proxy, Go API, PostgreSQL, private object storage and asset worker](docs/diagrams/architecture.svg)
+
+[Open the editable Draw.io diagrams](technical.drawio) for the architecture overview, upload lifecycle, asset processing, authoring, viewer runtime and product screenshots. See [the technical guide](technical.md) for the implementation details.
 
 ## Run locally
 
