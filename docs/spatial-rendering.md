@@ -1,7 +1,7 @@
-# Spatial rendering (Phase 5)
+# Spatial rendering
 
 Preview, public and embed viewers build a separate visual tree from the prepared
-Phase 4 model/layout. Builder views retain individual authored meshes. Add
+runtime model/layout. Builder views retain individual authored meshes. Add
 `spatial=0` to the viewer query string to use the original visual tree for comparison.
 Navigation, approved floors and hotspot occlusion always use the authored tree.
 The tree is never reparented, simplified or hidden by visual LOD.
@@ -72,6 +72,5 @@ CPU/GPU measurements on the target devices.
 
 Remaining acceptance: physical-device comparisons, sustained walkthroughs,
 reviewed LOD silhouettes/transitions for real uploads, and room metadata/chunk
-streaming in Phase 6. The earlier public courtyard-exit walking regression remains
-outside this phase's acceptance evidence. Persistent/offline LOD generation can
+[room streaming](room-streaming.md). The [chunking acceptance report](chunking-acceptance.md) records passing public courtyard-exit checks. Persistent/offline LOD generation can
 follow profiling; no runtime variant can alter navigation permissions.

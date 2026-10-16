@@ -1,6 +1,6 @@
 # Reviewed capture walking and exact tile streaming
 
-Phases 8–9 are implemented locally. Phase 9's selected scope is independently addressable splat tiles. Layout capture placements and photo/video reconstruction remain separate future projects. Synthetic browser acceptance establishes correctness; representative captures, physical devices and the actual production HTTPS/S3 path remain outstanding release acceptance from earlier phases.
+Reviewed GLB proxies support capture walking, and independently addressable splat tiles support selective loading. Capture placement in layouts and photo/video reconstruction are unsupported. Synthetic browser checks cover correctness; representative captures, physical devices and production HTTPS/S3 still require validation.
 
 ## Authoring a walking capture
 

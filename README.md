@@ -1,6 +1,19 @@
-# Virtual Tour Studio
+# Roomweft
 
-Phases 1–6 of the proof of concept, plus V2 phases 1–5: create projects, walk through GLB scenes, view 360 panoramas, and connect scenes with navigation hotspots. Information and artwork hotspots support plain text, uploaded images and external links. The builder includes a properties panel and a visitor preview. Publish tours with stable share URLs and compact iframe embeds. Build a continuous lobby/room layout on a floor-plan grid and place multiple GLB furniture instances. Camera and start-scene settings persist. Orbit inspection remains available. The dashboard opens directly without authentication.
+Build connected virtual tours from 3D models, 360° panoramas and Gaussian splat captures. Roomweft brings scenes together with navigation, information and artwork hotspots, then publishes them through shareable links and iframe embeds.
+
+The browser editor includes a floor-plan builder, furniture placement, material controls, reviewed walking regions and a visitor preview. The Go API stores project data in PostgreSQL and media in private S3-compatible storage.
+
+The editor and project API have no authentication. Deploy them only where access is restricted to trusted users; published tours use scoped read endpoints.
+
+## Documentation
+
+- [Technical architecture and data flow](technical.md)
+- [API specification](docs/openapi.yaml)
+- [Practice house and sample assets](assets/prefabs/practice-house/README.md)
+- [Rendering quality](docs/viewer-quality.md) and [performance benchmarks](docs/performance-benchmarks.md)
+- [Runtime asset processing](docs/runtime-assets.md) and [reviewed GLB chunking](docs/chunking-acceptance.md)
+- [Gaussian capture format and viewer](docs/splat-feasibility.md), [deployment](docs/splat-rollout.md) and [walking and streaming](docs/splat-walking-streaming.md)
 
 ## Run locally
 
@@ -130,7 +143,7 @@ For S3, replace the example origin in `docs/s3-cors.json` and apply it to the pr
 aws s3api put-bucket-cors --bucket YOUR_BUCKET --cors-configuration file://docs/s3-cors.json
 ```
 
-Keep the bucket private. Uploads use a presigned multipart POST policy (15-minute expiry, exact size, and fixed content type); reads use 15-minute presigned GET URLs. Bucket CORS must allow POST, GET, and HEAD. The API must be able to get and put objects, including server-side copy. Configure `S3_PUBLIC_ENDPOINT` for the hostname the visitor's browser can reach; it is signed independently from the internal Docker endpoint. Local Compose is a development setup, with Vite and published ports bound to `0.0.0.0` by default. The project API has no authentication, as required for this POC.
+Keep the bucket private. Uploads use a presigned multipart POST policy (15-minute expiry, exact size, and fixed content type); reads use 15-minute presigned GET URLs. Bucket CORS must allow POST, GET, and HEAD. The API must be able to get and put objects, including server-side copy. Configure `S3_PUBLIC_ENDPOINT` for the hostname the visitor's browser can reach; it is signed independently from the internal Docker endpoint. Local Compose is a development setup, with Vite and published ports bound to `0.0.0.0` by default. The project API has no authentication.
 
 ## API
 
@@ -187,7 +200,7 @@ Imported room assemblies require at least one collidable interior module with ap
 
 Only the selected scene's asset is fetched. GLB files must be 20 bytes–1000 MiB with a valid glTF 2.0 binary container. External buffers and images are rejected; JSON chunks are limited to 8 MiB. Basic validation does not guarantee every GLB extension is renderable; unsupported models show a viewer error. Originals are copied without modification into a separate key after validation, so a reused upload policy cannot overwrite them. Failed/pending uploads remain visible; **Confirm upload** retries completion if the object reached storage, otherwise upload the file again.
 
-The POC has no object garbage collection yet: temporary uploads and objects belonging to deleted projects can remain in storage. For longer-lived environments, configure a lifecycle expiry for the `pending/` prefix (for example, one day) and plan cleanup of abandoned originals.
+Storage cleanup is incomplete: temporary uploads and objects belonging to deleted projects can remain in storage. For longer-lived environments, configure a lifecycle expiry for the `pending/` prefix (for example, one day) and plan cleanup of abandoned originals.
 
 | Method | Route | Result |
 | --- | --- | --- |
@@ -274,7 +287,7 @@ npx playwright install chromium
 npm run test:hotspots
 ```
 
-The checks create and delete a separate example project. As with other POC uploads, its storage objects remain until storage cleanup. `TOUR_ORIGIN` defaults to `http://localhost:5173`. If a running container serves an older frontend, `TOUR_FRONTEND_ORIGIN=http://localhost:5174` tests a workspace Vite server through the configured origin so storage CORS remains consistent. The browser checks cover placement, save/reload, finding and testing markers, request retry, occlusion/reveal, pointer-lock activation, popups, navigation, panorama, public/embed, and emulated touch. Physical-device testing remains separate.
+The checks create and delete a separate example project. As with other uploads, its storage objects remain until storage cleanup. `TOUR_ORIGIN` defaults to `http://localhost:5173`. If a running container serves an older frontend, `TOUR_FRONTEND_ORIGIN=http://localhost:5174` tests a workspace Vite server through the configured origin so storage CORS remains consistent. The browser checks cover placement, save/reload, finding and testing markers, request retry, occlusion/reveal, pointer-lock activation, popups, navigation, panorama, public/embed, and emulated touch. Physical-device testing remains separate.
 
 Create an information hotspot with `POST /api/v1/scenes/{id}/hotspots`, for example:
 
@@ -292,7 +305,7 @@ Use world `x/y/z` for 3D. `PATCH /api/v1/hotspots/{id}` takes the same full cont
 4. Test the share URL in another browser and the embed on a separate page. For example, save an HTML file containing the copied iframe and serve it with `python3 -m http.server 8000`; open the file at `http://localhost:8000`.
 5. Click **Unpublish tour** to make public metadata, scene hotspots and fresh asset URL endpoints return `404`. Both viewer routes then show **Tour unavailable** when opened or reloaded. Republish preserves the same slug.
 
-Publishing sets a visibility flag over the saved project. Saved edits appear immediately through the existing share URL; there are no publication snapshots. The builder remains accessible in this trusted-environment POC. Public viewers use only tour-scoped read endpoints. Unused assets and assets/scenes from another project are unavailable through a tour's public routes. Public responses use `Cache-Control: no-store`. The private bucket serves presigned URLs valid for 15 minutes; unpublishing stops issuing new URLs, while URLs already issued and media already loaded remain usable until their expiry or the page is reloaded.
+Publishing sets a visibility flag over the saved project. Saved edits appear immediately through the existing share URL; there are no publication snapshots. The builder remains accessible in trusted deployments. Public viewers use only tour-scoped read endpoints. Unused assets and assets/scenes from another project are unavailable through a tour's public routes. Public responses use `Cache-Control: no-store`. The private bucket serves presigned URLs valid for 15 minutes; unpublishing stops issuing new URLs, while URLs already issued and media already loaded remain usable until their expiry or the page is reloaded.
 
 Imported-room-only layouts can be published after saving and approving at least one collidable module's floor meshes. Generated room/floor elements also supply usable floors. An assembly containing only unreviewed decoration is rejected. Imported GLBs must be ready, and navigation destinations and image/texture references must remain valid within the project.
 
@@ -304,10 +317,10 @@ Imported-room-only layouts can be published after saving and approving at least 
 | GET | `/api/v1/public/tours/{slug}/assets/{id}` | Fresh browser-reachable `url` for a ready asset used in this tour (`200`); unavailable/unused/other project (`404`) |
 | GET | `/api/v1/public/tours/{slug}/scenes/{id}/hotspots` | Scene's information/navigation hotspots (`200`); unavailable/other project (`404`) |
 
-Every project receives a unique stable slug on creation, including existing projects during migration. Rename, saving edits, unpublishing and republishing preserve it. Database integration tests check publish validation, visibility, stable slugs, saved edits, reconnection persistence, scoped reads and URL refresh. Browser checks cover the shared GLB/panorama renderer, information/images, navigation, clipboard actions, fullscreen, separate-origin iframe hosting, unpublishing, and emulated touch interaction. The implementation follows the stopping point in `plan_phase.md`; production deployment infrastructure remains deferred.
+Every project receives a unique stable slug on creation, including existing projects during migration. Rename, saving edits, unpublishing and republishing preserve it. Database integration tests check publish validation, visibility, stable slugs, saved edits, reconnection persistence, scoped reads and URL refresh. Browser checks cover the shared GLB/panorama renderer, information/images, navigation, clipboard actions, fullscreen, separate-origin iframe hosting, unpublishing, and emulated touch interaction.
 
 
-## Connected layouts (V2 Phase 3)
+## Connected layouts
 
 1. Open a project and click **Build layout**. It creates a lobby, corridor and two rooms with three doorways in one continuous scene. No uploaded building is needed.
 2. Select a shape on the **Floor plan** or use **Selected layout element**. Drag to move with grid snapping, or edit position, width, depth and height in metres. **Rotate 90°**, **Duplicate element**, **Delete element**, **Undo layout** and **Redo layout** operate on the draft. Lobby, room, corridor, floor and wall templates can be added individually.
@@ -333,9 +346,9 @@ npm --prefix web run test:layout
 
 These checks create their own project and remove it afterwards. `TOUR_ORIGIN` and `TOUR_FRONTEND_ORIGIN` work as described for the appearance checks. Unit checks cover doorway passage, shared walls, floor gaps, furniture collision, decoration passthrough, material isolation and attachment transforms. Browser checks exercise authoring, dragging, undo/redo, doorway editing, instance persistence, surface hotspot placement, continuous walking, solid walls, public/embed views and emulated touch.
 
-This phase is single-level and uses the existing walking controller. Tiled texture editing is available in Phase 4 below; acceleration, fixed simulation timing, reviewed imported walking boundaries, simple stairs and explicit exits are implemented in Phase 5 below. Physical touch-device and performance-budget verification remain pending.
+Layouts are single-level and use the shared walking controller. See the material and walking controls below for tiled textures, acceleration, reviewed walking boundaries, stairs and explicit exits. Physical touch-device and performance-budget verification remain pending.
 
-## Tiled materials (V2 Phase 4)
+## Tiled materials
 
 Upload PNG, JPG or WebP maps under **Assets → Texture map role → Upload texture map**. Each asset records its base-color, normal or roughness role. Base color uses sRGB; normal and roughness use linear data (roughness reads the green channel). Maps do not need panorama proportions, and use the existing 100 MiB and 8192 × 4096 pixel image limits. Originals are retained.
 
@@ -352,7 +365,7 @@ npm --prefix web run test:materials
 
 The demo generates project-owned procedural stone, wood, wall, normal and roughness maps and uploads them with two furniture instances into a connected layout. Browser checks use their own disposable project; `TOUR_ORIGIN` and `TOUR_FRONTEND_ORIGIN` work as in the other acceptance scripts. Unit and database tests cover role color spaces, independent samplers/materials, metre UVs, shared wall sides, module floor support, persistence, revision rollback, same-project references, deletion protection and scoped public access.
 
-## Smooth walking and explicit exits (V2 Phase 5)
+## Smooth walking and explicit exits
 
 Open **Walking areas and exits** to set speed, eye height, maximum step and slope. Layout walking areas follow the actual room and floor templates; **Exterior floor (requires an exit)** marks a standalone floor that visitors cannot reach by holding movement. Imported buildings start in inspection: use **Add walking region**, review the rectangle and floor elevation range, and open **Choose floor meshes** before saving scene settings. The **Approved floor meshes** dialog supports search, checkboxes, Select/Clear shown and an explicit **Apply selection** action. Cancel or Escape discards dialog changes. Green outlines show reviewed interiors; orange shows exterior regions. Roofs, tables, decorative surfaces and outdoor floors are excluded unless the author explicitly approves them. Changing model scale, up axis or rotation clears the old review and exits; review the prepared coordinates again. Existing uploaded bytes, saved views, hotspots, panoramas and share URLs remain readable.
 
@@ -369,7 +382,7 @@ npm --prefix web run test:walking
 
 The demo combines tiled connected rooms, two table instances, an exterior courtyard, exits and returns, a gallery annex, artwork information and scene navigation. Test scripts explicitly review the known bundled interior fixtures; production uploads never receive that approval automatically. Unit tests cover 30/60/120 FPS schedules, long interruptions, thin and diagonal walls, floor gaps, low ceilings, ramps, stairs, excluded roofs/decorations and locked exits with a return. Browser acceptance covers the author review, movement boundaries, safe starts, popup pause, portal activation, public/embed and emulated touch. Physical-device and performance-budget verification remains pending.
 
-## Runtime asset optimization (performance Phase 4)
+## Runtime asset optimization
 
 Completed GLB and material-texture uploads queue validated runtime derivatives when the background worker is enabled. The asset library shows processing status and supports retries. Existing assets can be queued there. Original files remain available while processing or after failures. Docker includes the Node processor; native development enables it with `ASSET_PROCESSOR_SCRIPT` as shown above.
 
@@ -379,18 +392,8 @@ Low, Balanced and HQ select embedded and external texture variants with maximum 
 
 Large static GLBs can be partitioned into author-reviewed room groups with independently delivered quality variants and shared images. Preview/public/embed viewers prepare exact navigation and occlusion before admitting movement; unsupported sources retain complete loading. Builder editing uses the complete source. Experimental intact-triangle cells are explicitly opt-in.
 
-API rollout defaults to `ASSET_CHUNK_STREAMING=off`. Use `reviewed` for verified room groups or `spatial` to also permit reviewed experimental cells. `VITE_CHUNK_STREAMING=0` and `?streaming=0` provide viewer rollback. All processor modules are included in the Docker image; migrations 014–016 establish partition, job and storage retirement records. See [final validation, measurements and rollout](docs/chunking-acceptance.md) and [the implementation plan](rendering_pland_phase.md). Automated generated-fixture/live-stack checks do not replace real-building or physical-device acceptance.
+API rollout defaults to `ASSET_CHUNK_STREAMING=off`. Use `reviewed` for verified room groups or `spatial` to also permit reviewed experimental cells. `VITE_CHUNK_STREAMING=0` and `?streaming=0` provide viewer rollback. All processor modules are included in the Docker image; migrations 014–016 establish partition, job and storage retirement records. See [final validation, measurements and rollout](docs/chunking-acceptance.md). Automated generated-fixture/live-stack checks do not replace real-building or physical-device acceptance.
 
-
-## Gaussian splats (phases 0–4)
-
-The asset library accepts self-contained raw `.splat` captures with at most 2,000,000 fixed 32-byte records (64,000,000 bytes). The API creates `SPLAT` scenes from ready same-project sources and stores versioned inspection settings and world cameras. Completion validates every record and promotes immutable private originals; signed reads use the existing project/publication scope. PLY and compressed formats are not supported.
-
-Run `npm --prefix web run dev` and open `/dev/splat` for the local renderer proof. `npm --prefix web run test:splat-proof` verifies generated captures, teardown and context restoration; `npm --prefix web run test:splat-upload` verifies browser admission and private delivery against the running local API/MinIO. See [the exact profile, evidence and limits](docs/splat-feasibility.md).
-
-Choose **New scene → Gaussian splat**, upload/select a capture, and use **Capture** to prepare scale, axis, yaw, position, exposure and orbit bounds. Save an inspection start view. Add information/navigation hotspots with explicit world coordinates or **Place 2 m in front of camera**. Transform saves move hotspots and clear the old start view. Markers use screen visibility; capture walls do not occlude them. Walking and mesh-only controls are unavailable until a reviewed proxy is supported.
-
-Builder, preview, public and embed share the lazy splat renderer with progress, signed-URL renewal, Retry scene and owned worker/GPU cleanup. Run `npm --prefix web run test:splat-viewer` and `npm --prefix web run test:splat-authoring` for the local viewing/authoring checks. Phase 5 release acceptance, real reconstructed indoor captures and physical-device measurements remain pending.
 
 ## Gaussian capture viewing
 
@@ -404,7 +407,7 @@ Use `viewer` for existing captures without new uploads/scenes, or `off` for roll
 
 ## Reviewed capture walking and tile streaming
 
-Phases 8–9 add independently gated GLB proxy walking and exact-record capture tiles. Set `ASSET_SPLAT_WALKING=on` / `VITE_SPLAT_WALKING=on` for proxy review/walking, and `ASSET_SPLAT_STREAMING=on` / `VITE_SPLAT_STREAMING=on` for tile processing/viewing, alongside the normal splat support gates. Rebuild the frontend and restart the API; migrations 018–019 apply before serving. Defaults remain off.
+GLB proxy walking and exact-record capture tiles have independent feature gates. Set `ASSET_SPLAT_WALKING=on` / `VITE_SPLAT_WALKING=on` for proxy review/walking, and `ASSET_SPLAT_STREAMING=on` / `VITE_SPLAT_STREAMING=on` for tile processing/viewing, alongside the normal splat support gates. Rebuild the frontend and restart the API; migrations 018–019 apply before serving. Defaults remain off.
 
 Upload a static GLB in the asset library, select it in the capture's **Walking** tab, align its cyan wireframe, save, approve alignment and review structural floor regions. Walking uses the existing collision/clearance controller; capture/proxy transform edits revoke approval and saved walking starts. Proxy walls can optionally occlude markers. Published proxy assets share the normal reference/deletion and private delivery protections.
 

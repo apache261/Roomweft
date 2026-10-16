@@ -1,4 +1,4 @@
-# Phase 10 validation, rollout and final handoff
+# GLB chunking validation and rollout
 
 The implementation is finalized for reviewed static room groups, shared images
 and optional intact-triangle spatial cells. Automated acceptance covers generated
@@ -110,7 +110,7 @@ review requirements.
 [Acceptance matrix and check logs](performance-baselines/chunking-phase10-acceptance.json),
 [live upload/worker/storage report](performance-baselines/chunking-phase10-live.json),
 and [same-source cold/warm comparison](performance-baselines/chunking-phase10-comparison.json)
-record this handoff. Database tests ran with `TEST_DATABASE_URL` configured.
+record these checks. Database tests ran with `TEST_DATABASE_URL` configured.
 The frontend has 98 passing unit checks and the processor has six; both ordinary
 and disabled-streaming builds pass, as do Go tests and vet. Browser coverage
 includes reviewed partitions, intact and spatial chunks, room streaming, runtime

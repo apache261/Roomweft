@@ -1,4 +1,4 @@
-# Intact chunk generation and scoped delivery (Phases 3–4)
+# Intact chunk generation and scoped delivery
 
 Saving a valid `reviewed-rooms` partition atomically queues a separate `chunks-v1` derivative job. The existing whole-file `runtime-v1` manifest and original remain accessible. API startup applies migration `015_chunk_derivatives.sql`; Docker includes the inventory, chunk, shared-image and spatial-split processor modules. Native processing uses the existing `ASSET_PROCESSOR_SCRIPT` configuration.
 
@@ -10,7 +10,7 @@ Skins, clips, morphs, instancing, lights, uncertain dependency groups, unsupport
 
 Chunks embed their own textures. Repeated pixels can increase total delivery and decoded estimates; no shared-image savings are claimed. The manifest records actual payload bytes and per-tier texture estimates. Sum chunk payload bytes for a visited set, and count navigation/occlusion separately. The full exact navigation proxy retains every source surface identity without granting floor approval. The occlusion product is a byte-identical copy of the original GLB, retaining authored material, alpha image, visibility and sidedness semantics. Its full bytes and preparation cost must count toward future startup measurements. This conservative choice may eliminate initial download savings; regional exact occlusion remains future work.
 
-Database claims snapshot processor version, partition revision, source hash, inventory and review. Publication requires the current attempt, unexpired lease and matching current source/revision. Partition edits reset queued attempts; current descriptor reads join against the saved revision. Obsolete reviews cannot be reclaimed or delivered. Interrupted current jobs can be reclaimed when their lease expires. Failed writes and rejected publication remove attempted uploaded keys. Abrupt process death and retirement of successful older products require Phase 8's durable orphan/storage cleanup.
+Database claims snapshot processor version, partition revision, source hash, inventory and review. Publication requires the current attempt, unexpired lease and matching current source/revision. Partition edits reset queued attempts; current descriptor reads join against the saved revision. Obsolete reviews cannot be reclaimed or delivered. Interrupted current jobs can be reclaimed when their lease expires. Failed writes and rejected publication remove attempted uploaded keys. Abrupt process death and retirement of successful older products use the [durable storage retirement workflow](chunking-lifecycle.md#durable-storage-retirement).
 
 Parent asset responses optionally advertise:
 
@@ -30,7 +30,7 @@ Pending/failed states have no manifest URL. Private responses may include an act
 
 All routes also exist below `/api/v1/public/tours/{slug}/assets/{id}`. Public requests first check the published tour's reference to the ready parent. Every refresh repeats authorization and resolves IDs only through the current validated manifest. Generated descriptor URLs include the source hash and partition revision; a conflicting `revision` or `source_sha256` query returns 409 so an old manifest cannot silently refresh to a new product. Unknown IDs return 404, invalid tiers return 400, and failed signing returns 503. Missing tiers default to Balanced. Unpublishing prevents new signing; existing signed URLs retain their normal expiry.
 
-In `scoped-descriptors` mode, manifest payload `url` fields identify JSON descriptor endpoints, not binary files. Fetch one endpoint to obtain a signed binary URL. The manifest itself signs zero storage URLs, avoiding startup signing of unused chunks. Storage keys and local paths are never delivered. Descriptor identity is the parent/source/revision/chunk/tier/hash, not the URL. Viewer consumption and safe movement gating are implemented in [Phases 5–6](chunking-viewer.md).
+In `scoped-descriptors` mode, manifest payload `url` fields identify JSON descriptor endpoints, not binary files. Fetch one endpoint to obtain a signed binary URL. The manifest itself signs zero storage URLs, avoiding startup signing of unused chunks. Storage keys and local paths are never delivered. Descriptor identity is the parent/source/revision/chunk/tier/hash, not the URL. Viewer consumption and safe movement gating are implemented in [viewer bootstrap and preloading](chunking-viewer.md).
 
 Checks:
 

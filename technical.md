@@ -1,10 +1,10 @@
-# Virtual Tour Studio: technical architecture and complete data flow
+# Roomweft: technical architecture and data flow
 
-This document describes the implementation in this repository, from selecting an upload to rendering and navigating a published tour. It covers the Go API, PostgreSQL records, private object storage, background asset processing, React authoring interface and Three.js runtime, including the performance work through Phase 7, reviewed GLB chunking and the bundled production HTTPS deployment.
+This document describes the implementation in this repository, from selecting an upload to rendering and navigating a published tour. It covers the Go API, PostgreSQL records, private object storage, background asset processing, React authoring interface and Three.js runtime, including adaptive rendering quality, reviewed GLB chunking, Gaussian captures and the bundled production HTTPS deployment.
 
-The application is a proof of concept with a directly accessible builder. It currently has no authentication or per-user authorization layer. A project's UUID identifies its data; it is not an access-control credential. Public tour endpoints add publication and reference checks, but the ordinary builder endpoints remain accessible wherever the API is exposed.
+The builder is directly accessible. It currently has no authentication or per-user authorization layer. A project's UUID identifies its data; it is not an access-control credential. Public tour endpoints add publication and reference checks, but the ordinary builder endpoints remain accessible wherever the API is exposed.
 
-The descriptions below distinguish implemented behavior from provisional limits and work still pending. The checked-in [performance phase plan](performace_phase.md) records implementation and acceptance status. The examples use placeholder identifiers, URLs and content; no environment secrets are required to understand them.
+The descriptions below distinguish implemented behavior from provisional limits and work still pending. The [benchmark guide](docs/performance-benchmarks.md) describes measurement procedures and remaining device validation. The examples use placeholder identifiers, URLs and content; no environment secrets are required to understand them.
 
 ## Contents
 
@@ -977,9 +977,9 @@ Scripts that create real fixtures need a working API/storage stack. Some accept 
 
 ### 20.4 Current acceptance boundary
 
-Performance Phases 1–7 have implementation evidence in the repository, but physical-device budgets and final visual acceptance remain pending. [performance-budgets.json](docs/performance-budgets.json) explicitly leaves required measured values unset. Null budgets do not mean a pass.
+Rendering and asset-processing features have implementation evidence in the repository, but physical-device budgets and final visual acceptance remain pending. [performance-budgets.json](docs/performance-budgets.json) explicitly leaves required measured values unset. Null budgets do not mean a pass.
 
-Short Chromium SwiftShader runs establish correctness, pass counts, cache behavior and software-renderer regressions. They do not establish sustained FPS, thermal performance, mobile VRAM or photorealism on production uploads. The recorded public courtyard-exit walking regression remains an acceptance item in the phase plan.
+Short Chromium SwiftShader runs establish correctness, pass counts, cache behavior and software-renderer regressions. They do not establish sustained FPS, thermal performance, mobile VRAM or photorealism on production uploads. The [chunking acceptance report](docs/chunking-acceptance.md) records passing public courtyard-exit and return checks.
 
 Current omissions include automatic splitting of monolithic GLBs, persistent download LOD generation, room-scoped external texture delivery, custom trusted window/stair/atrium visibility metadata, dynamic reflection capture, automatic lighting baking, offline screenshot/panorama rendering jobs and authenticated author permissions.
 
@@ -1128,7 +1128,7 @@ For deeper procedures and recorded limitations, see [runtime assets](docs/runtim
 
 ## 23. Reviewed monolithic chunking and rollout
 
-The [GLB chunking plan](rendering_pland_phase.md) is implemented through its automated Phase 10 handoff. `chunks-v1` is independent of `runtime-v1`: author-reviewed partitions queue revision/attempt-owned products with stable source mappings, scoped on-demand descriptors, exact-index readiness and declared content-addressed image dependencies. The viewer retains supported pose/resource ownership through quality changes, prevents entry into incomplete areas and releases obsolete requests through shared leases. Migration 016 records retryable storage retirement independently of deleted parents. Experimental `spatial_cell_size` splits only intact static triangles and preserves source-derived exact navigation/occlusion.
+[Reviewed GLB chunking](docs/chunking-acceptance.md) has automated and live-stack acceptance coverage. `chunks-v1` is independent of `runtime-v1`: author-reviewed partitions queue revision/attempt-owned products with stable source mappings, scoped on-demand descriptors, exact-index readiness and declared content-addressed image dependencies. The viewer retains supported pose/resource ownership through quality changes, prevents entry into incomplete areas and releases obsolete requests through shared leases. Migration 016 records retryable storage retirement independently of deleted parents. Experimental `spatial_cell_size` splits only intact static triangles and preserves source-derived exact navigation/occlusion.
 
 The API defaults to `ASSET_CHUNK_STREAMING=off`; `reviewed` admits intact static products and `spatial` additionally admits explicit experimental cells. Viewer build and query rollback are `VITE_CHUNK_STREAMING=0` and `?streaming=0`. Unknown schema/processor advertisements retain complete loading. [Final acceptance](docs/chunking-acceptance.md) records local PostgreSQL/worker/storage/browser checks and complete/chunked cold/warm comparisons. Full authored occlusion remains startup-global, so these small generated fixtures do not show startup-byte savings; production and physical-device acceptance remain held.
 
@@ -1143,7 +1143,7 @@ The API defaults to `ASSET_CHUNK_STREAMING=off`; `reviewed` admits intact static
 6. Movement requires resident visual contributors as well as approved exact standing geometry. A missing neighboring product blocks entry and offers retry. Full authored occlusion still hides hotspots behind unloaded walls. Inspection and HQ shadows require all visual contributors.
 7. Quality changes retain the current supported pose and resources until replacements commit. Obsolete owners release transfers and caches; replaced manifests and deleted originals enter durable retirement.
 
-The full authored occlusion product remains a copy of the complete source, including its image bytes and preparation cost. Shared-image output savings therefore do not establish startup transfer savings. See [processing and scoped delivery](docs/chunking-processing.md), [viewer bootstrap](docs/chunking-viewer.md), [shared images and lifetime management](docs/chunking-lifecycle.md) and [final acceptance](docs/chunking-acceptance.md) for phase-specific evidence and remaining acceptance work.
+The full authored occlusion product remains a copy of the complete source, including its image bytes and preparation cost. Shared-image output savings therefore do not establish startup transfer savings. See [processing and scoped delivery](docs/chunking-processing.md), [viewer bootstrap](docs/chunking-viewer.md), [shared images and lifetime management](docs/chunking-lifecycle.md) and [final acceptance](docs/chunking-acceptance.md) for feature-specific evidence and remaining acceptance work.
 
 ## Gaussian splat publication, performance and rollout
 
@@ -1155,7 +1155,7 @@ The DPR quality caps apply to splats without mesh texture policies, decimation o
 
 Development `?perf=1` records anonymous fetched bytes, splat count, validation/decode stage durations, bounded sort durations (last 120), sort backlog, estimated CPU/GPU bytes, resident renderer/source counts and shared first-usable/frame-time metrics. Diagnostics omit transport URLs. Production images bundle the pinned renderer and `/licenses/drei-splat.txt`; no splat runtime CDN or decoder is needed. [Rollout evidence](docs/splat-rollout.md) distinguishes software-renderer correctness from the pending reconstructed-capture, physical-device and actual HTTPS/S3 acceptance.
 
-## Splat proxy navigation and derived tiles (phases 8–9)
+## Splat proxy navigation and derived tiles
 
 `scene_splat_proxy_refs` records the scene, immutable source UUID and ready same-project GLB proxy UUID. Migration 018 enforces role/readiness and durable reference/deletion protection; migration 019 invalidates review/navigation/cameras on direct source/proxy preparation edits. `ChangeScene` applies the same rule transactionally, refreshes portal refs and preserves appearance-only approvals. Publication and public source scoping include proxies. Splat settings carry explicit proxy preparation, alignment review and optional occlusion, while mesh appearance/material controls remain excluded.
 

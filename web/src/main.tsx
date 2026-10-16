@@ -107,7 +107,7 @@ function Builder() {
 
 const SplatProof = lazy(() => import('./splat/SplatProof'));
 function App() {
-  return <BrowserRouter><header><Link to="/" className="brand"><span aria-hidden="true">◇</span> Virtual Tour Studio</Link><div className="header-actions"><span className="badge">Proof of concept</span><ThemeSwitch /></div></header>
+  return <BrowserRouter><header><Link to="/" className="brand"><span aria-hidden="true">◇</span> Roomweft</Link><div className="header-actions"><span className="badge">Virtual tour builder</span><ThemeSwitch /></div></header>
     <Routes>{import.meta.env.DEV && <Route path="/dev/splat" element={<Suspense fallback={<p>Loading proof…</p>}><SplatProof/></Suspense>}/>}<Route path="/" element={<Dashboard />} /><Route path="/projects/:id" element={<Builder />} /><Route path="/t/:slug" element={<PublicViewer />} /><Route path="/embed/:slug" element={<PublicViewer embed />} /><Route path="*" element={<main><h1>Page not found</h1><Link to="/">Back to projects</Link></main>} /></Routes>
   </BrowserRouter>;
 }

@@ -1,6 +1,6 @@
 # Splat viewing acceptance and deployment
 
-Phases 5–7 have local implementation and deterministic acceptance coverage. Production rollout remains **off** until representative reconstructed-capture, physical-device and actual HTTPS/S3 acceptance is recorded. This work does not accept Phase 0's outstanding physical-device baseline or enable walking.
+Capture viewing has local implementation and deterministic acceptance coverage. Production rollout defaults to **off** pending representative reconstructed-capture, physical-device and HTTPS/S3 validation. [Proxy walking](splat-walking-streaming.md) has a separate feature gate.
 
 ## Controls and rollback
 
@@ -28,9 +28,9 @@ Commands run against local PostgreSQL/MinIO and Vite at MinIO's configured brows
 - `VITE_SPLAT_SUPPORT=on npm --prefix web run build`: TypeScript and bundled renderer build; local decoder assets and copied MIT license.
 - `npm --prefix web run test:splat-authoring`: full upload/create/prepare/camera/hotspot path; mixed public/embed viewing, information image, fullscreen, emulated touch drag, deletion protection and unpublish/republish with existing signed URL retention.
 - `npm --prefix web run test:splat-viewer`: signed URL renewal, failure/retry, 12 consecutive reloads, worker ownership, independent viewers, context restoration, DPR/camera preservation, idle settling and disabled/re-enable mixed navigation. Runtime viewer-only mode hides capture creation controls. Writes `test-results/splat-viewing-acceptance.json` (local ignored artifact).
-- `npm --prefix web run test:splat-proof`: synthetic 39,204-splat room, resize, five mount/unmount cycles and context recovery. An initial parallel software-renderer run timed out taking a screenshot; the isolated rerun passed.
+- `npm --prefix web run test:splat-proof`: synthetic 39,204-splat room, resize, five mount/unmount cycles and context recovery.
 - `npm --prefix web run test:hotspots`: existing placement, occlusion, pointer-lock, GLB/panorama, public/embed and emulated touch regressions.
-- `npm --prefix web run test:layout`: authoring, instances, attachments, walking, walls, public/embed and emulated touch regressions. The initial run saw a development-page reload during an enabled-button wait; the rerun after edits settled passed.
+- `npm --prefix web run test:layout`: authoring, instances, attachments, walking, walls, public/embed and emulated touch regressions.
 
 The synthetic shared-viewer run used Chromium ANGLE SwiftShader, 441 splats / 14,112 source bytes and native DPR 2. One local run recorded first usable view at 928 ms, decode at 31 ms and first sort at 57 ms. These include local startup and software rendering; repeated runs vary. Verified quality DPR was Low 1, Balanced 1.5, HQ 2 and initial Auto 1.5, with unchanged camera and one worker throughout. Twelve reloads returned to one worker; failed/disabled views returned to zero. Settled idle checks allowed fewer than five frames in 500 ms. These are correctness assertions, not physical-device frame-time budgets.
 
@@ -45,9 +45,9 @@ The same authoring acceptance also passed against the production Nginx image wit
 | HQ | 2 | Higher raster resolution; more pixel work, no new source detail |
 | Auto | Shared capability and sustained-frame policy | Bounded DPR trials; interrupted/ineffective trials restore the previous tier |
 
-The full capture and camera stay resident across quality changes. There is no splat LOD, streaming or mesh texture tier. DPR can help pixel cost but cannot resolve worker sorting or decoded-count costs.
+The full capture and camera stay resident across quality changes. There is no splat LOD or mesh texture tier. Optional [exact tile streaming](splat-walking-streaming.md) has independent controls. DPR can help pixel cost but cannot resolve worker sorting or decoded-count costs.
 
-Development `?perf=1` exposes anonymous network/stage measurements, first usable view, frame distributions, source/count, decode duration, last 120 sort durations, one-or-zero sort backlog and estimated CPU/GPU allocations. Estimates now include worker counting tables and one decode batch; they are broader than the original Phase 0 allocation estimate. Browser frame samples exclude idle gaps and GPU time is not measured. Source reservations allow two distinct maximum-size sources per browser realm (128,000,000 bytes); renderer reservations cap estimated aggregate CPU/GPU allocation at 384 MiB. Separate tabs have separate budgets. These are provisional ceilings, not total browser memory guarantees; transfer copies, driver allocations and garbage collection add overhead. Oversized, unsupported, timed-out and budget-rejected captures present actionable retry/export-smaller errors.
+Development `?perf=1` exposes anonymous network/stage measurements, first usable view, frame distributions, source/count, decode duration, last 120 sort durations, one-or-zero sort backlog and estimated CPU/GPU allocations. Estimates now include worker counting tables and one decode batch; they are broader than the initial renderer allocation estimate. Browser frame samples exclude idle gaps and GPU time is not measured. Source reservations allow two distinct maximum-size sources per browser realm (128,000,000 bytes); renderer reservations cap estimated aggregate CPU/GPU allocation at 384 MiB. Separate tabs have separate budgets. These are provisional ceilings, not total browser memory guarantees; transfer copies, driver allocations and garbage collection add overhead. Oversized, unsupported, timed-out and budget-rejected captures present actionable retry/export-smaller errors.
 
 ## Production image verification
 

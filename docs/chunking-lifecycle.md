@@ -1,6 +1,6 @@
 # Chunk textures, lifetime management and experimental spatial cells
 
-Phases 7–9 extend `chunks-v1`. Existing self-contained manifests remain readable;
+`chunks-v1` supports shared images, resource retirement and optional spatial cells. Existing self-contained manifests remain readable;
 source upload validation still rejects external resources. Static reviewed groups
 remain the supported input. Animation, skinning and morphing retain the original
 fallback. These changes do not establish production or physical-device acceptance.
